@@ -16,6 +16,11 @@
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* irnas_ble_appTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* irnas_ble_appTests.m */; };
+		37CDEF9524983F8C0098FF56 /* BLE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37CDEF9424983F8C0098FF56 /* BLE.swift */; };
+		99B30DE9ED89A5C50E6C84EB /* libPods-irnas_ble_app-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D518241EF3E0863DBC53579 /* libPods-irnas_ble_app-tvOSTests.a */; };
+		B07B8FD4975D78A792B2F292 /* libPods-irnas_ble_app.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 96DACE0F7B6C5F7F391F1F76 /* libPods-irnas_ble_app.a */; };
+		BCB6362F0AA54FCF10179B17 /* libPods-irnas_ble_app-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E87830DF424B93EAB53A8BB2 /* libPods-irnas_ble_app-tvOS.a */; };
+		FE4602C8E724C0748B0B3374 /* libPods-irnas_ble_app-irnas_ble_appTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05C6800DD33EC9D9C496BDCB /* libPods-irnas_ble_app-irnas_ble_appTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +45,9 @@
 		00E356EE1AD99517003FC87E /* irnas_ble_appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = irnas_ble_appTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* irnas_ble_appTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = irnas_ble_appTests.m; sourceTree = "<group>"; };
+		05C6800DD33EC9D9C496BDCB /* libPods-irnas_ble_app-irnas_ble_appTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-irnas_ble_app-irnas_ble_appTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05DBA255B73C608642ABE980 /* Pods-irnas_ble_app-irnas_ble_appTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app-irnas_ble_appTests.debug.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app-irnas_ble_appTests/Pods-irnas_ble_app-irnas_ble_appTests.debug.xcconfig"; sourceTree = "<group>"; };
+		09A8E13D9EEC9862A6F4810C /* Pods-irnas_ble_app.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app.debug.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app/Pods-irnas_ble_app.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* irnas_ble_app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = irnas_ble_app.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = irnas_ble_app/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = irnas_ble_app/AppDelegate.m; sourceTree = "<group>"; };
@@ -49,8 +57,19 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = irnas_ble_app/main.m; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* irnas_ble_app-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "irnas_ble_app-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* irnas_ble_app-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "irnas_ble_app-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		37CDEF9324983F8B0098FF56 /* irnas_ble_app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "irnas_ble_app-Bridging-Header.h"; sourceTree = "<group>"; };
+		37CDEF9424983F8C0098FF56 /* BLE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLE.swift; sourceTree = "<group>"; };
+		3FCDF7091672EC1F2AA9A1C1 /* Pods-irnas_ble_app-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app-tvOS.release.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app-tvOS/Pods-irnas_ble_app-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		4D518241EF3E0863DBC53579 /* libPods-irnas_ble_app-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-irnas_ble_app-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7FEAE94F999200152A4DDCA7 /* Pods-irnas_ble_app-irnas_ble_appTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app-irnas_ble_appTests.release.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app-irnas_ble_appTests/Pods-irnas_ble_app-irnas_ble_appTests.release.xcconfig"; sourceTree = "<group>"; };
+		901E3CE218B7AC0AB2385BA1 /* Pods-irnas_ble_app.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app.release.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app/Pods-irnas_ble_app.release.xcconfig"; sourceTree = "<group>"; };
+		96DACE0F7B6C5F7F391F1F76 /* libPods-irnas_ble_app.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-irnas_ble_app.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DF817D435D52CF766073EB5A /* Pods-irnas_ble_app-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app-tvOS/Pods-irnas_ble_app-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
+		E87830DF424B93EAB53A8BB2 /* libPods-irnas_ble_app-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-irnas_ble_app-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
+		F1253C0A5C9E38AF7D24618C /* Pods-irnas_ble_app-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app-tvOSTests/Pods-irnas_ble_app-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
+		F972BB2319C4EE739755788C /* Pods-irnas_ble_app-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-irnas_ble_app-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-irnas_ble_app-tvOSTests/Pods-irnas_ble_app-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE4602C8E724C0748B0B3374 /* libPods-irnas_ble_app-irnas_ble_appTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +85,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B07B8FD4975D78A792B2F292 /* libPods-irnas_ble_app.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,6 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BCB6362F0AA54FCF10179B17 /* libPods-irnas_ble_app-tvOS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +101,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				99B30DE9ED89A5C50E6C84EB /* libPods-irnas_ble_app-tvOSTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,11 +139,30 @@
 			name = irnas_ble_app;
 			sourceTree = "<group>";
 		};
+		1D5B238D6985F570CC14D8E1 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				09A8E13D9EEC9862A6F4810C /* Pods-irnas_ble_app.debug.xcconfig */,
+				901E3CE218B7AC0AB2385BA1 /* Pods-irnas_ble_app.release.xcconfig */,
+				05DBA255B73C608642ABE980 /* Pods-irnas_ble_app-irnas_ble_appTests.debug.xcconfig */,
+				7FEAE94F999200152A4DDCA7 /* Pods-irnas_ble_app-irnas_ble_appTests.release.xcconfig */,
+				DF817D435D52CF766073EB5A /* Pods-irnas_ble_app-tvOS.debug.xcconfig */,
+				3FCDF7091672EC1F2AA9A1C1 /* Pods-irnas_ble_app-tvOS.release.xcconfig */,
+				F1253C0A5C9E38AF7D24618C /* Pods-irnas_ble_app-tvOSTests.debug.xcconfig */,
+				F972BB2319C4EE739755788C /* Pods-irnas_ble_app-tvOSTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
+				96DACE0F7B6C5F7F391F1F76 /* libPods-irnas_ble_app.a */,
+				05C6800DD33EC9D9C496BDCB /* libPods-irnas_ble_app-irnas_ble_appTests.a */,
+				E87830DF424B93EAB53A8BB2 /* libPods-irnas_ble_app-tvOS.a */,
+				4D518241EF3E0863DBC53579 /* libPods-irnas_ble_app-tvOSTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -135,11 +177,14 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				37CDEF9424983F8C0098FF56 /* BLE.swift */,
 				13B07FAE1A68108700A75B9A /* irnas_ble_app */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* irnas_ble_appTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
+				1D5B238D6985F570CC14D8E1 /* Pods */,
+				37CDEF9324983F8B0098FF56 /* irnas_ble_app-Bridging-Header.h */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -164,6 +209,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "irnas_ble_appTests" */;
 			buildPhases = (
+				ABC492A9AF1011D990E5B6F5 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
@@ -182,6 +228,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "irnas_ble_app" */;
 			buildPhases = (
+				34A6DF268BD3F521C6563348 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
@@ -201,6 +248,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "irnas_ble_app-tvOS" */;
 			buildPhases = (
+				DA8F426EC22C3C41B3DDDC48 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F122414F3F0027D42C /* Start Packager */,
 				2D02E4771E0B4A5D006451C7 /* Sources */,
 				2D02E4781E0B4A5D006451C7 /* Frameworks */,
@@ -220,6 +268,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "irnas_ble_app-tvOSTests" */;
 			buildPhases = (
+				CEC477FDB83FFCCBD2945B66 /* [CP] Check Pods Manifest.lock */,
 				2D02E48C1E0B4A5D006451C7 /* Sources */,
 				2D02E48D1E0B4A5D006451C7 /* Frameworks */,
 				2D02E48E1E0B4A5D006451C7 /* Resources */,
@@ -244,10 +293,12 @@
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
 						CreatedOnToolsVersion = 6.2;
+						DevelopmentTeam = 7FXFUCVLD7;
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						DevelopmentTeam = 7FXFUCVLD7;
+						LastSwiftMigration = 1150;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -344,6 +395,94 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
+		34A6DF268BD3F521C6563348 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-irnas_ble_app-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		ABC492A9AF1011D990E5B6F5 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-irnas_ble_app-irnas_ble_appTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CEC477FDB83FFCCBD2945B66 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-irnas_ble_app-tvOSTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DA8F426EC22C3C41B3DDDC48 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-irnas_ble_app-tvOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -398,6 +537,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				37CDEF9524983F8C0098FF56 /* BLE.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -449,8 +589,11 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 05DBA255B73C608642ABE980 /* Pods-irnas_ble_app-irnas_ble_appTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 7FXFUCVLD7;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -471,9 +614,12 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7FEAE94F999200152A4DDCA7 /* Pods-irnas_ble_app-irnas_ble_appTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 7FXFUCVLD7;
 				INFOPLIST_FILE = irnas_ble_appTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -490,10 +636,12 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09A8E13D9EEC9862A6F4810C /* Pods-irnas_ble_app.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7FXFUCVLD7;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -508,6 +656,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = irnas_ble_app;
+				SWIFT_OBJC_BRIDGING_HEADER = "irnas_ble_app-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -516,10 +665,12 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 901E3CE218B7AC0AB2385BA1 /* Pods-irnas_ble_app.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7FXFUCVLD7;
 				INFOPLIST_FILE = irnas_ble_app/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -529,6 +680,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = irnas_ble_app;
+				SWIFT_OBJC_BRIDGING_HEADER = "irnas_ble_app-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -536,6 +688,7 @@
 		};
 		2D02E4971E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DF817D435D52CF766073EB5A /* Pods-irnas_ble_app-tvOS.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -563,6 +716,7 @@
 		};
 		2D02E4981E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3FCDF7091672EC1F2AA9A1C1 /* Pods-irnas_ble_app-tvOS.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -590,6 +744,7 @@
 		};
 		2D02E4991E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F1253C0A5C9E38AF7D24618C /* Pods-irnas_ble_app-tvOSTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -616,6 +771,7 @@
 		};
 		2D02E49A1E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F972BB2319C4EE739755788C /* Pods-irnas_ble_app-tvOSTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
