@@ -29,7 +29,7 @@ class App extends React.Component {
     this.state = {
       failed: true,
       scanRunning: false,
-      heartRate: 0,
+      NotifyData: 0,
       device: undefined,
       numOfDevices: 0,
       notificationsRunning: false,
@@ -38,14 +38,9 @@ class App extends React.Component {
     this.devices = [];
     this.services = {};
 
-    //this.nordicUartService = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
-    //this.uartRx = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
-    //this.uartTx = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
-
-    this.hrService = "0000180d-0000-1000-8000-00805f9b34fb";
-    this.hrMeasurement = "00002a37-0000-1000-8000-00805f9b34fb";
-    this.hrBodySensorLoc = "00002a38-0000-1000-8000-00805f9b34fb";
-    this.hrControlPoint = "00002a39-0000-1000-8000-00805f9b34fb";
+    this.uartService = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
+    this.uartRx = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";   // write
+    this.uartTx = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";   // notify
   }
 
   componentWillUnmount() {
@@ -192,7 +187,7 @@ class App extends React.Component {
   async setupNotifications() {
     //const characteristic = await device.writeCharacteristicWithResponseForService( service, characteristicW, "AQ==");
 
-    this.state.device.monitorCharacteristicForService(this.hrService, this.hrMeasurement, (error, characteristic) => {
+    this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
       if (error) {
         console.log(error.message);
         return;
@@ -201,7 +196,7 @@ class App extends React.Component {
       const result = DecodeBase64(characteristic.value);
       //console.log(result.length);
       //console.log("HR: " + result[0] + " " + result[1])
-      this.setState({heartRate: result[1]});
+      this.setState({NotifyData: result[1]});
     });
   }
 
@@ -216,7 +211,7 @@ class App extends React.Component {
       encoded = EncodeBase64(this.state.writeText);
     }
 
-    this.state.device.writeCharacteristicWithoutResponseForService(this.hrService, this.hrControlPoint, encoded)
+    this.state.device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
     .then(() => {
       NotifyMessage("Write ok...")
     }, (error) => {
@@ -280,7 +275,7 @@ class App extends React.Component {
       return (
         <View style={styles.container}>
           <Text style={styles.mainTitle}>
-            BLE react test app - HR profile
+            BLE react test app - UART profile
           </Text>
           <Button
             color="#32a852"
@@ -313,7 +308,7 @@ class App extends React.Component {
       let hrText = "";
       if (notify) {
         notifyText = "turn off notifications";
-        hrText = this.state.heartRate;
+        hrText = this.state.NotifyData;
       }
       else {
         notifyText = "turn on notifications";
@@ -349,18 +344,18 @@ class App extends React.Component {
           <TextInput placeholder="String to write" style={styles.input} onChangeText={this.handleWriteText}/>
           <Button
             color="#32a852"
-            title='set hr control point'
+            title='Write to RX characteristic'
             onPress={()=>this.write()}
           />
           <Separator />
           <Button
             color="#32a852"
-            title='get body sensor location'
+            title='Read from TBA'
             onPress={()=>this.read()}
           />
           <Separator />
           <Text style={styles.sectionTitle}>
-            HR: {hrText}
+            Notify message: {hrText}
           </Text>
         </View>
       );
