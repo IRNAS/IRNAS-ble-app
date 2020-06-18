@@ -1,5 +1,5 @@
 /**
- * IRNAS BLE app to communicate with Nordic UART Service profile
+ * IRNAS BLE app to communicate with basic HR profile
  * Tested with server in Nrf connect Android app
  *
  * @format
