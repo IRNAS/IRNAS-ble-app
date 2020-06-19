@@ -204,12 +204,13 @@ class App extends React.Component {
     this.setState({ writeText: text});
   }
 
-  write() {
+  write(encoedIn) {
     //device.writeCharacteristicWithoutResponseForService(this.nordicUartService, this.uartRx, "heh")
-    const encoded = EncodeBase64([1]);  // default send array [1]
+    let encoded = EncodeBase64([1]);
     if (this.state.writeText) {   // if user write data send that
       encoded = EncodeBase64(this.state.writeText);
     }
+    console.log(encoded);
 
     this.state.device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
     .then(() => {
@@ -335,16 +336,54 @@ class App extends React.Component {
             onPress={()=>this.displayAllServices()}
           />
           <Separator />
-          <Button
-            color="#32a852"
-            title={notifyText}
-            onPress={()=>this.notificationsOnOff()}
-          />
+          <Text style={styles.title}>
+            Write data to device (RX characteristic)
+          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', }}>
+            <View style={styles.button_1}>
+              <Button
+                title="Write 1"
+                onPress={() => {
+                  console.log('clicked 1');
+                  this.setState({ writeText: "text 1"}, this.write);
+                }}
+              />
+            </View>
+            <View style={styles.button_1}>
+              <Button
+                title="Write 2"
+                onPress={() => {
+                  console.log('clicked 2');
+                  this.setState({ writeText: "text 2"}, this.write);
+                }}
+              />
+            </View>
+            <View style={styles.button_1}>
+              <Button
+                title="Write 3"
+                onPress={() => {
+                  console.log('clicked 3');
+                  this.setState({ writeText: "text 3"}, this.write);
+                }}
+              />
+            </View>
+            <View style={styles.button_1}>
+              <Button
+                title="Write 4"
+                onPress={() => {
+                  console.log('clicked 4');
+                  this.setState({ writeText: "text 4"}, this.write);
+                }}
+              />
+            </View>
+          </View>
           <Separator />
-          <TextInput placeholder="String to write" style={styles.input} onChangeText={this.handleWriteText}/>
+          <Text style={styles.sectionTitle}>
+            Write custom data:
+          </Text>
+          <TextInput placeholder="Write string here" style={styles.input} onChangeText={this.handleWriteText}/>
           <Button
-            color="#32a852"
-            title='Write to RX characteristic'
+            title='Write custom string to RX char'
             onPress={()=>this.write()}
           />
           <Separator />
@@ -352,6 +391,12 @@ class App extends React.Component {
             color="#32a852"
             title='Read from TBA'
             onPress={()=>this.read()}
+          />
+          <Separator />
+          <Button
+            color="#32a852"
+            title={notifyText}
+            onPress={()=>this.notificationsOnOff()}
           />
           <Separator />
           <Text style={styles.sectionTitle}>
@@ -381,7 +426,7 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 14,
     fontWeight: '600',
     color: Colors.black,
     textAlign: 'center',
@@ -396,6 +441,10 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 16,
     textAlign: 'center',
+  },
+  button_1: {
+    marginHorizontal: 3,
+    alignContent: 'center',
   },
 });
 
