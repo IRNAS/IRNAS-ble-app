@@ -1,0 +1,48 @@
+{
+	"device_filter" : {
+		"name" : "iz",
+		"mac" : "01:23:45:67:89:AB"
+	},
+	"commands" : [
+		{
+			"name" : "Factory m",
+			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"factory\"} }"
+		},
+		{
+			"name" : "Storage m",
+			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"storage\"} }"
+		},
+		{
+			"name" : "Deploy m",
+			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"deployment\"} }"
+		},
+		{
+			"name" : "Operation m",
+			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"operation\"} }"
+		},
+		{
+			"name" : "Measure",
+			"uart_command" : "M:"
+		},
+		{
+			"name" : "Connect",
+			"uart_command" : "C:"
+		},
+		{
+			"name" : "Get Rep",
+			"uart_command" : "GR:"
+		},
+		{
+			"name" : "Get conf",
+			"uart_command" : "GC:"
+		},
+		{
+			"name" : "Reset",
+			"uart_command" : "R:"
+		},
+		{
+			"name" : "Test",
+			"uart_command" : "T:"
+		}
+	]
+}

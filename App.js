@@ -7,12 +7,13 @@
  */
 
 import React, { Component } from 'react';
-import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, TextInput } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
 
 import ListDeviceItem from './components/ListDeviceItem';
+import UartButton from './components/UartButton';
 import { EncodeBase64, DecodeBase64, NotifyMessage }  from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
@@ -41,12 +42,21 @@ class App extends React.Component {
     this.uartService = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
     this.uartRx = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";   // write
     this.uartTx = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";   // notify
+
+    this.bleFilterName = "";
+    this.bleFilterMac = "";
+    this.uartCommands = [];
+  }
+
+  componentDidMount() {
+    this.checkBLE();
   }
 
   componentWillUnmount() {
     if (this.state.device !== undefined) {
       this.disconnect();
       // TODO cancel asynchronous task (notify)
+      this.notificationsOnOff();
     }
   }
 
@@ -112,11 +122,11 @@ class App extends React.Component {
 
   connect(item) {
     const device = item;
-    this.setState({device: item});
+    //this.setState({device: item});
     //console.log(device);
 
     if (device !== undefined) {
-      NotifyMessage("connecting to device: ", device.id);
+      NotifyMessage("connecting to device: " + device.id);
       device.connect()
       .then((device) => {
         //let allCharacteristics = device.discoverAllServicesAndCharacteristics()
@@ -133,6 +143,7 @@ class App extends React.Component {
         console.log("found services");
         this.services = services;
         NotifyMessage("Connect OK");
+        this.setState({device: item}, this.notificationsOnOff);
       })
       .catch ((error) => {
         NotifyMessage("Error when connecting to selected device.");
@@ -189,13 +200,13 @@ class App extends React.Component {
 
     this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
       if (error) {
-        console.log(error.message);
+        console.log("ERROR: " + error.message);
         return;
       }
       //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
       const result = DecodeBase64(characteristic.value);
-      //console.log(result.length);
-      //console.log("HR: " + result[0] + " " + result[1])
+      console.log(result.length);
+      console.log("Received data from device: " + result);
       this.setState({NotifyData: result[1]});
     });
   }
@@ -204,13 +215,13 @@ class App extends React.Component {
     this.setState({ writeText: text});
   }
 
-  write(encoedIn) {
+  write() {
     //device.writeCharacteristicWithoutResponseForService(this.nordicUartService, this.uartRx, "heh")
-    let encoded = EncodeBase64([1]);
+    let encoded; // = EncodeBase64([1]);
     if (this.state.writeText) {   // if user write data send that
       encoded = EncodeBase64(this.state.writeText);
     }
-    console.log(encoded);
+    //console.log("Writing encoded data: " + encoded);
 
     this.state.device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
     .then(() => {
@@ -221,6 +232,7 @@ class App extends React.Component {
   }
 
   read() {
+    // TODO GATT request MTU?
     const dev = this.state.device;
     //device.readCharacteristicForService(this.nordicUartService, this.readChar)
     dev.readCharacteristicForService(this.hrService, this.hrBodySensorLoc)
@@ -259,8 +271,36 @@ class App extends React.Component {
     }
   }
 
+  parseJsonConfig() {
+    var data = require('./Test.json');
+    console.log(data);
+
+    if (data.device_filter !== undefined) {
+      this.bleFilterName = data.device_filter.name;
+      // TODO use mac filtering
+      console.log("JSON data: found filters.");
+    }
+    if (data.commands !== undefined) {
+      console.log("JSON data: found " + data.commands.length + " commands.");
+      this.uartCommands = data.commands;
+    }
+  }
+
+  displayUartButtons() {
+    const views = [];
+    var command;
+    for (command of this.uartCommands) {
+      views.push(<UartButton title={command.name} uart_command={command.uart_command} writeUartCommand={this.writeUartCommand}/>)
+    }
+    return views;
+  }
+
+  writeUartCommand = uart => {
+    console.log('button clicked, writing command: ' + uart);
+    this.setState({ writeText: uart}, this.write);
+  }
+
   render() {
-    let deviceResults = this.displayResults();  // TODO naredi da se lahko scrolla po njih
     // scan screen
     if (this.state.device === undefined) {
       let scanText = "";
@@ -273,6 +313,10 @@ class App extends React.Component {
         scanText = "Start scan";
         scanStatus = "Idle";
       }
+      // TODO prikaz podatkov v appu in ne v konzoli
+      // TODO naredi da se lahko boljše scrolla po prikazanih napravah
+      // TODO buttone naredi boljše
+      // TODO ko se disconnecta naredi reconnect
       return (
         <View style={styles.container}>
           <Text style={styles.mainTitle}>
@@ -280,8 +324,8 @@ class App extends React.Component {
           </Text>
           <Button
             color="#32a852"
-            title='check Bluetooth'
-            onPress={()=>this.checkBLE()}
+            title='Load json string'
+            onPress={()=>this.parseJsonConfig()}
           />
           <Separator />
           <Button
@@ -295,7 +339,7 @@ class App extends React.Component {
           </Text>
           <Separator />
             <View>
-                {deviceResults}
+              {this.displayResults()}
             </View>
           <Separator />
         </View>
@@ -304,20 +348,6 @@ class App extends React.Component {
     // connect screen
     else {
       let displayName = this.state.device.name;
-      let notify  = this.state.notificationsRunning;
-      let notifyText = "";
-      let hrText = "";
-      if (notify) {
-        notifyText = "turn off notifications";
-        hrText = this.state.NotifyData;
-      }
-      else {
-        notifyText = "turn on notifications";
-        hrText = "??";
-      }
-      if (displayName === null) {
-        displayName = this.state.device.id;
-      }
       return(
         <View style={styles.container}>
           <Text style={styles.mainTitle}>
@@ -330,52 +360,11 @@ class App extends React.Component {
             onPress={()=>this.disconnect()}
           />
           <Separator />
-          <Button
-            color="#32a852"
-            title='Display all services'
-            onPress={()=>this.displayAllServices()}
-          />
-          <Separator />
           <Text style={styles.title}>
             Write data to device (RX characteristic)
           </Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', }}>
-            <View style={styles.button_1}>
-              <Button
-                title="Write 1"
-                onPress={() => {
-                  console.log('clicked 1');
-                  this.setState({ writeText: "text 1"}, this.write);
-                }}
-              />
-            </View>
-            <View style={styles.button_1}>
-              <Button
-                title="Write 2"
-                onPress={() => {
-                  console.log('clicked 2');
-                  this.setState({ writeText: "text 2"}, this.write);
-                }}
-              />
-            </View>
-            <View style={styles.button_1}>
-              <Button
-                title="Write 3"
-                onPress={() => {
-                  console.log('clicked 3');
-                  this.setState({ writeText: "text 3"}, this.write);
-                }}
-              />
-            </View>
-            <View style={styles.button_1}>
-              <Button
-                title="Write 4"
-                onPress={() => {
-                  console.log('clicked 4');
-                  this.setState({ writeText: "text 4"}, this.write);
-                }}
-              />
-            </View>
+          <View style={{justifyContent: 'center', }}>
+            {this.displayUartButtons()}
           </View>
           <Separator />
           <Text style={styles.sectionTitle}>
@@ -386,27 +375,13 @@ class App extends React.Component {
             title='Write custom string to RX char'
             onPress={()=>this.write()}
           />
-          <Separator />
-          <Button
-            color="#32a852"
-            title='Read from TBA'
-            onPress={()=>this.read()}
-          />
-          <Separator />
-          <Button
-            color="#32a852"
-            title={notifyText}
-            onPress={()=>this.notificationsOnOff()}
-          />
-          <Separator />
-          <Text style={styles.sectionTitle}>
-            Notify message: {hrText}
-          </Text>
         </View>
       );
     }
   }
 }
+
+// TODO spodnja polovica ekrana textfield ki printa notify loge + ostale informacije o povezavi z napravo
 
 const styles = StyleSheet.create({
   container: {
@@ -441,10 +416,6 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 16,
     textAlign: 'center',
-  },
-  button_1: {
-    marginHorizontal: 3,
-    alignContent: 'center',
   },
 });
 
