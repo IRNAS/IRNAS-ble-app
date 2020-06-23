@@ -30,7 +30,7 @@ class App extends React.Component {
     this.state = {
       failed: true,
       scanRunning: false,
-      NotifyData: 0,
+      NotifyData: [],
       device: undefined,
       numOfDevices: 0,
       notificationsRunning: false,
@@ -205,9 +205,11 @@ class App extends React.Component {
       }
       //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
       const result = DecodeBase64(characteristic.value);
-      console.log(result.length);
+      //console.log(result.length);
       console.log("Received data from device: " + result);
-      this.setState({NotifyData: result[1]});
+      this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
+        NotifyData: [...prevState.NotifyData, result.toString() + "\n"]
+      }));
     });
   }
 
@@ -313,14 +315,16 @@ class App extends React.Component {
         scanText = "Start scan";
         scanStatus = "Idle";
       }
-      // TODO prikaz podatkov v appu in ne v konzoli
+
       // TODO naredi da se lahko boljše scrolla po prikazanih napravah
       // TODO buttone naredi boljše
       // TODO ko se disconnecta naredi reconnect
+      // TODO izpiši timestampe
+
       return (
         <View style={styles.container}>
           <Text style={styles.mainTitle}>
-            BLE react test app - UART profile
+            IRNAS BLE app - UART profile
           </Text>
           <Button
             color="#32a852"
@@ -360,6 +364,7 @@ class App extends React.Component {
             onPress={()=>this.disconnect()}
           />
           <Separator />
+          <ScrollView>
           <Text style={styles.title}>
             Write data to device (RX characteristic)
           </Text>
@@ -375,6 +380,13 @@ class App extends React.Component {
             title='Write custom string to RX char'
             onPress={()=>this.write()}
           />
+          <Separator/>
+          <ScrollView>
+            <Text>
+            {this.state.NotifyData}
+            </Text>
+          </ScrollView>
+          </ScrollView>
         </View>
       );
     }
