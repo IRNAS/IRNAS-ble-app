@@ -48,6 +48,8 @@ class App extends React.Component {
     this.bleFilterName = "";
     this.bleFilterMac = "";
     this.uartCommands = [];
+
+    this.oldJson = {};
   }
 
   componentDidMount() {
@@ -55,6 +57,7 @@ class App extends React.Component {
 
     var data = require('./Test.json');
     //console.log(data);
+    this.oldJson = data;
     this.setState({jsonText: data});
   }
 
@@ -283,6 +286,8 @@ class App extends React.Component {
     //var data = require('./Test.json');
     //console.log(data);
 
+    let data = this.state.jsonText;
+
     if (data.device_filter !== undefined) {
       this.bleFilterName = data.device_filter.name;
       // TODO use mac filtering
@@ -292,6 +297,13 @@ class App extends React.Component {
       console.log("JSON data: found " + data.commands.length + " commands.");
       this.uartCommands = data.commands;
     }
+
+    this.oldJson = data;
+  }
+
+  cleanJsonText = text => {
+    //let cleanText = ReplaceAll(text, "\n", "");
+    this.setState({ jsonText: JSON.parse(text)});
   }
 
   openJsonConfig() {
@@ -301,6 +313,9 @@ class App extends React.Component {
   closeJsonConfig(save) {
     if (save) {
       this.parseJsonConfig();
+    }
+    else {
+      this.setState({ jsonText: this.oldJson});
     }
     this.setState({ jsonEditActive: false});
   }
@@ -323,11 +338,9 @@ class App extends React.Component {
     if (this.state.device === undefined) {
       if (this.state.jsonEditActive) {  // edit json file screen
         let jsonString = JSON.stringify(this.state.jsonText);
-        jsonString = ReplaceAll(jsonString, ",", ",\n");
-        jsonString = ReplaceAll(jsonString, "{", "{\n");
-        //jsonString = ReplaceAll(jsonString, "}", "\n}");
-        jsonString = ReplaceAll(jsonString, "[", "[\n");
-        jsonString = ReplaceAll(jsonString, "]", "\n\t]");
+        //jsonString = ReplaceAll(jsonString, ",", ",\n");
+        //jsonString = ReplaceAll(jsonString, "{", "{\n");
+        //jsonString = ReplaceAll(jsonString, "[", "[\n");
 
         return (
           <View style={styles.container}>
@@ -353,7 +366,7 @@ class App extends React.Component {
             <TextInput
               placeholder="Json config wll be displayed here"
               style={styles.inputMulti}
-              onChangeText={this.handleWriteText}
+              onChangeText={this.cleanJsonText}
               value={jsonString}
               multiline={true}/>
           </View>
@@ -383,7 +396,7 @@ class App extends React.Component {
             </Text>
             <Button
               color="#32a852"
-              title='Load json string'
+              title='Edit json string'
               onPress={()=>this.openJsonConfig()}
             />
             <Separator />
