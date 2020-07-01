@@ -14,7 +14,7 @@ import { BleManager, LogLevel } from 'react-native-ble-plx';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage }  from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll}  from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -35,6 +35,8 @@ class App extends React.Component {
       numOfDevices: 0,
       notificationsRunning: false,
       writeText: "",
+      jsonEditActive: false,
+      jsonText: {},
     };
     this.devices = [];
     this.services = {};
@@ -50,6 +52,10 @@ class App extends React.Component {
 
   componentDidMount() {
     this.checkBLE();
+
+    var data = require('./Test.json');
+    //console.log(data);
+    this.setState({jsonText: data});
   }
 
   componentWillUnmount() {
@@ -274,8 +280,8 @@ class App extends React.Component {
   }
 
   parseJsonConfig() {
-    var data = require('./Test.json');
-    console.log(data);
+    //var data = require('./Test.json');
+    //console.log(data);
 
     if (data.device_filter !== undefined) {
       this.bleFilterName = data.device_filter.name;
@@ -286,6 +292,17 @@ class App extends React.Component {
       console.log("JSON data: found " + data.commands.length + " commands.");
       this.uartCommands = data.commands;
     }
+  }
+
+  openJsonConfig() {
+    this.setState({ jsonEditActive: true});
+  }
+
+  closeJsonConfig(save) {
+    if (save) {
+      this.parseJsonConfig();
+    }
+    this.setState({ jsonEditActive: false});
   }
 
   displayUartButtons() {
@@ -303,51 +320,90 @@ class App extends React.Component {
   }
 
   render() {
-    // scan screen
     if (this.state.device === undefined) {
-      let scanText = "";
-      let scanStatus = "";
-      if (this.state.scanRunning) {
-        scanText = "Stop scan";
-        scanStatus = "Scanning...";
-      }
-      else {
-        scanText = "Start scan";
-        scanStatus = "Idle";
-      }
+      if (this.state.jsonEditActive) {  // edit json file screen
+        let jsonString = JSON.stringify(this.state.jsonText);
+        jsonString = ReplaceAll(jsonString, ",", ",\n");
+        jsonString = ReplaceAll(jsonString, "{", "{\n");
+        //jsonString = ReplaceAll(jsonString, "}", "\n}");
+        jsonString = ReplaceAll(jsonString, "[", "[\n");
+        jsonString = ReplaceAll(jsonString, "]", "\n\t]");
 
-      // TODO naredi da se lahko boljše scrolla po prikazanih napravah
-      // TODO buttone naredi boljše
-      // TODO ko se disconnecta naredi reconnect
-      // TODO izpiši timestampe
-
-      return (
-        <View style={styles.container}>
-          <Text style={styles.mainTitle}>
-            IRNAS BLE app - UART profile
-          </Text>
-          <Button
-            color="#32a852"
-            title='Load json string'
-            onPress={()=>this.parseJsonConfig()}
-          />
-          <Separator />
-          <Button
-            color="#32a852"
-            title={scanText}
-            onPress={()=>this.startStopScan()}
-          />
-          <Separator />
-          <Text style={styles.title}>
-            Status: {scanStatus}
-          </Text>
-          <Separator />
-            <View>
-              {this.displayResults()}
+        return (
+          <View style={styles.container}>
+            <Text style={styles.mainTitle}>
+              Json editor screen
+            </Text>
+            <Separator />
+            <View style={styles.multiLineBtn}>
+              <Button
+                color="#32a852"
+                title="   Save   "
+                style={styles.customBtn}
+                onPress={()=>this.closeJsonConfig(true)}
+              />
+              <Button
+                color="#32a852"
+                title="   Back   "
+                style={styles.customBtn}
+                onPress={()=>this.closeJsonConfig(false)}
+              />
             </View>
-          <Separator />
-        </View>
-      );
+            <Separator />
+            <TextInput
+              placeholder="Json config wll be displayed here"
+              style={styles.inputMulti}
+              onChangeText={this.handleWriteText}
+              value={jsonString}
+              multiline={true}/>
+          </View>
+        );
+      }
+      else {  // scan screen
+        let scanText = "";
+        let scanStatus = "";
+        if (this.state.scanRunning) {
+          scanText = "Stop scan";
+          scanStatus = "Scanning...";
+        }
+        else {
+          scanText = "Start scan";
+          scanStatus = "Idle";
+        }
+
+        // TODO naredi da se lahko boljše scrolla po prikazanih napravah
+        // TODO buttone naredi boljše
+        // TODO ko se disconnecta naredi reconnect
+        // TODO izpiši timestampe
+
+        return (
+          <View style={styles.container}>
+            <Text style={styles.mainTitle}>
+              IRNAS BLE app - UART profile
+            </Text>
+            <Button
+              color="#32a852"
+              title='Load json string'
+              onPress={()=>this.openJsonConfig()}
+            />
+            <Separator />
+            <Button
+              color="#32a852"
+              title={scanText}
+              onPress={()=>this.startStopScan()}
+            />
+            <Separator />
+            <Text style={styles.title}>
+              Status: {scanStatus}
+            </Text>
+            <Separator />
+              <View>
+                {this.displayResults()}
+              </View>
+            <Separator />
+          </View>
+        );
+      }
     }
     // connect screen
     else {
@@ -428,6 +484,15 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 16,
     textAlign: 'center',
+  },
+  inputMulti: {
+    padding: 8,
+    fontSize: 16,
+  },
+  multiLineBtn: {
+    flexDirection: "row",
+    marginLeft: 10,
+    justifyContent: 'space-evenly',
   },
 });
 

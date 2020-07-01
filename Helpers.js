@@ -20,3 +20,7 @@ export function DecodeBase64(data) {
     const result = Buffer.from(data, 'base64');
     return result;
 }
+
+export function ReplaceAll(string, search, replace) {
+    return string.split(search).join(replace);
+  }
