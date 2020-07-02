@@ -22,6 +22,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 
 // TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
 // TODO ko se disconnecta naredi reconnect
+// TODO ko se tipkovnica odpre v json configu, naredi da se ostali del ekrana scala na preostali fraj plac
 
 function Separator() {
   return <View style={styles.separator} />;
