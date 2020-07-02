@@ -340,8 +340,14 @@ class App extends React.Component {
   }
 
   cleanJsonText = text => {
-    //let cleanText = ReplaceAll(text, "\n", "");
-    this.setState({ jsonText: JSON.parse(text)});
+    try {
+      let parsedText = JSON.parse(text);
+      this.setState({ jsonText: parsedText});
+    }
+    catch (error) {
+      console.log(error);
+      NotifyMessage("JSON parse error, please try again");
+    }
   }
 
   openJsonConfig() {
