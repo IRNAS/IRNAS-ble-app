@@ -469,7 +469,7 @@ class App extends React.Component {
             <Text style={styles.mainTitle}>
               Connected to {displayName}
             </Text>
-            <Text style={styles.sectionTitle}>
+            <Text style={styles.title}>
               Read logs
             </Text>
             <Separator />
@@ -506,14 +506,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     textAlign: 'center',
-    marginVertical: 5,
+    marginBottom: 5,
   },
   mainTitle: {
     fontSize: 20,
     color: '#32a852',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: 15,
+    marginVertical: 10,
   },
   sectionTitle: {
     fontSize: 14,

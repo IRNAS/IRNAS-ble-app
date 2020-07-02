@@ -14,9 +14,9 @@ const UartButton = (props) => {
 
 const styles = StyleSheet.create({
     button_1: {
-        marginHorizontal: 3,
+        marginHorizontal: 10,
+        paddingBottom: 10,
         alignContent: 'center',
-        paddingHorizontal: 3,
       },
 })
 

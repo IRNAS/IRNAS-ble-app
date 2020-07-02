@@ -5,19 +5,19 @@
 	},
 	"commands" : [
 		{
-			"name" : "Factory m",
+			"name" : "Factory mode",
 			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"factory\"} }"
 		},
 		{
-			"name" : "Storage m",
+			"name" : "Storage mode",
 			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"storage\"} }"
 		},
 		{
-			"name" : "Deploy m",
+			"name" : "Deploy mode",
 			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"deployment\"} }"
 		},
 		{
-			"name" : "Operation m",
+			"name" : "Operation mode",
 			"uart_command" : "SC: {\"cfg\": {\"device_mode\": \"operation\"} }"
 		},
 		{
@@ -29,11 +29,11 @@
 			"uart_command" : "C:"
 		},
 		{
-			"name" : "Get Rep",
+			"name" : "Get Report",
 			"uart_command" : "GR:"
 		},
 		{
-			"name" : "Get conf",
+			"name" : "Get config",
 			"uart_command" : "GC:"
 		},
 		{
