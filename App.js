@@ -14,7 +14,7 @@ import { BleManager, LogLevel } from 'react-native-ble-plx';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll}  from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp}  from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -217,8 +217,9 @@ class App extends React.Component {
       const result = DecodeBase64(characteristic.value);
       //console.log(result.length);
       console.log("Received data from device: " + result);
+      const stringResult = GetTimestamp()  + ":" + result.toString();
       this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
-        NotifyData: [...prevState.NotifyData, result.toString() + "\n"]
+        NotifyData: [...prevState.NotifyData, stringResult + "\n"]
       }));
     });
   }
@@ -391,7 +392,6 @@ class App extends React.Component {
         // TODO naredi da se lahko boljše scrolla po prikazanih napravah
         // TODO buttone naredi boljše
         // TODO ko se disconnecta naredi reconnect
-        // TODO izpiši timestampe
 
         return (
           <View style={styles.container}>

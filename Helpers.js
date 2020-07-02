@@ -23,4 +23,10 @@ export function DecodeBase64(data) {
 
 export function ReplaceAll(string, search, replace) {
     return string.split(search).join(replace);
-  }
+}
+
+export function GetTimestamp() {
+    var today = new Date();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + "." + today.getMilliseconds();
+    return time;
+}
