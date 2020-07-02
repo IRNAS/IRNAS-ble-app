@@ -206,7 +206,7 @@ class App extends React.Component {
 
   notifyStop() {
     if (this.state.device !== undefined) {
-      NotifyMessage("Turning off notifications");
+      //NotifyMessage("Turning off notifications");
       this.setState({notificationsRunning: false});
     }
   }
@@ -232,7 +232,7 @@ class App extends React.Component {
       const result = DecodeBase64(characteristic.value);
       //console.log(result.length);
       console.log("Received data from device: " + result);
-      const stringResult = GetTimestamp()  + ":" + result.toString();
+      const stringResult = GetTimestamp()  + ": " + result.toString();
       this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
         NotifyData: [...prevState.NotifyData, stringResult + "\n"]
       }));

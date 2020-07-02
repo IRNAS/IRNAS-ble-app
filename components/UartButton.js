@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Button } from 'react-native';
 
+// TODO solve each child should have unique key prop
+
 const UartButton = (props) => {
     return (
         <View style={styles.button_1}>
