@@ -156,6 +156,7 @@ class App extends React.Component {
       })
       .catch ((error) => {
         NotifyMessage("Error when connecting to selected device.");
+        // TODO add connect retry
         console.log(error.message);
         this.setState({device: undefined});
       });
@@ -299,6 +300,7 @@ class App extends React.Component {
     }
 
     this.oldJson = data;
+    NotifyMessage("JSON parsed OK");
   }
 
   cleanJsonText = text => {
@@ -337,11 +339,7 @@ class App extends React.Component {
   render() {
     if (this.state.device === undefined) {
       if (this.state.jsonEditActive) {  // edit json file screen
-        let jsonString = JSON.stringify(this.state.jsonText);
-        //jsonString = ReplaceAll(jsonString, ",", ",\n");
-        //jsonString = ReplaceAll(jsonString, "{", "{\n");
-        //jsonString = ReplaceAll(jsonString, "[", "[\n");
-
+        let jsonString = JSON.stringify(this.state.jsonText); // TODO naredi lepši prikaz json-a
         return (
           <View style={styles.container}>
             <Text style={styles.mainTitle}>
