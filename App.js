@@ -21,9 +21,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
 // TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
-// TODO naredi da se lahko boljše scrolla po prikazanih napravah
 // TODO ko se disconnecta naredi reconnect
-// TODO prikaz devicov, daj malo roba spodaj, ker se včasih ne vidi vseh naprav
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -123,16 +121,30 @@ class App extends React.Component {
       }
       if (scannedDevice) {
         console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
-        let containsDevice = false;
-        for (device of this.devices) {
-          if (device.id === scannedDevice.id) {
-            containsDevice = true;
-            break;
+
+        // device filter by name active, check if name contains desired string
+        let filterOK = true;
+        if (this.bleFilterName !== "") {
+          if (scannedDevice.name === null || !scannedDevice.name.includes(this.bleFilterName)) {
+            console.log("Doesn't contain desired name filter: " + scannedDevice.name);
+            filterOK = false;
           }
         }
-        if (containsDevice) {
-          this.setState({numOfDevices: this.state.numOfDevices++})
-          this.devices.push(scannedDevice);
+        if (filterOK) {
+          console.log("filter OK");
+          let containsDevice = false;
+          for (device of this.devices) {
+            if (device.id === scannedDevice.id) {
+              containsDevice = true;
+              console.log("contains device");
+              break;
+            }
+          }
+          if (!containsDevice) {
+            console.log("new device being added");
+            this.devices.push(scannedDevice);
+            this.setState({numOfDevices: this.state.numOfDevices++})
+          }
         }
       }
     });
@@ -219,8 +231,6 @@ class App extends React.Component {
   }
 
   notificationsOnOff() {
-    // check if we
-
     if (this.state.notificationsRunning) {
       this.notifyStop();
     }
@@ -304,7 +314,11 @@ class App extends React.Component {
         );
     }
     else {
-      return <Text style={styles.title}>No devices</Text>;
+      let noDevicesText = "No devices found yet";
+      if (this.bleFilterName !== "") {
+        noDevicesText = "No devices that match json device filter have been found yet";
+      }
+      return <Text style={styles.title}>{noDevicesText}</Text>;
     }
   }
 
