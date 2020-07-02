@@ -11,6 +11,7 @@ import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert,
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
+import RNLocation from 'react-native-location';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
@@ -73,13 +74,27 @@ class App extends React.Component {
     console.log("Checking Bluetooth");
     const subscription = this.manager.onStateChange((state) => {
       if (state === 'PoweredOn') {
-        NotifyMessage("Bluetooth OK");
+        console.log("Bluetooth OK");
         subscription.remove();
       } else {
         NotifyMessage("Bluetooth not OK, state: " + state.toString());
-        subscription.remove();
       }
     }, true);
+
+    console.log("Checking location");
+    RNLocation.requestPermission({
+      ios: "whenInUse",
+      android: {
+        detail: "coarse"
+      }
+    }).then(granted => {
+        if (granted) {
+          console.log("Location OK");
+        }
+        else {
+          NotifyMessage("In order to scan for BLE devices, location access must be granted!");
+        }
+    });
   }
 
   startStopScan() {
@@ -390,7 +405,6 @@ class App extends React.Component {
         }
 
         // TODO naredi da se lahko boljše scrolla po prikazanih napravah
-        // TODO buttone naredi boljše
         // TODO ko se disconnecta naredi reconnect
 
         return (
