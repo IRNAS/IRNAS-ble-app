@@ -37,6 +37,7 @@ class App extends React.Component {
       writeText: "",
       jsonEditActive: false,
       jsonText: {},
+      writeScreenActive: true,
     };
     this.devices = [];
     this.services = {};
@@ -57,8 +58,7 @@ class App extends React.Component {
 
     var data = require('./Test.json');
     //console.log(data);
-    this.oldJson = data;
-    this.setState({jsonText: data});
+    this.setState({jsonText: data}, this.parseJsonConfig);
   }
 
   componentWillUnmount() {
@@ -284,9 +284,6 @@ class App extends React.Component {
   }
 
   parseJsonConfig() {
-    //var data = require('./Test.json');
-    //console.log(data);
-
     let data = this.state.jsonText;
 
     if (data.device_filter !== undefined) {
@@ -334,6 +331,15 @@ class App extends React.Component {
   writeUartCommand = uart => {
     console.log('button clicked, writing command: ' + uart);
     this.setState({ writeText: uart}, this.write);
+  }
+
+  displayLogs() {
+    if (this.state.writeScreenActive) {
+      this.setState({ writeScreenActive: false });
+    }
+    else {
+      this.setState({ writeScreenActive: true });
+    }
   }
 
   render() {
@@ -416,51 +422,81 @@ class App extends React.Component {
         );
       }
     }
-    // connect screen
-    else {
+    else {   // connect screen
       let displayName = this.state.device.name;
-      return(
-        <View style={styles.container}>
-          <Text style={styles.mainTitle}>
-            Connected to {displayName}
-          </Text>
-          <Separator />
-          <Button
-            color="#32a852"
-            title='Disconnect'
-            onPress={()=>this.disconnect()}
-          />
-          <Separator />
-          <ScrollView>
-          <Text style={styles.title}>
-            Write data to device (RX characteristic)
-          </Text>
-          <View style={{justifyContent: 'center', }}>
-            {this.displayUartButtons()}
-          </View>
-          <Separator />
-          <Text style={styles.sectionTitle}>
-            Write custom data:
-          </Text>
-          <TextInput placeholder="Write string here" style={styles.input} onChangeText={this.handleWriteText}/>
-          <Button
-            title='Write custom string to RX char'
-            onPress={()=>this.write()}
-          />
-          <Separator/>
-          <ScrollView>
-            <Text>
-            {this.state.NotifyData}
+      if (this.state.writeScreenActive) {  // write screen
+        return(
+          <View style={styles.container}>
+            <Text style={styles.mainTitle}>
+              Connected to {displayName}
             </Text>
-          </ScrollView>
-          </ScrollView>
-        </View>
-      );
+            <View style={styles.multiLineBtn}>
+              <Button
+                color="#32a852"
+                title='   Disconnect   '
+                onPress={()=>this.disconnect()}
+              />
+              <Button
+                color="#32a852"
+                title='   Read logs   '
+                onPress={()=>this.displayLogs()}
+              />
+            </View>
+            <Separator />
+            <ScrollView>
+              <Text style={styles.title}>
+                Write data to device (RX characteristic)
+              </Text>
+              <View style={{justifyContent: 'center', }}>
+                {this.displayUartButtons()}
+              </View>
+              <Separator />
+              <Text style={styles.sectionTitle}>
+                Write custom data:
+              </Text>
+              <TextInput placeholder="Write string here" style={styles.input} onChangeText={this.handleWriteText}/>
+              <Button
+                title='Write custom string to RX char'
+                onPress={()=>this.write()}
+              />
+            </ScrollView>
+          </View>
+        );
+      }
+      else {  // read screen
+        return (
+          <View style={styles.container}>
+            <Text style={styles.mainTitle}>
+              Connected to {displayName}
+            </Text>
+            <Text style={styles.sectionTitle}>
+              Read logs
+            </Text>
+            <Separator />
+            <View style={styles.multiLineBtn}>
+              <Button
+                color="#32a852"
+                title='   Disconnect   '
+                onPress={()=>this.disconnect()}
+              />
+              <Button
+                color="#32a852"
+                title='   Write commands   '
+                onPress={()=>this.displayLogs()}
+              />
+            </View>
+            <Separator />
+            <ScrollView>
+              <Text>
+                {this.state.NotifyData}
+               </Text>
+            </ScrollView>
+          </View>
+        );
+      }
     }
   }
 }
-
-// TODO spodnja polovica ekrana textfield ki printa notify loge + ostale informacije o povezavi z napravo
 
 const styles = StyleSheet.create({
   container: {
