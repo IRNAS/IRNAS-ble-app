@@ -7,7 +7,8 @@
  */
 
 import React, { Component } from 'react';
-import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert,
+  TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase, KeyboardAvoidingView } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
@@ -15,9 +16,14 @@ import RNLocation from 'react-native-location';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp}  from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
+
+// TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
+// TODO naredi da se lahko boljše scrolla po prikazanih napravah
+// TODO ko se disconnecta naredi reconnect
+// TODO prikaz devicov, daj malo roba spodaj, ker se včasih ne vidi vseh naprav
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -124,7 +130,7 @@ class App extends React.Component {
             break;
           }
         }
-        if (!containsDevice) {
+        if (containsDevice) {
           this.setState({numOfDevices: this.state.numOfDevices++})
           this.devices.push(scannedDevice);
         }
@@ -186,6 +192,7 @@ class App extends React.Component {
       .then((device) => {
         NotifyMessage("Disconnect OK");
         this.setState({device: undefined});
+        this.setState({NotifyData: []});
       });
     }
   }
@@ -212,6 +219,8 @@ class App extends React.Component {
   }
 
   notificationsOnOff() {
+    // check if we
+
     if (this.state.notificationsRunning) {
       this.notifyStop();
     }
@@ -404,9 +413,6 @@ class App extends React.Component {
           scanStatus = "Idle";
         }
 
-        // TODO naredi da se lahko boljše scrolla po prikazanih napravah
-        // TODO ko se disconnecta naredi reconnect
-
         return (
           <View style={styles.container}>
             <Text style={styles.mainTitle}>
@@ -428,7 +434,7 @@ class App extends React.Component {
               Status: {scanStatus}
             </Text>
             <Separator />
-              <View>
+              <View style={styles.displayDevices}>
                 {this.displayResults()}
               </View>
             <Separator />
@@ -502,8 +508,8 @@ class App extends React.Component {
             <Separator />
             <ScrollView>
               <Text>
-                {this.state.NotifyData}
-               </Text>
+              {this.state.NotifyData}
+              </Text>
             </ScrollView>
           </View>
         );
@@ -555,6 +561,10 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     justifyContent: 'space-evenly',
   },
+  displayDevices: {
+    paddingBottom: 100,
+    marginBottom: 100,
+  }
 });
 
 export default App;
