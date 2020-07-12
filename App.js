@@ -355,6 +355,7 @@ class App extends React.Component {
     catch (error) {
       console.log(error);
       NotifyMessage("JSON parse error, please try again");
+      this.setState({ jsonText: this.oldJson });
     }
   }
 
@@ -364,10 +365,11 @@ class App extends React.Component {
 
   closeJsonConfig(save) {
     if (save) {
+      this.cleanJsonText();
       this.parseJsonConfig();
     }
     else {
-      this.setState({ jsonText: this.oldJson});
+      this.setState({ jsonText: JSON.stringify(this.oldJson)});
     }
     this.setState({ jsonEditActive: false});
   }
@@ -401,13 +403,12 @@ class App extends React.Component {
 
   saveLog() {
     // TODO save to file
-    NotifyMessage("To be implemented");
+    NotifyMessage("TBA");
   }
 
   render() {
     if (this.state.device === undefined) {
       if (this.state.jsonEditActive) {  // edit json file screen
-        let jsonString = JSON.stringify(this.state.jsonParsed); // TODO naredi lepši prikaz json-a
         return (
           <View style={styles.container}>
             <Text style={styles.mainTitle}>
@@ -417,7 +418,7 @@ class App extends React.Component {
               <View style={styles.multiLineView}>
                 <Button
                   color="#32a852"
-                  title="   Save   "
+                  title="Save"
                   style={styles.customBtn}
                   onPress={()=>this.closeJsonConfig(true)}
                 />
@@ -425,7 +426,7 @@ class App extends React.Component {
               <View style={styles.multiLineView}>
                 <Button
                   color="#32a852"
-                  title="   Back   "
+                  title="Back"
                   style={styles.customBtn}
                   onPress={()=>this.closeJsonConfig(false)}
                 />
@@ -436,8 +437,7 @@ class App extends React.Component {
               placeholder="Json config wll be displayed here"
               style={styles.inputMulti}
               onChangeText={this.changeJsonText}
-              onEndEditing={this.cleanJsonText}
-              value={jsonString}
+              value={this.state.jsonText}
               multiline={true}/>
           </View>
         );
