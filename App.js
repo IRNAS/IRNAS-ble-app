@@ -42,7 +42,8 @@ class App extends React.Component {
       notificationsRunning: false,
       writeText: "",
       jsonEditActive: false,
-      jsonText: {},
+      jsonText: "",
+      jsonParsed: {},
       writeScreenActive: true,
     };
     this.devices = [];
@@ -64,7 +65,7 @@ class App extends React.Component {
 
     var data = require('./Test.json');
     //console.log(data);
-    this.setState({jsonText: data}, this.parseJsonConfig);
+    this.setState({jsonText: JSON.stringify(data), jsonParsed: data}, this.parseJsonConfig);
 
     //this.setState({device: 1, writeScreenActive: false});   // TODO testing
   }
@@ -326,7 +327,7 @@ class App extends React.Component {
   }
 
   parseJsonConfig() {
-    let data = this.state.jsonText;
+    let data = this.state.jsonParsed;
 
     if (data.device_filter !== undefined) {
       this.bleFilterName = data.device_filter.name;
@@ -342,10 +343,14 @@ class App extends React.Component {
     NotifyMessage("JSON parsed OK");
   }
 
-  cleanJsonText = text => {
+  changeJsonText = text => {
+    this.setState({ jsonText: text});
+  }
+
+  cleanJsonText() {
     try {
-      let parsedText = JSON.parse(text);
-      this.setState({ jsonText: parsedText});
+      let parsedText = JSON.parse(this.state.jsonText);
+      this.setState({ jsonParsed: parsedText});
     }
     catch (error) {
       console.log(error);
@@ -396,37 +401,42 @@ class App extends React.Component {
 
   saveLog() {
     // TODO save to file
+    NotifyMessage("To be implemented");
   }
 
   render() {
     if (this.state.device === undefined) {
       if (this.state.jsonEditActive) {  // edit json file screen
-        let jsonString = JSON.stringify(this.state.jsonText); // TODO naredi lepši prikaz json-a
+        let jsonString = JSON.stringify(this.state.jsonParsed); // TODO naredi lepši prikaz json-a
         return (
           <View style={styles.container}>
             <Text style={styles.mainTitle}>
               Json editor screen
             </Text>
-            <Separator />
-            <View style={styles.multiLineView}>
-              <Button
-                color="#32a852"
-                title="   Save   "
-                style={styles.customBtn}
-                onPress={()=>this.closeJsonConfig(true)}
-              />
-              <Button
-                color="#32a852"
-                title="   Back   "
-                style={styles.customBtn}
-                onPress={()=>this.closeJsonConfig(false)}
-              />
+            <View style={styles.multiLineViewMain}>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title="   Save   "
+                  style={styles.customBtn}
+                  onPress={()=>this.closeJsonConfig(true)}
+                />
+              </View>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title="   Back   "
+                  style={styles.customBtn}
+                  onPress={()=>this.closeJsonConfig(false)}
+                />
+              </View>
             </View>
             <Separator />
             <TextInput
               placeholder="Json config wll be displayed here"
               style={styles.inputMulti}
-              onChangeText={this.cleanJsonText}
+              onChangeText={this.changeJsonText}
+              onEndEditing={this.cleanJsonText}
               value={jsonString}
               multiline={true}/>
           </View>

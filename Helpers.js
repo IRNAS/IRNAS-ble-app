@@ -27,6 +27,19 @@ export function ReplaceAll(string, search, replace) {
 
 export function GetTimestamp() {
     var today = new Date();
-    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + "." + today.getMilliseconds();
+    var time = today.getHours() + ":" + today.getMinutes() + ":";
+    var seconds = today.getSeconds();
+    if (seconds < 10) {
+        time += "0" + seconds;
+    }
+    else {
+        time += seconds;
+    }
+    time += ".";
+    var miliSeconds = today.getMilliseconds();
+    time += miliSeconds;
+    if (miliSeconds < 100) {
+        time += "0";
+    }
     return time;
 }
