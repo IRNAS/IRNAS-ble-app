@@ -570,7 +570,11 @@ class App extends React.Component {
             <Text style={styles.title}>
               Read logs
             </Text>
-            <ScrollView>
+            <ScrollView
+              ref={ref => this.scrollView = ref}
+              onContentSizeChange={(contentWidth, contentHeight)=>{
+                  this.scrollView.scrollResponderScrollToEnd({animated: true});
+              }}>
               <Text>
               {this.state.NotifyData}
               </Text>
