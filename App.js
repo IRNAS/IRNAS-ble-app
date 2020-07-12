@@ -65,6 +65,8 @@ class App extends React.Component {
     var data = require('./Test.json');
     //console.log(data);
     this.setState({jsonText: data}, this.parseJsonConfig);
+
+    //this.setState({device: 1, writeScreenActive: false});   // TODO testing
   }
 
   componentWillUnmount() {
@@ -388,6 +390,14 @@ class App extends React.Component {
     }
   }
 
+  clearLog() {
+    this.setState({ NotifyData: [] });
+  }
+
+  saveLog() {
+    // TODO save to file
+  }
+
   render() {
     if (this.state.device === undefined) {
       if (this.state.jsonEditActive) {  // edit json file screen
@@ -398,7 +408,7 @@ class App extends React.Component {
               Json editor screen
             </Text>
             <Separator />
-            <View style={styles.multiLineBtn}>
+            <View style={styles.multiLineView}>
               <Button
                 color="#32a852"
                 title="   Save   "
@@ -471,17 +481,21 @@ class App extends React.Component {
             <Text style={styles.mainTitle}>
               Connected to {displayName}
             </Text>
-            <View style={styles.multiLineBtn}>
-              <Button
-                color="#32a852"
-                title='   Disconnect   '
-                onPress={()=>this.disconnect()}
-              />
-              <Button
-                color="#32a852"
-                title='   Read logs   '
-                onPress={()=>this.displayLogs()}
-              />
+            <View style={styles.multiLineViewMain}>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title='Disconnect'
+                  onPress={()=>this.disconnect()}
+                />
+              </View>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title='Read logs'
+                  onPress={()=>this.displayLogs()}
+                />
+              </View>
             </View>
             <Separator />
             <ScrollView>
@@ -510,23 +524,42 @@ class App extends React.Component {
             <Text style={styles.mainTitle}>
               Connected to {displayName}
             </Text>
+            <View style={styles.multiLineViewMain}>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title='Disconnect'
+                  onPress={()=>this.disconnect()}
+                />
+              </View>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title='Write commands'
+                  onPress={()=>this.displayLogs()}
+                />
+              </View>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title='Clear logs'
+                  buttonStyle={styles.multiLineBtn}
+                  onPress={()=>this.clearLog()}
+                />
+              </View>
+              <View style={styles.multiLineView}>
+                <Button
+                  color="#32a852"
+                  title='Save logs'
+                  buttonStyle={styles.multiLineBtn}
+                  onPress={()=>this.saveLog()}
+                />
+              </View>
+            </View>
+            <Separator />
             <Text style={styles.title}>
               Read logs
             </Text>
-            <Separator />
-            <View style={styles.multiLineBtn}>
-              <Button
-                color="#32a852"
-                title='   Disconnect   '
-                onPress={()=>this.disconnect()}
-              />
-              <Button
-                color="#32a852"
-                title='   Write commands   '
-                onPress={()=>this.displayLogs()}
-              />
-            </View>
-            <Separator />
             <ScrollView>
               <Text>
               {this.state.NotifyData}
@@ -577,10 +610,14 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 16,
   },
-  multiLineBtn: {
-    flexDirection: "row",
-    marginLeft: 10,
-    justifyContent: 'space-evenly',
+  multiLineViewMain: {
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+  },
+  multiLineView: {
+    marginBottom: 5,
+    marginHorizontal: 3,
+    width: '48%',
   },
   displayDevices: {
     paddingBottom: 100,
