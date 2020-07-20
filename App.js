@@ -23,6 +23,8 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
 // TODO ko se disconnecta naredi reconnect
 // TODO ko se tipkovnica odpre v json configu, naredi da se ostali del ekrana scala na preostali fraj plac
+// TODO avtomatiziraj celoten build proces za android
+// TODO swipe down to clear scan results + restart scan
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -34,7 +36,6 @@ class App extends React.Component {
     this.manager = new BleManager();
     this.manager.setLogLevel(LogLevel.Debug);
     this.state = {
-      failed: true,
       scanRunning: false,
       NotifyData: [],
       device: undefined,
@@ -67,7 +68,10 @@ class App extends React.Component {
     //console.log(data);
     this.setState({jsonText: JSON.stringify(data), jsonParsed: data}, this.parseJsonConfig);
 
-    //this.setState({device: 1, writeScreenActive: false});   // TODO testing
+    // if scan screen is visible auto start scan
+    if (this.state.device === undefined && !this.state.jsonEditActive && !this.state.scanRunning) {
+      this.scan();
+    }
   }
 
   componentWillUnmount() {
@@ -75,6 +79,9 @@ class App extends React.Component {
       this.disconnect();
       // TODO cancel asynchronous task (notify)
       this.notificationsOnOff();
+    }
+    if (this.state.scanRunning) { // stop scan if running
+      this.stop();
     }
   }
 
@@ -130,7 +137,7 @@ class App extends React.Component {
         let filterOK = true;
         if (this.bleFilterName !== "") {
           if (scannedDevice.name === null || !scannedDevice.name.includes(this.bleFilterName)) {
-            console.log("Doesn't contain desired name filter: " + scannedDevice.name);
+            console.log("Doesn't contain desired name filter: " + scannedDevice.name);  // TODO obrni + dodaj ime filtra
             filterOK = false;
           }
         }
@@ -162,7 +169,9 @@ class App extends React.Component {
 
   connectToDevice = item => {
     console.log("selected device: " + item.id + " " + item.name);
-    this.stop();
+    if (this.state.scanRunning) { // stop scan if running
+      this.stop();
+    }
     this.connect(item);
   }
 
@@ -319,20 +328,27 @@ class App extends React.Component {
     }
     else {
       let noDevicesText = "No devices found yet";
+      let filtersText = "";
       if (this.bleFilterName !== "") {
-        noDevicesText = "No devices that match json device filter have been found yet";
+        filtersText = "active filters"
       }
-      return <Text style={styles.title}>{noDevicesText}</Text>;
+      return (
+        <View>
+          <Text style={styles.title}>{noDevicesText}</Text>
+          <Text style={styles.title}>{filtersText}</Text>
+        </View>
+      );
     }
   }
 
   parseJsonConfig() {
+    console.log("parseJsonConfig");
     let data = this.state.jsonParsed;
 
     if (data.device_filter !== undefined) {
-      this.bleFilterName = data.device_filter.name;
+      this.bleFilterName = data.device_filter.name; // name filtering
       // TODO use mac filtering
-      console.log("JSON data: found filters.");
+      console.log("JSON data: found filters: " + this.bleFilterName);
     }
     if (data.commands !== undefined) {
       console.log("JSON data: found " + data.commands.length + " commands.");
@@ -344,13 +360,15 @@ class App extends React.Component {
   }
 
   changeJsonText = text => {
+    console.log("changeJsonText");
     this.setState({ jsonText: text});
   }
 
   cleanJsonText() {
+    console.log("cleanJsonText");
     try {
       let parsedText = JSON.parse(this.state.jsonText);
-      this.setState({ jsonParsed: parsedText});
+      this.setState({ jsonParsed: parsedText}, this.parseJsonConfig);
     }
     catch (error) {
       console.log(error);
@@ -360,13 +378,18 @@ class App extends React.Component {
   }
 
   openJsonConfig() {
+    console.log("openJsonConfig");
+    if (this.state.scanRunning) { // stop scan if running
+      this.stop();
+    }
     this.setState({ jsonEditActive: true});
   }
 
   closeJsonConfig(save) {
+    console.log("closeJsonConfig");
     if (save) {
       this.cleanJsonText();
-      this.parseJsonConfig();
+      //this.parseJsonConfig();
     }
     else {
       this.setState({ jsonText: JSON.stringify(this.oldJson)});
@@ -457,7 +480,7 @@ class App extends React.Component {
         return (
           <View style={styles.container}>
             <Text style={styles.mainTitle}>
-              IRNAS BLE app - UART profile
+              IRNAS BLE app
             </Text>
             <Button
               color="#32a852"
