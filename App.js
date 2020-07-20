@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert,
+import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, RefreshControl,
   TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase, KeyboardAvoidingView } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
@@ -23,7 +23,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 
 // TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
 // TODO ko se disconnecta naredi reconnect
-// TODO ko se tipkovnica odpre v json configu, naredi da se ostali del ekrana scala na preostali fraj plac
 // TODO avtomatiziraj celoten build proces za android
 // TODO swipe down to clear scan results + restart scan
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
@@ -40,6 +39,7 @@ class App extends React.Component {
     this.manager.setLogLevel(LogLevel.Debug);
     this.state = {
       scanRunning: false,
+      refreshingScanList: false,
       NotifyData: [],
       device: undefined,
       numOfDevices: 0,
@@ -133,23 +133,24 @@ class App extends React.Component {
       if (scannedDevice) {
         console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
 
-        // device filter by name active, check if name contains desired string
+
         let filterOK = true;
-        if (this.bleFilterName !== "") {
-          if (scannedDevice.name === null || !scannedDevice.name.includes(this.bleFilterName)) {
-            console.log("Device " + scannedDevice.name + " filtered out because name should be " + this.bleFilterName);
-            filterOK = false;
+        if (this.state.deviceFiltersActive) { // filtering is active, check each filter
+          if (this.bleFilterName !== "") {  // device filter by name active, check if name contains desired string
+            if (scannedDevice.name === null || !scannedDevice.name.includes(this.bleFilterName)) {
+              console.log("Device " + scannedDevice.name + " filtered out because name should be " + this.bleFilterName);
+              filterOK = false;
+            }
           }
-        }
-        if (filterOK && this.bleFilterMac !== "") {
-          if (scannedDevice.id === null || !scannedDevice.id.includes(this.bleFilterMac)) {
-            console.log("Device " + scannedDevice.id + " filtered out because mac should be " + this.bleFilterMac);
-            filterOK = false;
+          if (filterOK && this.bleFilterMac !== "") { // device filter by mac active, check if mac adresses match
+            if (scannedDevice.id === null || scannedDevice.id !== this.bleFilterMac) {
+              console.log("Device " + scannedDevice.id + " filtered out because mac should be " + this.bleFilterMac);
+              filterOK = false;
+            }
           }
         }
 
         if (filterOK) {
-          console.log("filter OK");
           let containsDevice = false;
           for (device of this.devices) {
             if (device.id === scannedDevice.id) {
@@ -330,6 +331,12 @@ class App extends React.Component {
         <FlatList
                 data = {devices}
                 renderItem={({ item }) => <ListDeviceItem item_in={item} connectToDevice={this.connectToDevice} />}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={this.state.refreshingScanList}
+                    onRefresh={this.onScanResultRefresh.bind(this)}
+                  />
+                }
               />
         );
     }
@@ -356,6 +363,11 @@ class App extends React.Component {
         </View>
       );
     }
+  }
+
+  onScanResultRefresh() {   // pull down on BLE devices list gesture handler
+    this.devices = [];
+    this.setState({ numOfDevices: 0, refreshing: false });
   }
 
   parseJsonConfig() {
