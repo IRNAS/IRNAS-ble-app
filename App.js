@@ -1,6 +1,6 @@
 /**
  * IRNAS BLE app to communicate with Nordic UART Service profile
- * Tested with server in Nrf connect Android app
+ * Tested with server in Nrf connect Android app and Nordic dev board PCA10040
  *
  * @format
  * @flow strict-local
@@ -25,6 +25,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO ko se tipkovnica odpre v json configu, naredi da se ostali del ekrana scala na preostali fraj plac
 // TODO avtomatiziraj celoten build proces za android
 // TODO swipe down to clear scan results + restart scan
+// TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -45,6 +46,7 @@ class App extends React.Component {
       jsonEditActive: false,
       jsonText: "",
       jsonParsed: {},
+      deviceFiltersActive: false,
       writeScreenActive: true,
     };
     this.devices = [];
@@ -134,7 +136,7 @@ class App extends React.Component {
         let filterOK = true;
         if (this.bleFilterName !== "") {
           if (scannedDevice.name === null || !scannedDevice.name.includes(this.bleFilterName)) {
-            console.log("Doesn't contain desired name filter: " + scannedDevice.name);  // TODO obrni + dodaj ime filtra
+            console.log("Device " + scannedDevice.id + " filtered out because name is " + scannedDevice.name);
             filterOK = false;
           }
         }
@@ -315,7 +317,7 @@ class App extends React.Component {
 
   displayResults() {
     const devices = this.devices;
-    if (devices.length > 0) {
+    if (devices.length > 0) { // show devices found
       return (
         <FlatList
                 data = {devices}
@@ -323,16 +325,27 @@ class App extends React.Component {
               />
         );
     }
-    else {
-      let noDevicesText = "No devices found yet";
+    else if (this.state.deviceFiltersActive) {  // no devices but active filters
       let filtersText = "";
       if (this.bleFilterName !== "") {
-        filtersText = "active filters"
+        filtersText += " name: " + this.bleFilterName;
+      }
+      if (this.bleFilterMac !== "") {
+        filtersText += " mac: " + this.bleFilterMac;
       }
       return (
         <View>
-          <Text style={styles.title}>{noDevicesText}</Text>
-          <Text style={styles.title}>{filtersText}</Text>
+          <Text style={styles.title}>No devices found yet</Text>
+          <Text style={styles.title}>Active filters:</Text>
+          <Text style={styles.sectionTitle}>{filtersText}</Text>
+        </View>
+      );
+    }
+    else {  // No devices and no active filters
+      return (
+        <View>
+          <Text style={styles.title}>No devices found yet</Text>
+          <Text style={styles.title}>No filters active</Text>
         </View>
       );
     }
@@ -342,11 +355,25 @@ class App extends React.Component {
     console.log("parseJsonConfig");
     let data = this.state.jsonParsed;
 
+    // check if json contains device filters
     if (data.device_filter !== undefined) {
+
       this.bleFilterName = data.device_filter.name; // name filtering
       // TODO use mac filtering
-      console.log("JSON data: found filters: " + this.bleFilterName);
+
+      if (this.bleFilterName !== "" || this.bleFilterMac !== "") {
+        this.setState({deviceFiltersActive: true});
+        console.log("JSON data: found filters: " + this.bleFilterName + " " + this.bleFilterMac);
+      }
+      else {  // filter value fields are empty, disable filtering
+        this.setState({deviceFiltersActive: false});
+      }
     }
+    else { // // json doesn't contain filter field, disable filtering
+      this.setState({deviceFiltersActive: false});
+    }
+
+    // check if device contains commands
     if (data.commands !== undefined) {
       console.log("JSON data: found " + data.commands.length + " commands.");
       this.uartCommands = data.commands;
