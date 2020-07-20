@@ -26,6 +26,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO avtomatiziraj celoten build proces za android
 // TODO swipe down to clear scan results + restart scan
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
+// TODO dinamični izpis RSSI vrednosti
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -66,10 +67,9 @@ class App extends React.Component {
   componentDidMount() {
     this.checkBLE();  // on launch check BLE and start scan if OK
 
-    var data = require('./Test.json');
+    var data = require('./Test.json');  // read json file
     //console.log(data);
-    this.setState({jsonText: JSON.stringify(data), jsonParsed: data}, this.parseJsonConfig);
-
+    this.setState({jsonText: JSON.stringify(data), jsonParsed: data}, this.parseJsonConfig);  // parse json file
   }
 
   componentWillUnmount() {
@@ -136,10 +136,17 @@ class App extends React.Component {
         let filterOK = true;
         if (this.bleFilterName !== "") {
           if (scannedDevice.name === null || !scannedDevice.name.includes(this.bleFilterName)) {
-            console.log("Device " + scannedDevice.id + " filtered out because name is " + scannedDevice.name);
+            console.log("Device " + scannedDevice.name + " filtered out because name should be " + this.bleFilterName);
             filterOK = false;
           }
         }
+        if (filterOK && this.bleFilterMac !== "") {
+          if (scannedDevice.id === null || !scannedDevice.id.includes(this.bleFilterMac)) {
+            console.log("Device " + scannedDevice.id + " filtered out because mac should be " + this.bleFilterMac);
+            filterOK = false;
+          }
+        }
+
         if (filterOK) {
           console.log("filter OK");
           let containsDevice = false;
@@ -326,17 +333,16 @@ class App extends React.Component {
         );
     }
     else if (this.state.deviceFiltersActive) {  // no devices but active filters
-      let filtersText = "";
+      let filtersText = "Filters active";
       if (this.bleFilterName !== "") {
-        filtersText += " name: " + this.bleFilterName;
+        filtersText += "\nname: " + this.bleFilterName;
       }
       if (this.bleFilterMac !== "") {
-        filtersText += " mac: " + this.bleFilterMac;
+        filtersText += "\nmac: " + this.bleFilterMac;
       }
       return (
         <View>
           <Text style={styles.title}>No devices found yet</Text>
-          <Text style={styles.title}>Active filters:</Text>
           <Text style={styles.sectionTitle}>{filtersText}</Text>
         </View>
       );
@@ -345,7 +351,7 @@ class App extends React.Component {
       return (
         <View>
           <Text style={styles.title}>No devices found yet</Text>
-          <Text style={styles.title}>No filters active</Text>
+          <Text style={styles.sectionTitle}>No filters active</Text>
         </View>
       );
     }
@@ -359,7 +365,7 @@ class App extends React.Component {
     if (data.device_filter !== undefined) {
 
       this.bleFilterName = data.device_filter.name; // name filtering
-      // TODO use mac filtering
+      this.bleFilterMac = data.device_filter.mac;   // mac filtering
 
       if (this.bleFilterName !== "" || this.bleFilterMac !== "") {
         this.setState({deviceFiltersActive: true});
