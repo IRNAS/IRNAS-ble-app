@@ -62,16 +62,12 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.checkBLE();
+    this.checkBLE();  // on launch check BLE and start scan if OK
 
     var data = require('./Test.json');
     //console.log(data);
     this.setState({jsonText: JSON.stringify(data), jsonParsed: data}, this.parseJsonConfig);
 
-    // if scan screen is visible auto start scan
-    if (this.state.device === undefined && !this.state.jsonEditActive && !this.state.scanRunning) {
-      this.scan();
-    }
   }
 
   componentWillUnmount() {
@@ -89,10 +85,11 @@ class App extends React.Component {
     console.log("Checking Bluetooth");
     const subscription = this.manager.onStateChange((state) => {
       if (state === 'PoweredOn') {
-        console.log("Bluetooth OK");
+        NotifyMessage("Bluetooth is OK");
         subscription.remove();
+        this.scan();
       } else {
-        NotifyMessage("Bluetooth not OK, state: " + state.toString());
+        NotifyMessage("Bluetooth is " + state.toString());
       }
     }, true);
 
