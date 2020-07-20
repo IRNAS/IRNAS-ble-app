@@ -24,7 +24,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
 // TODO ko se disconnecta naredi reconnect
 // TODO avtomatiziraj celoten build proces za android
-// TODO swipe down to clear scan results + restart scan
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO dinamični izpis RSSI vrednosti
 
@@ -368,6 +367,9 @@ class App extends React.Component {
   onScanResultRefresh() {   // pull down on BLE devices list gesture handler
     this.devices = [];
     this.setState({ numOfDevices: 0, refreshing: false });
+    if (!this.state.scanRunning) {
+      this.scan();
+    }
   }
 
   parseJsonConfig() {
