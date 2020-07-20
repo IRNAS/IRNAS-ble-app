@@ -13,6 +13,7 @@ import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions 
 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
 import RNLocation from 'react-native-location';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
@@ -486,12 +487,14 @@ class App extends React.Component {
               </View>
             </View>
             <Separator />
-            <TextInput
-              placeholder="Json config wll be displayed here"
-              style={styles.inputMulti}
-              onChangeText={this.changeJsonText}
-              value={this.state.jsonText}
-              multiline={true}/>
+            <KeyboardAwareScrollView>
+              <TextInput
+                placeholder="Json config wll be displayed here"
+                style={styles.inputMulti}
+                onChangeText={this.changeJsonText}
+                value={this.state.jsonText}
+                multiline={true}/>
+            </KeyboardAwareScrollView>
           </View>
         );
       }
