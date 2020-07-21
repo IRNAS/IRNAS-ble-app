@@ -46,6 +46,7 @@ class App extends React.Component {
       refreshingScanList: false,
       NotifyData: [],
       device: undefined,
+      connectionInProgress: false,
       numOfDevices: 0,
       notificationsRunning: false,
       writeText: "",
@@ -189,7 +190,7 @@ class App extends React.Component {
   connect(item) {
     console.log("connect()");
     const device = item;
-    //this.setState({device: item});
+    this.setState({connectionInProgress: true});
     //console.log(device);
 
     if (device !== undefined) {
@@ -210,13 +211,13 @@ class App extends React.Component {
         console.log("found services");
         this.services = services;
         NotifyMessage("Connect OK");
-        this.setState({device: item}, this.notificationsOnOff);
+        this.setState({device: item, connectionInProgress: false}, this.notificationsOnOff);
       })
       .catch ((error) => {
         NotifyMessage("Error when connecting to selected device.");
         // TODO add connect retry
         console.log(error.message);
-        this.setState({device: undefined});
+        this.setState({device: undefined, connectionInProgress: false});
       });
     }
   }
@@ -229,8 +230,7 @@ class App extends React.Component {
       this.manager.cancelDeviceConnection(device.id)
       .then((device) => {
         NotifyMessage("Disconnect OK");
-        this.setState({device: undefined});
-        this.setState({NotifyData: []});
+        this.setState({device: undefined, connectionInProgress: false, NotifyData: [] });
       });
     }
   }
@@ -525,7 +525,12 @@ class App extends React.Component {
         }
         else {
           scanText = "Start scan";
-          scanStatus = "Idle";
+          if (this.state.connectionInProgress) {
+            scanStatus = "Connecting...";
+          }
+          else {
+            scanStatus = "Idle";
+          }
         }
 
         return (
