@@ -23,6 +23,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 
 // TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
 // TODO ko se disconnecta naredi reconnect
+// TODO fix connection behaving randomly sometimes
 // TODO avtomatiziraj celoten build proces za android
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO dinamični izpis RSSI vrednosti
@@ -30,7 +31,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO implement save log to file
 // TODO write status: connecting when connecting to device (now says idle)
 // TODO read logs: display no logs yet
-// TODO na write commands scrollaj screen čisto do podna (da se vidi write knof še)
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -582,7 +582,7 @@ class App extends React.Component {
               </View>
             </View>
             <Separator />
-            <ScrollView>
+            <KeyboardAwareScrollView>
               <Text style={styles.title}>
                 Write data to device (RX characteristic)
               </Text>
@@ -590,15 +590,17 @@ class App extends React.Component {
                 {this.displayUartButtons()}
               </View>
               <Separator />
-              <Text style={styles.sectionTitle}>
-                Write custom data:
-              </Text>
-              <TextInput placeholder="Write string here" style={styles.input} onChangeText={this.handleWriteText}/>
               <Button
-                title='Write custom string to RX char'
+                title='Send custom data to RX char'
                 onPress={()=>this.write()}
               />
-            </ScrollView>
+              <TextInput
+                placeholder="Write custom string here"
+                style={styles.input}
+                onChangeText={this.handleWriteText}
+                onSubmitEditing={() => this.write()}
+                />
+            </KeyboardAwareScrollView>
           </View>
         );
       }
