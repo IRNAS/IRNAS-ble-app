@@ -28,6 +28,9 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
 // TODO implement save log to file
+// TODO write status: connecting when connecting to device (now says idle)
+// TODO read logs: display no logs yet
+// TODO na write commands scrollaj screen čisto do podna (da se vidi write knof še)
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -184,6 +187,7 @@ class App extends React.Component {
   }
 
   connect(item) {
+    console.log("connect()");
     const device = item;
     //this.setState({device: item});
     //console.log(device);
@@ -218,6 +222,7 @@ class App extends React.Component {
   }
 
   disconnect() {
+    console.log("disconnect()");
     var device = this.state.device;
     if (device !== undefined) {
       NotifyMessage("disconnecting from device: ", device.id);
@@ -446,7 +451,7 @@ class App extends React.Component {
     const views = [];
     var command;
     for (command of this.uartCommands) {
-      views.push(<UartButton title={command.name} uart_command={command.uart_command} writeUartCommand={this.writeUartCommand}/>)
+      views.push(<UartButton key={command.name} title={command.name} uart_command={command.uart_command} writeUartCommand={this.writeUartCommand}/>)
     }
     return views;
   }
