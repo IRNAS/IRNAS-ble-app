@@ -26,6 +26,8 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO avtomatiziraj celoten build proces za android
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO dinamični izpis RSSI vrednosti
+// TODO write screen - naredi knofe dva po dva
+// TODO implement save log to file
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -131,7 +133,6 @@ class App extends React.Component {
       }
       if (scannedDevice) {
         console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
-
 
         let filterOK = true;
         if (this.state.deviceFiltersActive) { // filtering is active, check each filter
@@ -418,7 +419,7 @@ class App extends React.Component {
     catch (error) {
       console.log(error);
       NotifyMessage("JSON parse error, please try again");
-      this.setState({ jsonText: this.oldJson });
+      this.setState({ jsonText: this.oldJson }, this.closeJsonConfig);
     }
   }
 
@@ -434,7 +435,6 @@ class App extends React.Component {
     console.log("closeJsonConfig");
     if (save) {
       this.cleanJsonText();
-      //this.parseJsonConfig();
     }
     else {
       this.setState({ jsonText: JSON.stringify(this.oldJson)});
@@ -470,7 +470,6 @@ class App extends React.Component {
   }
 
   saveLog() {
-    // TODO save to file
     NotifyMessage("TBA");
   }
 
