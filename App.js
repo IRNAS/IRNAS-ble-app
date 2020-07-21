@@ -8,12 +8,13 @@
 
 import React, { Component } from 'react';
 import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, RefreshControl,
-  TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase, KeyboardAvoidingView } from 'react-native';
+  TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase, KeyboardAvoidingView, PermissionsAndroid } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
 import RNLocation from 'react-native-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { writeFile, readFile, DownloadDirectoryPath, DocumentDirectoryPath } from 'react-native-fs';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
@@ -28,7 +29,8 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
-// TODO implement save log to file
+// TODO save logs file daj timestamp polek, da bo vedno novi
+// TODO create directory /Irnas_BLE_app_Logs
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -69,7 +71,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.checkBLE();  // on launch check BLE and start scan if OK
+    this.checkPermissions();  // on launch check all required permissions and start scan if OK
 
     var data = require('./Test.json');  // read json file
     //console.log(data);
@@ -87,7 +89,7 @@ class App extends React.Component {
     }
   }
 
-  checkBLE() {
+  checkPermissions() {
     console.log("Checking Bluetooth");
     const subscription = this.manager.onStateChange((state) => {
       if (state === 'PoweredOn') {
@@ -99,7 +101,7 @@ class App extends React.Component {
       }
     }, true);
 
-    console.log("Checking location");
+    console.log("Checking location permission");
     RNLocation.requestPermission({
       ios: "whenInUse",
       android: {
@@ -113,6 +115,30 @@ class App extends React.Component {
           NotifyMessage("In order to scan for BLE devices, location access must be granted!");
         }
     });
+
+    console.log("Checking storage permission");
+    this.requestStoragePermission();
+  }
+
+  requestStoragePermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: "External Storage Write Permission",
+          message:
+            "Irnas BLE App needs access to your storage " +
+            "so it can save read logs.",
+        }
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log("Logs can be saved to device's storage.");
+      } else {
+        NotifyMessage("Write to external storage permission is denied, you cannot save logs to storage!");
+      }
+    } catch (err) {
+      console.warn(err);
+    }
   }
 
   startStopScan() {
@@ -473,7 +499,27 @@ class App extends React.Component {
   }
 
   saveLog() {
-    NotifyMessage("TBA");
+    if (this.state.NotifyData.length !== 0) {
+      if (Platform.OS === 'android') {
+        const filename = "logs";
+        const fullFilename = DownloadDirectoryPath + "/" + filename + ".txt";
+        writeFile(fullFilename, "," + this.state.NotifyData.toString(), 'utf8')
+        .then((success) => {
+          NotifyMessage("File was saved to Downloads folder.");
+        })
+        .catch((error) => {
+          NotifyMessage("File save error");
+          console.log(error.message);
+        });
+      }
+      else {
+        Alert.alert("This feature is available only on Android OS.");
+        //const DDP = DocumentDirectoryPath + "/";
+      }
+    }
+    else {  // no logs yet
+      NotifyMessage("There are no logs available yet.");
+    }
   }
 
   render() {

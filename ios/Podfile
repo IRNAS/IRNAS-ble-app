@@ -81,6 +81,8 @@ target 'irnas_ble_app' do
 
   pod 'react-native-location', :path => '../node_modules/react-native-location'
 
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
   target 'irnas_ble_appTests' do
     inherit! :complete
     # Pods for testing
