@@ -29,8 +29,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
 // TODO implement save log to file
-// TODO write status: connecting when connecting to device (now says idle)
-// TODO read logs: display no logs yet
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -610,6 +608,11 @@ class App extends React.Component {
         );
       }
       else {  // read screen
+        let logs = this.state.NotifyData;
+        if (logs.length === 0) {
+          logs = "No logs yet";
+        }
+
         return (
           <View style={styles.container}>
             <Text style={styles.mainTitle}>
@@ -656,9 +659,7 @@ class App extends React.Component {
               onContentSizeChange={(contentWidth, contentHeight)=>{
                   this.scrollView.scrollResponderScrollToEnd({animated: true});
               }}>
-              <Text>
-              {this.state.NotifyData}
-              </Text>
+              <Text>{logs}</Text>
             </ScrollView>
           </View>
         );
