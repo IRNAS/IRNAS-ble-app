@@ -14,11 +14,11 @@ import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
 import RNLocation from 'react-native-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { writeFile, readFile, DownloadDirectoryPath, DocumentDirectoryPath } from 'react-native-fs';
+import { writeFile, readFile, DownloadDirectoryPath, DocumentDirectoryPath, mkdir } from 'react-native-fs';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp }  from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -29,8 +29,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp }  
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
-// TODO save logs file daj timestamp polek, da bo vedno novi
-// TODO create directory /Irnas_BLE_app_Logs
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -501,11 +499,18 @@ class App extends React.Component {
   saveLog() {
     if (this.state.NotifyData.length !== 0) {
       if (Platform.OS === 'android') {
-        const filename = "logs";
-        const fullFilename = DownloadDirectoryPath + "/" + filename + ".txt";
+        // make a directory Irnas_BLE_logs if it doesn't exist
+        mkdir(DownloadDirectoryPath + "/Irnas_BLE_logs")
+        // prepare filename (logs + deviceName + timestamp)
+        const deviceName = this.state.device.name;
+        if (deviceName === "null") {
+          deviceName = "NoName";
+        }
+        const filename = "logs-" + deviceName + "-" + GetFullTimestamp();
+        const fullFilename = DownloadDirectoryPath + "/Irnas_BLE_logs/" + filename + ".txt";
         writeFile(fullFilename, "," + this.state.NotifyData.toString(), 'utf8')
         .then((success) => {
-          NotifyMessage("File was saved to Downloads folder.");
+          NotifyMessage("File was saved to Downloads/Irnas_BLE_logs/.");
         })
         .catch((error) => {
           NotifyMessage("File save error");
