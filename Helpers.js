@@ -5,7 +5,8 @@ export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
         ToastAndroid.show(msg, ToastAndroid.SHORT)
     } else {
-        AlertIOS.alert(msg);
+        //AlertIOS.alert(msg);
+        console.log(msg);
     }
 }
 

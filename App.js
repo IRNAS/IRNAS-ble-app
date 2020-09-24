@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, TextInput } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
@@ -33,6 +33,7 @@ class App extends React.Component {
       device: undefined,
       numOfDevices: 0,
       notificationsRunning: false,
+      writeText: "",
     };
     this.devices = [];
     this.services = {};
@@ -204,9 +205,17 @@ class App extends React.Component {
     });
   }
 
+  handleWriteText = text => {
+    this.setState({ writeText: text});
+  }
+
   write() {
     //device.writeCharacteristicWithoutResponseForService(this.nordicUartService, this.uartRx, "heh")
-    const encoded = EncodeBase64([1]);
+    const encoded = EncodeBase64([1]);  // default send array [1]
+    if (this.state.writeText) {   // if user write data send that
+      encoded = EncodeBase64(this.state.writeText);
+    }
+
     this.state.device.writeCharacteristicWithoutResponseForService(this.hrService, this.hrControlPoint, encoded)
     .then(() => {
       NotifyMessage("Write ok...")
@@ -337,6 +346,7 @@ class App extends React.Component {
             onPress={()=>this.notificationsOnOff()}
           />
           <Separator />
+          <TextInput placeholder="String to write" style={styles.input} onChangeText={this.handleWriteText}/>
           <Button
             color="#32a852"
             title='set hr control point'
@@ -385,6 +395,12 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderBottomColor: '#737373',
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  input: {
+    height: 60,
+    padding: 8,
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 
