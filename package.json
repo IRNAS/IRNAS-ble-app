@@ -19,6 +19,7 @@
     "react-native": "0.62.2",
     "react-native-ble-plx": "^2.0.0",
     "react-native-color-picker": "^0.5.2",
+    "react-native-device-info": "^6.0.4",
     "react-native-fs": "^2.16.6",
     "react-native-gesture-handler": "^1.6.1",
     "react-native-keyboard-aware-scroll-view": "^0.9.1",
