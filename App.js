@@ -18,6 +18,7 @@ import RNLocation from 'react-native-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
 import { getDeviceId } from 'react-native-device-info';
+import RNFileSelector from 'react-native-file-selector';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
@@ -32,7 +33,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
-// TODO importJsonConfig - file selector popup
 
 function Separator() {
     return <View style={styles.separator} />;
@@ -372,7 +372,7 @@ class App extends React.Component {
             );
         }
         else if (this.state.deviceFiltersActive) {  // no devices but active filters
-            let filtersText = "Filters active";
+            let filtersText = "Filtering active";
             if (this.bleFilterName !== "") {
                 filtersText += "\nname: " + this.bleFilterName;
             }
@@ -503,32 +503,31 @@ class App extends React.Component {
 
     importJsonConfig() {
         if (Platform.OS === 'android') {
-            // make a directory Irnas_BLE_logs if it doesn't exist
-            readDir(DownloadDirectoryPath + "/Irnas_BLE_logs")
-            .then((result) => {
-                console.log("Got result", result[result.length-1]);
-                const deviceName = getDeviceId();
-                const filename = "config-" + deviceName;
-                //var config_index = result.indexOf()
-                return Promise.all([stat(result[result.length-1].path), result[result.length-1].path]);
-            })
-            .then((statResult) => {
-                if (statResult[0].isFile()) {
-                    // if we have a file, read it
-                    return readFile(statResult[1], 'utf8');
+            RNFileSelector.Show(
+                {
+                    title: 'Select File',
+                    path: DownloadDirectoryPath,
+                    onDone: (path) => {
+                        console.log('File selected: ' + path);
+                        // if we have a file, read it
+                        readFile(path, 'utf8')
+                            .then((contents) => {
+                                // log the file contents
+                                console.log(contents);
+                                NotifyMessage("Config read OK");
+                                this.setState({ jsonText: contents });
+                            })
+                            .catch((err) => {
+                                NotifyMessage("Config file read error");
+                                console.log(err.message, err.code);
+                            });
+                    },
+                    onCancel: () => {
+                        console.log('Cancelled');
+                    }
                 }
-                return 'no file';
-            })
-            .then((contents) => {
-                // log the file contents
-                console.log(contents);
-                NotifyMessage("Config read OK");
-                this.setState({ jsonText: contents });
-            })
-            .catch((err) => {
-                NotifyMessage("Config file read error");
-                console.log(err.message, err.code);
-            });
+            )
+           
         }
         else {
             Alert.alert("This feature is available only on Android OS.");

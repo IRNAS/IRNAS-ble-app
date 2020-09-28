@@ -89,6 +89,10 @@ target 'irnas_ble_app' do
   end
 
   use_native_modules!
+  pod 'RNFileSelector', :path => '../node_modules/react-native-file-selector/ios'
+
+  use_frameworks!
+  pod 'FileBrowser', :git => 'https://github.com/prscX/FileBrowser'
 
   # Enables Flipper.
   #
