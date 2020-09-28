@@ -490,6 +490,7 @@ class App extends React.Component {
 
     cleanJsonText() {
         console.log("cleanJsonText");
+        this.onScanResultRefresh();
         try {
             let parsedText = JSON.parse(this.state.jsonText);
             this.setState({ jsonParsed: parsedText }, this.parseJsonConfig);
