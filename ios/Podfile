@@ -83,6 +83,8 @@ target 'irnas_ble_app' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
+
   target 'irnas_ble_appTests' do
     inherit! :complete
     # Pods for testing

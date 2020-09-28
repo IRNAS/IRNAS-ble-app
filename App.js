@@ -8,7 +8,7 @@
 
 import React, { Component } from 'react';
 import {
-    StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, RefreshControl,
+    StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, RefreshControl, AppState,
     TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase, KeyboardAvoidingView, PermissionsAndroid
 } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
@@ -19,6 +19,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
 import { getDeviceId } from 'react-native-device-info';
 import RNFileSelector from 'react-native-file-selector';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
@@ -72,12 +73,57 @@ class App extends React.Component {
         this.oldJson = {};
     }
 
+    handleAppStateChange = (nextAppState) => {
+        if (nextAppState === 'background' || nextAppState === 'inactive') {
+            // save current config to app storage
+            this.storeData();
+            console.log('dataToSave');
+        }
+    };
+    
+    storeData = async () => {   // save latest json data
+        try {
+            await AsyncStorage.setItem('@jsonText', this.state.jsonText);
+            console.log("done storing");
+        } 
+        catch (error) {
+            console.log(error);
+        }
+    };
+    
+    recoverData = async () => {     // load latest or default json data
+        try {
+            const value = await AsyncStorage.getItem('@jsonText');
+            console.log(value);
+            if (value !== null) {
+                this.setState({ jsonText: value}, this.cleanJsonText);  // parse json file
+            }
+            else {
+                var data = require('./default_config.json');  // read json file
+                //console.log(data);
+                this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
+            }
+        } 
+        catch(e) {
+            console.log(error);
+        }
+    };
+    
+    removeData = async () => {  // delete json data from async storage
+        try {
+            await AsyncStorage.removeItem('@jsonText')
+        } 
+        catch(e) {
+            console.log(error);
+        }
+        console.log('Done.')
+    }
+    
     componentDidMount() {
+        //this.removeData();
         this.checkPermissions();  // on launch check all required permissions and start scan if OK
-
-        var data = require('./Test.json');  // read json file
-        //console.log(data);
-        this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
+        AppState.addEventListener('change', this.handleAppStateChange);    // add listener for app going into background
+        this.recoverData(); // get data from saved state (async storage)
     }
 
     componentWillUnmount() {
@@ -89,6 +135,7 @@ class App extends React.Component {
         if (this.state.scanRunning) { // stop scan if running
             this.stop();
         }
+        AppState.removeEventListener('change', this.handleAppStateChange);     // remove listener for app going into background
     }
 
     checkPermissions() {
@@ -162,19 +209,19 @@ class App extends React.Component {
                 return;
             }
             if (scannedDevice) {
-                console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
+                //console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
 
                 let filterOK = true;
                 if (this.state.deviceFiltersActive) { // filtering is active, check each filter
                     if (this.bleFilterName !== "") {  // device filter by name active, check if name contains desired string
                         if (scannedDevice.name === null || !scannedDevice.name.includes(this.bleFilterName)) {
-                            console.log("Device " + scannedDevice.name + " filtered out because name should be " + this.bleFilterName);
+                            //console.log("Device " + scannedDevice.name + " filtered out because name should be " + this.bleFilterName);
                             filterOK = false;
                         }
                     }
                     if (filterOK && this.bleFilterMac !== "") { // device filter by mac active, check if mac adresses match
                         if (scannedDevice.id === null || scannedDevice.id !== this.bleFilterMac) {
-                            console.log("Device " + scannedDevice.id + " filtered out because mac should be " + this.bleFilterMac);
+                            //console.log("Device " + scannedDevice.id + " filtered out because mac should be " + this.bleFilterMac);
                             filterOK = false;
                         }
                     }
@@ -185,12 +232,12 @@ class App extends React.Component {
                     for (device of this.devices) {
                         if (device.id === scannedDevice.id) {
                             containsDevice = true;
-                            console.log("contains device");
+                            //console.log("contains device");
                             break;
                         }
                     }
                     if (!containsDevice) {
-                        console.log("new device being added");
+                        //console.log("new device being added");
                         this.devices.push(scannedDevice);
                         this.setState({ numOfDevices: this.state.numOfDevices++ })
                     }
@@ -476,15 +523,14 @@ class App extends React.Component {
     exportJsonConfig() {
         if (this.state.jsonText !== 0) {
             if (Platform.OS === 'android') {
-                // make a directory Irnas_BLE_logs if it doesn't exist
-                mkdir(DownloadDirectoryPath + "/Irnas_BLE_logs")
+                // make a directory Irnas_BLE_files if it doesn't exist
+                mkdir(DownloadDirectoryPath + "/Irnas_BLE_files")
                 // prepare filename (logs + deviceName + timestamp)
-                const deviceName = getDeviceId();
-                const filename = "config-" + deviceName;
-                const fullFilename = DownloadDirectoryPath + "/Irnas_BLE_logs/" + filename + ".txt";
+                const filename = "config-" + getDeviceId() + "-" + GetFullTimestamp();
+                const fullFilename = DownloadDirectoryPath + "/Irnas_BLE_files/" + filename + ".json";
                 writeFile(fullFilename, this.state.jsonText, 'utf8')
                     .then((success) => {
-                        NotifyMessage("Config was saved to Downloads/Irnas_BLE_logs/.");
+                        NotifyMessage("Config was saved to Downloads/Irnas_BLE_files/.");
                     })
                     .catch((error) => {
                         NotifyMessage("Config file save error");
@@ -496,7 +542,7 @@ class App extends React.Component {
                 //const DDP = DocumentDirectoryPath + "/";
             }
         }
-        else {  // no logs yet
+        else { 
             NotifyMessage("Config json is empty!");
         }
     }
@@ -513,7 +559,7 @@ class App extends React.Component {
                         readFile(path, 'utf8')
                             .then((contents) => {
                                 // log the file contents
-                                console.log(contents);
+                                //console.log(contents);
                                 NotifyMessage("Config read OK");
                                 this.setState({ jsonText: contents });
                             })
@@ -527,7 +573,6 @@ class App extends React.Component {
                     }
                 }
             )
-           
         }
         else {
             Alert.alert("This feature is available only on Android OS.");
@@ -565,18 +610,18 @@ class App extends React.Component {
     saveLog() {
         if (this.state.NotifyData.length !== 0) {
             if (Platform.OS === 'android') {
-                // make a directory Irnas_BLE_logs if it doesn't exist
-                mkdir(DownloadDirectoryPath + "/Irnas_BLE_logs")
+                // make a directory Irnas_BLE_files if it doesn't exist
+                mkdir(DownloadDirectoryPath + "/Irnas_BLE_files")
                 // prepare filename (logs + deviceName + timestamp)
                 const deviceName = this.state.device.name;
                 if (deviceName === "null") {
                     deviceName = "NoName";
                 }
                 const filename = "logs-" + deviceName + "-" + GetFullTimestamp();
-                const fullFilename = DownloadDirectoryPath + "/Irnas_BLE_logs/" + filename + ".txt";
+                const fullFilename = DownloadDirectoryPath + "/Irnas_BLE_files/" + filename + ".txt";
                 writeFile(fullFilename, "," + this.state.NotifyData.toString(), 'utf8')
                     .then((success) => {
-                        NotifyMessage("File was saved to Downloads/Irnas_BLE_logs/.");
+                        NotifyMessage("File was saved to Downloads/Irnas_BLE_files/.");
                     })
                     .catch((error) => {
                         NotifyMessage("File save error");
@@ -600,7 +645,7 @@ class App extends React.Component {
                     <View style={styles.container}>
                         <Text style={styles.mainTitle}>
                             Json editor screen
-            </Text>
+                        </Text>
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
@@ -670,10 +715,10 @@ class App extends React.Component {
                     <View style={styles.container}>
                         <Text style={styles.mainTitle}>
                             IRNAS BLE app
-            </Text>
+                        </Text>
                         <Button
                             color="#32a852"
-                            title='Edit json string'
+                            title='Edit configuration'
                             onPress={() => this.openJsonConfig()}
                         />
                         <Separator />
@@ -723,7 +768,7 @@ class App extends React.Component {
                         <KeyboardAwareScrollView>
                             <Text style={styles.title}>
                                 Write data to device (RX characteristic)
-              </Text>
+                            </Text>
                             <View style={{ justifyContent: 'center', }}>
                                 {this.displayUartButtons()}
                             </View>
@@ -788,7 +833,7 @@ class App extends React.Component {
                         <Separator />
                         <Text style={styles.title}>
                             Read logs
-            </Text>
+                        </Text>
                         <ScrollView
                             ref={ref => this.scrollView = ref}
                             onContentSizeChange={(contentWidth, contentHeight) => {
