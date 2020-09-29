@@ -83,12 +83,18 @@ target 'irnas_ble_app' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
+
   target 'irnas_ble_appTests' do
     inherit! :complete
     # Pods for testing
   end
 
   use_native_modules!
+  pod 'RNFileSelector', :path => '../node_modules/react-native-file-selector/ios'
+
+  use_frameworks!
+  pod 'FileBrowser', :git => 'https://github.com/prscX/FileBrowser'
 
   # Enables Flipper.
   #
