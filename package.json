@@ -6,6 +6,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "postversion": "react-native-version",
     "build-apk": "react-native bundle --platform android --dev false --entry-file App.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "test": "jest",
     "lint": "eslint ."
@@ -44,6 +45,7 @@
     "eslint-plugin-react": "^7.20.0",
     "jest": "^24.9.0",
     "metro-react-native-babel-preset": "^0.58.0",
+    "react-native-version": "^4.0.0",
     "react-test-renderer": "16.11.0"
   },
   "jest": {
