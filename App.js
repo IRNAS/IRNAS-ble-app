@@ -84,7 +84,6 @@ class App extends React.Component {
     storeData = async () => {   // save latest json data
         try {
             await AsyncStorage.setItem('@jsonText', this.state.jsonText);
-            console.log("done storing");
         } 
         catch (error) {
             console.log(error);
@@ -94,7 +93,7 @@ class App extends React.Component {
     recoverData = async () => {     // load latest or default json data
         try {
             const value = await AsyncStorage.getItem('@jsonText');
-            console.log(value);
+            //console.log(value);
             if (value !== null) {
                 this.setState({ jsonText: value}, this.cleanJsonText);  // parse json file
             }
@@ -116,7 +115,7 @@ class App extends React.Component {
         catch(e) {
             console.log(error);
         }
-        console.log('Done.')
+        console.log('Done removing.')
     }
     
     componentDidMount() {
