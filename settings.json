@@ -1,0 +1,136 @@
+{
+    "fw_version": {
+      "major": 0,
+      "minor": 1
+    },
+    "hardware": {
+      "type": "wisentedge_nrf52840",
+      "version": {
+        "major": 0,
+        "minor": 1
+      }
+    },
+    "basic_settings": {
+      "port": 3,
+      "type": "lion_collar",
+      "enabled": true,
+      "A": {
+        "id": "0x01",
+        "default": 50,
+        "min": 0,
+        "max": 100,
+        "length": 4,
+        "conversion": "uint32"
+      },
+      "B": {
+        "id": "0x02",
+        "default": 50,
+        "min": 0,
+        "max": 100,
+        "length": 4,
+        "conversion": "uint32"
+      },
+      "C": {
+        "id": "0x03",
+        "default": 50,
+        "min": 0,
+        "max": 100,
+        "length": 4,
+        "conversion": "uint32"
+      },
+      "D": {
+        "id": "0x04",
+        "default": 50,
+        "min": 0,
+        "max": 100,
+        "length": 4,
+        "conversion": "uint32"
+      }
+    },
+    "advanced_settings": {
+      "port": 3,
+      "setting_name_1": {
+        "id": "0x11",
+        "enabled": true,
+        "default": 50,
+        "min": 0,
+        "max": 100,
+        "length": 4,
+        "conversion": "uint32"
+      },
+      "setting_name_2": {
+        "id": "0x12",
+        "enabled": false,
+        "default": "asd-asd-asd-asd",
+        "min": "0",
+        "max": "1234567890123456",
+        "length": 16,
+        "conversion": "string"
+      },
+      "setting_name_3": {
+        "id": "0x13",
+        "enabled": false,
+        "default": "asd-asd-asd-asd",
+        "min": "0",
+        "max": "1234567890123456",
+        "length": 16,
+        "conversion": "string"
+      }
+    },
+    "commands": {
+      "port": 99,
+      "cmd_reset": {
+        "id": "0xA1",
+        "length": 0,
+        "conversion": "uint8"
+      },
+      "cmd_send_all_val": {
+        "id": "0xA2",
+        "length": 0,
+        "conversion": "uint8"
+      },
+      "cmd_send_single_val": {
+        "id": "0xA3",
+        "length": 8,
+        "conversion": "uint8"
+      },
+      "cmd_send_all_settings": {
+        "id": "0xA4",
+        "length": 8,
+        "conversion": "uint8"
+      }
+    },
+    "values": {
+      "port": 98,
+      "val_name_1": {
+        "id": "0xD1",
+        "default": 50,
+        "min": 0,
+        "max": 100,
+        "length": 4,
+        "conversion": "uint32"
+      },
+      "val_name_2": {
+        "id": "0xD2",
+        "default": "asd-asd-asd-asd",
+        "min": "0",
+        "max": "1234567890123456",
+        "length": 16,
+        "conversion": "string"
+      }
+    },
+    "messages": {
+      "msg_status": {
+        "port": 98,
+        "id": "0xF1",
+        "length": 8,
+        "conversion": "packed values"
+      },
+      "msg_location": {
+        "port": 98,
+        "id": "0xF2",
+        "length": 0,
+        "conversion": "packed values"
+      }
+    }
+  }

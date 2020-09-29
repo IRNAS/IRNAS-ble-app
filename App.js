@@ -34,6 +34,11 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
+// TODO handle back button
+// TODO separate App.js into multiple files, also define some folder structure
+
+// TRACKER STUFF:
+// TODO device settings fetch from github (get all tags)
 
 function Separator() {
     return <View style={styles.separator} />;
@@ -68,7 +73,7 @@ class App extends React.Component {
 
         this.bleFilterName = "";
         this.bleFilterMac = "";
-        this.uartCommands = [];
+        this.deviceCommands = [];
 
         this.oldJson = {};
     }
@@ -370,7 +375,7 @@ class App extends React.Component {
 
         this.state.device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
             .then(() => {
-                NotifyMessage("Write ok...")
+                NotifyMessage("Write ok...");
             }, (error) => {
                 console.log(error.message);
             })
@@ -379,8 +384,7 @@ class App extends React.Component {
     read() {
         // TODO GATT request MTU?
         const dev = this.state.device;
-        //device.readCharacteristicForService(this.nordicUartService, this.readChar)
-        dev.readCharacteristicForService(this.hrService, this.hrBodySensorLoc)
+        device.readCharacteristicForService(this.nordicUartService, this.readChar)
             .then((chara) => {
                 //console.log("read ok");
                 const result = DecodeBase64(chara.value);
@@ -450,6 +454,11 @@ class App extends React.Component {
         }
     }
 
+    parseCommands() {       // parse tracker commands specified in default_config.json with settings.json -> generate uart_command (raw command to send)
+        var settings = require('./settings.json'); // read settings.json
+
+    }
+
     parseJsonConfig() {
         console.log("parseJsonConfig");
         let data = this.state.jsonParsed;
@@ -475,7 +484,8 @@ class App extends React.Component {
         // check if device contains commands
         if (data.commands !== undefined) {
             console.log("JSON data: found " + data.commands.length + " commands.");
-            this.uartCommands = data.commands;
+            this.deviceCommands = data.commands;
+            this.parseCommands();
         }
 
         this.oldJson = data;
@@ -582,8 +592,7 @@ class App extends React.Component {
 
     displayUartButtons() {
         const views = [];
-        var command;
-        for (command of this.uartCommands) {
+        for (var command of this.deviceCommands) {
             views.push(<UartButton key={command.name} title={command.name} uart_command={command.uart_command} writeUartCommand={this.writeUartCommand} />)
         }
         return views;
@@ -714,7 +723,7 @@ class App extends React.Component {
                 return (
                     <View style={styles.container}>
                         <Text style={styles.mainTitle}>
-                            IRNAS BLE app
+                            IRNAS BLE app - tracker
                         </Text>
                         <Button
                             color="#32a852"
