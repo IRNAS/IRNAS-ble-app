@@ -1,16 +1,18 @@
 {
   "name": "irnas_ble_app",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "postversion": "react-native-version",
     "build-apk": "react-native bundle --platform android --dev false --entry-file App.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "test": "jest",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@react-native-community/async-storage": "^1.12.0",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-navigation/native": "^5.6.1",
     "buffer": "^5.6.0",
@@ -19,6 +21,8 @@
     "react-native": "0.62.2",
     "react-native-ble-plx": "^2.0.0",
     "react-native-color-picker": "^0.5.2",
+    "react-native-device-info": "^6.0.4",
+    "react-native-file-selector": "^1.0.0",
     "react-native-fs": "^2.16.6",
     "react-native-gesture-handler": "^1.6.1",
     "react-native-keyboard-aware-scroll-view": "^0.9.1",
@@ -41,6 +45,7 @@
     "eslint-plugin-react": "^7.20.0",
     "jest": "^24.9.0",
     "metro-react-native-babel-preset": "^0.58.0",
+    "react-native-version": "^4.0.0",
     "react-test-renderer": "16.11.0"
   },
   "jest": {

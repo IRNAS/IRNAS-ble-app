@@ -9,10 +9,10 @@
             "label": "Build APK Debug",
             "type": "shell",
             "windows": {
-                "command": "cd android; if($?) {./gradlew assembleDebug}"
+                "command": "cd ${workspaceFolder}\\android\\ && gradlew assembleDebug"
             },
             "linux": {
-                "command": "cd android && ./gradlew assembleDebug"
+                "command": "cd ${workspaceFolder}/android && ./gradlew assembleDebug"
             },
             "problemMatcher": []
         },
@@ -21,11 +21,12 @@
             "group": "build",
             "type": "shell",
             "windows": {
-                "command": "cd android; if($?) {./gradlew assembleRelease}"
+                "command": "cd ${workspaceFolder}\\android\\ && gradlew assembleRelease"
             },
             "linux": {
                 "command": "cd android && ./gradlew assembleRelease"
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "Generate Android Bundle",
@@ -44,6 +45,13 @@
             "group": "build",
             "type": "shell",
             "command": "adb shell input keyevent 82",
+            "problemMatcher": []
+        },
+        {
+            "label": "Open Android build folder",
+            "group": "build",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}\\android\\app\\build\\outputs\\apk\\ && start .",
             "problemMatcher": []
         }
     ]
