@@ -229,10 +229,13 @@ class App extends React.Component {
                 if (filterOK) {
                     let containsDevice = false;
                     for (device of this.devices) {
-                        if (device.id === scannedDevice.id) {
+                        if (device.id === scannedDevice.id) {   // TODO optimize this process
                             containsDevice = true;
                             //console.log("contains device");
-                            break;
+                            let objIndex = this.devices.findIndex(obj => obj.id == device.id);      
+                            this.devices[objIndex].rssi = scannedDevice.rssi;
+                            this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
+                            break;  // TODO somehow trigger a refresh here
                         }
                     }
                     if (!containsDevice) {
