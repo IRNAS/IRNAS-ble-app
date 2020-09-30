@@ -209,7 +209,7 @@ class App extends React.Component {
             }
             if (scannedDevice) {
                 //console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
-
+                //console.log(scannedDevice.name, ", ", DecodeBase64(scannedDevice.manufacturerData));
                 let filterOK = true;
                 if (this.state.deviceFiltersActive) { // filtering is active, check each filter
                     if (this.bleFilterName !== "") {  // device filter by name active, check if name contains desired string
@@ -407,7 +407,7 @@ class App extends React.Component {
             return (
                 <FlatList
                     data={devices}
-                    renderItem={({ item }) => <ListDeviceItem item_in={item} connectToDevice={this.connectToDevice} />}
+                    renderItem={({ item }) => <ListDeviceItem item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
                     refreshControl={
                         <RefreshControl
                             refreshing={this.state.refreshingScanList}
