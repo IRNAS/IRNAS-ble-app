@@ -236,7 +236,7 @@ class App extends React.Component {
                             this.devices[objIndex].rssi = scannedDevice.rssi;
                             this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
                             this.setState({refreshScanList: true});
-                            break;  // TODO somehow trigger a refresh here
+                            break;
                         }
                     }
                     if (!containsDevice) {
@@ -722,17 +722,22 @@ class App extends React.Component {
                         <Text style={styles.mainTitle}>
                             IRNAS BLE app
                         </Text>
-                        <Button
-                            color="#32a852"
-                            title='Edit configuration'
-                            onPress={() => this.openJsonConfig()}
-                        />
-                        <Separator />
-                        <Button
-                            color="#32a852"
-                            title={scanText}
-                            onPress={() => this.startStopScan()}
-                        />
+                        <View style={styles.multiLineViewMain}>
+                            <View style={styles.multiLineView}>
+                            <Button
+                                color="#32a852"
+                                title={scanText}
+                                onPress={() => this.startStopScan()}
+                            />
+                            </View>
+                            <View style={styles.multiLineView}>
+                                <Button
+                                color="#32a852"
+                                title='Edit configuration'
+                                onPress={() => this.openJsonConfig()}
+                                />
+                            </View>
+                        </View>
                         <Separator />
                         <Text style={styles.title}>
                             Status: {scanStatus}
