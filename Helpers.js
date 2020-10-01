@@ -1,6 +1,9 @@
 import { ToastAndroid, AlertIOS } from 'react-native';
 import { Buffer } from "buffer";
 
+const IzOpModesEnum = Object.freeze({0:"factory", 1:"storage", 2:"deployment", 3:"operation_slow", 4:"operation_fast" });
+const IzConnectionsEnum = Object.freeze({0:"offline", 1:"online", 2:"online-psm"});
+
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
         ToastAndroid.show(msg, ToastAndroid.SHORT)
@@ -51,6 +54,16 @@ export function GetFullTimestamp() {
     return (date + "T" + time);
 }
 
-export function ParseManufacturerData(data) {   // TODO implement this
+export function ParseIzData(data) {
+    var izo_data = { leakage: -1, surge: -1, battery: -1, op_mode: "unknown", connection: "unknown" }
 
+    izo_data.leakage = data.readInt16BE(0);
+    izo_data.surge = data.readInt8(2);
+    izo_data.battery = data.readInt8(3);
+    
+    let op_mode_connection = data.readInt8(4);
+    //izo_data.op_mode
+    //izo_data.connection
+
+    return izo_data;
 }
