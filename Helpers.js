@@ -50,3 +50,7 @@ export function GetFullTimestamp() {
     var time = today.getHours() + "-" + today.getMinutes() + "-" + today.getSeconds();
     return (date + "T" + time);
 }
+
+export function ParseManufacturerData(data) {   // TODO implement this
+
+}
