@@ -227,23 +227,16 @@ class App extends React.Component {
                 }
 
                 if (filterOK) {
-                    let containsDevice = false;
-                    for (device of this.devices) {
-                        if (device.id === scannedDevice.id) {   // TODO optimize this process
-                            containsDevice = true;
-                            //console.log("contains device");
-                            let objIndex = this.devices.findIndex(obj => obj.id == device.id);      
-                            this.devices[objIndex].rssi = scannedDevice.rssi;
-                            this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
-                            this.setState({refreshScanList: true});
-                            break;
-                        }
-                    }
-                    if (!containsDevice) {
-                        //console.log("new device being added");
+                    let objIndex = this.devices.findIndex(obj => obj.id == scannedDevice.id);  // seach if we already have current scanned device saved
+                    if (objIndex < 0) { // new device, add to array
                         this.devices.push(scannedDevice);
                         this.setState({ numOfDevices: this.state.numOfDevices++ })
-                    }
+                    } 
+                    else {  // old device, update its values  
+                        this.devices[objIndex].rssi = scannedDevice.rssi;
+                        this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
+                        this.setState({refreshScanList: true});
+                    }   
                 }
             }
         });
@@ -411,9 +404,7 @@ class App extends React.Component {
             return (
                 <FlatList
                     data={devices}
-                    extraData={!this.state.refreshScanList}
                     renderItem={({ item }) => <ListDeviceItem item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
-                    keyExtractor={item => item.id}
                     refreshControl={
                         <RefreshControl
                             refreshing={this.state.refreshingScanList}
@@ -907,8 +898,8 @@ const styles = StyleSheet.create({
         width: '48%',
     },
     displayDevices: {
-        paddingBottom: 100,
-        marginBottom: 100,
+        paddingBottom: 70,
+        marginBottom: 70,
     }
 });
 
