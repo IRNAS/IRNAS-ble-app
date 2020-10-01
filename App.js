@@ -32,7 +32,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 // TODO fix connection behaving randomly sometimes
 // TODO avtomatiziraj celoten build proces za android
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
-// TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
 
 function Separator() {
@@ -58,6 +57,7 @@ class App extends React.Component {
             jsonParsed: {},
             deviceFiltersActive: false,
             writeScreenActive: true,
+            refreshScanList: false,
         };
         this.devices = [];
         this.services = {};
@@ -235,6 +235,7 @@ class App extends React.Component {
                             let objIndex = this.devices.findIndex(obj => obj.id == device.id);      
                             this.devices[objIndex].rssi = scannedDevice.rssi;
                             this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
+                            this.setState({refreshScanList: true});
                             break;  // TODO somehow trigger a refresh here
                         }
                     }
@@ -410,7 +411,9 @@ class App extends React.Component {
             return (
                 <FlatList
                     data={devices}
+                    extraData={!this.state.refreshScanList}
                     renderItem={({ item }) => <ListDeviceItem item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
+                    keyExtractor={item => item.id}
                     refreshControl={
                         <RefreshControl
                             refreshing={this.state.refreshingScanList}
@@ -447,7 +450,7 @@ class App extends React.Component {
 
     onScanResultRefresh() {   // pull down on BLE devices list gesture handler
         this.devices = [];
-        this.setState({ numOfDevices: 0, refreshing: false });
+        this.setState({ numOfDevices: 0, refreshing: false, refreshScanList: false });
         if (!this.state.scanRunning) {
             this.scan();
         }
