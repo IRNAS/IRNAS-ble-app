@@ -6,7 +6,7 @@ const ListDeviceItem = (props) => {
     let item_view = (
         <View>
             <Text style={styles.title}>
-                {props.item_in.name}   {props.item_in.id}  RSSI: {props.item_in.rssi}
+                {props.item_in.name}  {props.item_in.id}   rssi: {props.item_in.rssi} dBm
             </Text>
         </View>
         );
@@ -20,7 +20,7 @@ const ListDeviceItem = (props) => {
                 item_view = 
                 <View>
                     <Text style={styles.title}>
-                        {props.item_in.name}   {props.item_in.id}  RSSI: {props.item_in.rssi}
+                    {props.item_in.name}  {props.item_in.id}   rssi: {props.item_in.rssi} dBm
                     </Text>
                     <Text style={styles.subtitle}>
                         Leakage: {raw_data.data[2]} {raw_data.data[3]}    Surge: {raw_data.data[4]}    Battery: {raw_data.data[5]} mV
@@ -37,7 +37,7 @@ const ListDeviceItem = (props) => {
                 item_view = 
                 <View>
                     <Text style={styles.title}>
-                        {props.item_in.name}   {props.item_in.id}  RSSI: {props.item_in.rssi}
+                        {props.item_in.name}  {props.item_in.id}   rssi: {props.item_in.rssi} dBm
                     </Text>
                     <Text style={styles.subtitle}>
                         Alarm state: {raw_data.data[2]}
@@ -80,10 +80,10 @@ function parseManufacturerData() {  // TODO
 const styles = StyleSheet.create({
     item: {
         backgroundColor: '#fcd703',
-        paddingBottom: 8,
+        paddingVertical: 8,
         fontSize: 5,
         marginVertical: 5,
-        marginHorizontal: 10,
+        marginHorizontal: 3,
     },
     title: {
         textAlign: 'center',
