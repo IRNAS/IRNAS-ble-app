@@ -1,8 +1,8 @@
 import { ToastAndroid, AlertIOS } from 'react-native';
-import { Buffer } from "buffer";
+var Buffer = require('buffer/').Buffer;
 
-const IzOpModesEnum = Object.freeze({0:"factory", 1:"storage", 2:"deployment", 3:"operation_slow", 4:"operation_fast" });
-const IzConnectionsEnum = Object.freeze({0:"offline", 1:"online", 2:"online-psm"});
+const IzOpModesEnum = Object.freeze({ 0:"factory", 1:"storage", 2:"deployment", 3:"operation_slow", 4:"operation_fast" });
+const IzConnectionsEnum = Object.freeze({ 0:"offline", 1:"online", 2:"online-psm" });
 
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
@@ -55,15 +55,18 @@ export function GetFullTimestamp() {
 }
 
 export function ParseIzData(data) {
-    var izo_data = { leakage: -1, surge: -1, battery: -1, op_mode: "unknown", connection: "unknown" }
+    var iz_data = { leakage: -1, surge: -1, battery: -1, op_mode: "unknown", connection: "unknown" };
 
-    izo_data.leakage = data.readInt16BE(0);
-    izo_data.surge = data.readInt8(2);
-    izo_data.battery = data.readInt8(3);
+    iz_data.leakage = data.readInt16LE(2);
+    iz_data.surge = data.readInt8(4);
     
-    let op_mode_connection = data.readInt8(4);
-    //izo_data.op_mode
-    //izo_data.connection
+    let bat_8bit = data.readInt8(6);
+    let range = (Math.pow(2, 8) - 1) / 4000;
+    iz_data.battery = parseInt(bat_8bit / range, 10);
+    
+    let op_mode_conn = data.readInt8(6);
+    iz_data.op_mode = IzOpModesEnum[op_mode_conn >> 4];
+    iz_data.connection = IzConnectionsEnum[op_mode_conn & 0x0F];
 
-    return izo_data;
+    return iz_data;
 }

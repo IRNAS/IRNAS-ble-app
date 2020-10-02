@@ -1,11 +1,11 @@
 import React from 'react';
-import { DecodeBase64 } from '../Helpers';
+import { DecodeBase64, ParseIzData } from '../Helpers';
 import { View, Text, TouchableHighlight, StyleSheet } from 'react-native';
 
 const ListDeviceItem = (props) => {
     let text_default, text_line1, text_line2, text_raw;
     text_default = (    // print default info (name, mac, rssi)
-        <Text style={styles.title}>
+        <Text key="text_default" style={styles.title}>
             {props.item_in.name}  {props.item_in.id}   rssi: {props.item_in.rssi} dBm
         </Text>
     );
@@ -22,21 +22,22 @@ const ListDeviceItem = (props) => {
                 </Text>
             );
             
-            if (props.item_in.name.includes("iz")) {    // TODO parse leakage, op mode and connection
+            if (props.item_in.name.includes("iz")) {
+                let iz_data = ParseIzData(decoded_raw_data);
                 text_line1 = (
-                    <Text style={styles.subtitle}>
-                        Leakage: {raw_data.data[2]} {raw_data.data[3]}    Surge: {raw_data.data[4]}    Battery: {raw_data.data[5]} mV
+                    <Text key="text_line1" style={styles.subtitle}>
+                        Leakage: {iz_data.leakage}    Surge: {iz_data.surge}    Battery: {iz_data.battery} mV
                     </Text>
                 );
                 text_line2 = (
-                    <Text style={styles.subtitle}>
-                        Op mode: {raw_data.data[6]}   Connection: {raw_data.data[7]}
+                    <Text key="text_line2" style={styles.subtitle}>
+                        Op mode: {iz_data.op_mode}   Connection: {iz_data.connection}
                     </Text>
                 );
             }
             else if (props.item_in.name === "TestDomey") {  // TODO print raw data as hex
                 text_line1 = (
-                    <Text style={styles.subtitle}>
+                    <Text key="text_line1" style={styles.subtitle}>
                         Alarm state: {raw_data.data[2]}
                     </Text>
                 );
