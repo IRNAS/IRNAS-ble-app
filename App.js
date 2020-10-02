@@ -57,7 +57,6 @@ class App extends React.Component {
             jsonParsed: {},
             deviceFiltersActive: false,
             writeScreenActive: true,
-            refreshScanList: false,
         };
         this.devices = [];
         this.services = {};
@@ -232,10 +231,9 @@ class App extends React.Component {
                         this.devices.push(scannedDevice);
                         this.setState({ numOfDevices: this.state.numOfDevices++ })
                     } 
-                    else {  // old device, update its values  
+                    else {  // old device, update its values    // TODO handle redraw better
                         this.devices[objIndex].rssi = scannedDevice.rssi;
                         this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
-                        this.setState({refreshScanList: true});
                     }   
                 }
             }
@@ -441,7 +439,7 @@ class App extends React.Component {
 
     onScanResultRefresh() {   // pull down on BLE devices list gesture handler
         this.devices = [];
-        this.setState({ numOfDevices: 0, refreshing: false, refreshScanList: false });
+        this.setState({ numOfDevices: 0, refreshing: false });
         if (!this.state.scanRunning) {
             this.scan();
         }
