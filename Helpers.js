@@ -60,7 +60,7 @@ export function ParseIzData(data) {
     iz_data.leakage = data.readInt16LE(2);
     iz_data.surge = data.readInt8(4);
     
-    let bat_8bit = data.readInt8(6);
+    let bat_8bit = data[5];
     let range = (Math.pow(2, 8) - 1) / 4000;
     iz_data.battery = parseInt(bat_8bit / range, 10);
     
