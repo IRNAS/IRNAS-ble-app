@@ -5,6 +5,16 @@
 	},
 	"commands" : [
 		{
+			"name" : "Set LoRa send to 10 sec",
+			"device_command": "lora_send_interval: 10",
+			"uart_command" : null
+		},
+		{
+			"name" : "Set LoRa send to 10 sec - raw cmd",
+			"device_command": null,
+			"uart_command" : "03 01 04 00 00 00 0A"
+		},
+		{
 			"name" : "Set GPS interval to 5",
 			"device_command": "setting_name_1: 5",
 			"uart_command" : null
@@ -17,7 +27,7 @@
 		{
 			"name" : "Set GPS interval to 10 - raw cmd",
 			"device_command" : null,
-			"uart_command" : "3 0x11 1 10"
+			"uart_command" : "3 11 1 10"
 		},
 		{
 			"name" : "Request GPS position",
@@ -27,7 +37,7 @@
 		{
 			"name" : "Request GPS position - raw cmd",
 			"device_command": null,
-			"uart_command" : "99 0xA3 1 0xD1"
+			"uart_command" : "99 A3 1 D1"
 		}
 	]
 }

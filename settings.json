@@ -1,136 +1,197 @@
 {
-    "fw_version": {
+  "fw_version": {
       "major": 0,
       "minor": 1
-    },
-    "hardware": {
+  },
+  "hardware": {
       "type": "wisentedge_nrf52840",
       "version": {
         "major": 0,
         "minor": 1
       }
-    },
-    "basic_settings": {
+  },
+  "basic_settings": {
       "port": 3,
-      "type": "lion_collar",
+      "type": "lion_tracker",
       "enabled": true,
-      "A": {
-        "id": "0x01",
-        "default": 50,
-        "min": 0,
-        "max": 100,
-        "length": 4,
-        "conversion": "uint32"
+      "lora_send_interval": {
+          "id": "0x01",
+          "default": 10,
+          "min": 1,
+          "max": 3600,
+          "length": 4,
+          "conversion": "uint32"
       },
       "B": {
-        "id": "0x02",
-        "default": 50,
-        "min": 0,
-        "max": 100,
-        "length": 4,
-        "conversion": "uint32"
+          "id": "0x02",
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "length": 4,
+          "conversion": "uint32"
       },
       "C": {
-        "id": "0x03",
-        "default": 50,
-        "min": 0,
-        "max": 100,
-        "length": 4,
-        "conversion": "uint32"
+          "id": "0x03",
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "length": 4,
+          "conversion": "uint32"
       },
       "D": {
-        "id": "0x04",
-        "default": 50,
-        "min": 0,
-        "max": 100,
-        "length": 4,
-        "conversion": "uint32"
+          "id": "0x04",
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "length": 4,
+          "conversion": "uint32"
       }
-    },
-    "advanced_settings": {
+  },
+  "advanced_settings": {
       "port": 3,
-      "setting_name_1": {
-        "id": "0x11",
-        "enabled": true,
-        "default": 50,
-        "min": 0,
-        "max": 100,
-        "length": 4,
-        "conversion": "uint32"
+      "setting_name_1":
+      {
+          "id": "0x11",
+          "enabled": true,
+          "default": 5,
+          "min": 0,
+          "max": 255,
+          "length": 1,
+          "conversion": "uint8"
       },
-      "setting_name_2": {
-        "id": "0x12",
-        "enabled": false,
-        "default": "asd-asd-asd-asd",
-        "min": "0",
-        "max": "1234567890123456",
-        "length": 16,
-        "conversion": "string"
+      "setting_name_2":
+      {
+          "id": "0x12",
+          "enabled": true,
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "length": 2,
+          "conversion": "uint16"
       },
-      "setting_name_3": {
-        "id": "0x13",
-        "enabled": false,
-        "default": "asd-asd-asd-asd",
-        "min": "0",
-        "max": "1234567890123456",
-        "length": 16,
-        "conversion": "string"
+      "setting_name_3":
+      {
+          "id": "0x13",
+          "enabled": true,
+          "default": 500,
+          "min": 0,
+          "max": 1000,
+          "length": 4,
+          "conversion": "uint32"
+      },
+      "setting_name_4":
+      {
+          "id": "0x14",
+          "enabled": true,
+          "default": 0,
+          "min": -5,
+          "max": 5,
+          "length": 1,
+          "conversion": "int8"
+      },
+      "setting_name_5":
+      {
+          "id": "0x15",
+          "enabled": true,
+          "default": 0,
+          "min": -100,
+          "max": 100,
+          "length": 2,
+          "conversion": "int16"
+      },
+      "setting_name_6":
+      {
+          "id": "0x16",
+          "enabled": true,
+          "default": 0,
+          "min": -1000,
+          "max": 1000,
+          "length": 4,
+          "conversion": "int32"
+      },
+      "setting_name_7":
+      {
+          "id": "0x17",
+          "enabled": true,
+          "default": 5.2,
+          "min": -10.5,
+          "max": 10.5,
+          "length": 4,
+          "conversion": "float"
+      },
+      "setting_name_8":
+      {
+          "id": "0x18",
+          "enabled": true,
+          "default": "asd-asd-asd-asd",
+          "min": "0",
+          "max": "123456789012345",
+          "length": 16,
+          "conversion": "string"
+      },
+      "setting_name_9":
+      {
+          "id": "0x19",
+          "enabled": true,
+          "default": true,
+          "min": false,
+          "max": true,
+          "length": 1,
+          "conversion": "bool"
       }
-    },
-    "commands": {
+  },
+  "commands": {
       "port": 99,
       "cmd_reset": {
         "id": "0xA1",
         "length": 0,
-        "conversion": "uint8"
+        "conversion": "uint8",
+        "value": 0
       },
       "cmd_send_all_val": {
         "id": "0xA2",
         "length": 0,
-        "conversion": "uint8"
+        "conversion": "uint8",
+        "value": 0
       },
       "cmd_send_single_val": {
-        "id": "0xA3",
+        "id": "0xA2",
         "length": 8,
-        "conversion": "uint8"
-      },
-      "cmd_send_all_settings": {
-        "id": "0xA4",
-        "length": 8,
-        "conversion": "uint8"
+        "conversion": "uint8",
+        "value": "0123456"
       }
     },
-    "values": {
+  "values": {
+    "port": 98,
+    "val_name_1": {
+      "id": "0xD1",
+      "default": 50,
+      "min": 0,
+      "max": 100,
+      "length": 4,
+      "conversion": "uint32"
+    },
+    "val_name_2": {
+      "id": "0xD2",
+      "default": "asd-asd-asd-asd",
+      "min": "0",
+      "max": "1234567890123456",
+      "length": 16,
+      "conversion": "string"
+    }
+  },
+  "mesasges": {
+    "msg_status": {
       "port": 98,
-      "val_name_1": {
-        "id": "0xD1",
-        "default": 50,
-        "min": 0,
-        "max": 100,
-        "length": 4,
-        "conversion": "uint32"
-      },
-      "val_name_2": {
-        "id": "0xD2",
-        "default": "asd-asd-asd-asd",
-        "min": "0",
-        "max": "1234567890123456",
-        "length": 16,
-        "conversion": "string"
-      }
+      "id": "0xF1",
+      "length": 8,
+      "conversion": "packed values"
     },
-    "messages": {
-      "msg_status": {
-        "port": 98,
-        "id": "0xF1",
-        "length": 8,
-        "conversion": "packed values"
-      },
-      "msg_location": {
-        "port": 98,
-        "id": "0xF2",
-        "length": 0,
-        "conversion": "packed values"
-      }
+    "msg_location": {
+      "port": 98,
+      "id": "0xF2",
+      "length": 0,
+      "conversion": "packed values"
     }
   }
+}
