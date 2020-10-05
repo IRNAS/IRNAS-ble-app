@@ -6,13 +6,13 @@
 	"commands" : [
 		{
 			"name" : "Set LoRa send to 10 sec",
-			"device_command": "lora_send_interval: 10",
+			"device_command": "lr_send_interval: 10",
 			"uart_command" : null
 		},
 		{
 			"name" : "Set LoRa send to 10 sec - raw cmd",
 			"device_command": null,
-			"uart_command" : "03 01 04 00 00 00 0A"
+			"uart_command" : "03 01 04 0A 00 00 00"
 		},
 		{
 			"name" : "Set GPS interval to 5",

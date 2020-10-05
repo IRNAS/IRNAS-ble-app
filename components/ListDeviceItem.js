@@ -1,5 +1,5 @@
 import React from 'react';
-import { DecodeBase64, ParseTrackerData } from '../Helpers';
+import { DecodeBase64, ParseTrackerAdvData } from '../Helpers';
 import { View, Text, TouchableHighlight, StyleSheet } from 'react-native';
 
 const ListDeviceItem = (props) => {
@@ -23,7 +23,7 @@ const ListDeviceItem = (props) => {
             );
             
             if (props.item_in.name.includes("Irnas") || props.item_in.name.includes("TestDomey")) {
-                let tracker_data = ParseTrackerData(decoded_raw_data);  // TODO
+                let tracker_data = ParseTrackerAdvData(decoded_raw_data);  // TODO
                 text_line1 = (
                     <Text key="text_line1" style={styles.subtitle}>    
                         System status: OK  Battery: 2913 mV  

@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp } from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, ParseDeviceCommands } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -35,6 +35,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 // TODO write screen - naredi knofe dva po dva
 // TODO handle back button
 // TODO separate App.js into multiple files, also define some folder structure
+// TODO support reseting configuration json file to default
 
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
@@ -98,16 +99,19 @@ class App extends React.Component {
         try {
             const value = await AsyncStorage.getItem('@jsonText');
             //console.log(value);
+            // TEST
+            /*
             if (value !== null) {
                 this.setState({ jsonText: value}, this.cleanJsonText);  // parse json file
             }
             else {
+                */
                 var data = require('./default_config.json');  // read json file
                 //console.log(data);
                 this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
-            }
+            //}
         } 
-        catch(e) {
+        catch(error) {
             console.log(error);
         }
     };
@@ -116,7 +120,7 @@ class App extends React.Component {
         try {
             await AsyncStorage.removeItem('@jsonText')
         } 
-        catch(e) {
+        catch(error) {
             console.log(error);
         }
         console.log('Done removing.')
@@ -449,11 +453,6 @@ class App extends React.Component {
         }
     }
 
-    parseCommands() {       // parse tracker commands specified in default_config.json with settings.json -> generate uart_command (raw command to send)
-        var settings = require('./settings.json'); // read settings.json
-
-    }
-
     parseJsonConfig() {
         console.log("parseJsonConfig");
         let data = this.state.jsonParsed;
@@ -479,8 +478,8 @@ class App extends React.Component {
         // check if device contains commands
         if (data.commands !== undefined) {
             console.log("JSON data: found " + data.commands.length + " commands.");
-            this.deviceCommands = data.commands;
-            this.parseCommands();
+            //this.deviceCommands = data.commands;
+            this.deviceCommands = ParseDeviceCommands(data.commands);
         }
 
         this.oldJson = data;
