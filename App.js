@@ -32,7 +32,6 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 // TODO fix connection behaving randomly sometimes
 // TODO avtomatiziraj celoten build proces za android
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
-// TODO dinamični izpis RSSI vrednosti
 // TODO write screen - naredi knofe dva po dva
 
 function Separator() {
@@ -209,7 +208,7 @@ class App extends React.Component {
             }
             if (scannedDevice) {
                 //console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
-
+                //console.log(scannedDevice.name, ", ", DecodeBase64(scannedDevice.manufacturerData));
                 let filterOK = true;
                 if (this.state.deviceFiltersActive) { // filtering is active, check each filter
                     if (this.bleFilterName !== "") {  // device filter by name active, check if name contains desired string
@@ -227,19 +226,15 @@ class App extends React.Component {
                 }
 
                 if (filterOK) {
-                    let containsDevice = false;
-                    for (device of this.devices) {
-                        if (device.id === scannedDevice.id) {
-                            containsDevice = true;
-                            //console.log("contains device");
-                            break;
-                        }
-                    }
-                    if (!containsDevice) {
-                        //console.log("new device being added");
+                    let objIndex = this.devices.findIndex(obj => obj.id == scannedDevice.id);  // seach if we already have current scanned device saved
+                    if (objIndex < 0) { // new device, add to array
                         this.devices.push(scannedDevice);
                         this.setState({ numOfDevices: this.state.numOfDevices++ })
-                    }
+                    } 
+                    else {  // old device, update its values    // TODO handle redraw better
+                        this.devices[objIndex].rssi = scannedDevice.rssi;
+                        this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
+                    }   
                 }
             }
         });
@@ -407,7 +402,7 @@ class App extends React.Component {
             return (
                 <FlatList
                     data={devices}
-                    renderItem={({ item }) => <ListDeviceItem item_in={item} connectToDevice={this.connectToDevice} />}
+                    renderItem={({ item }) => <ListDeviceItem item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
                     refreshControl={
                         <RefreshControl
                             refreshing={this.state.refreshingScanList}
@@ -716,17 +711,22 @@ class App extends React.Component {
                         <Text style={styles.mainTitle}>
                             IRNAS BLE app
                         </Text>
-                        <Button
-                            color="#32a852"
-                            title='Edit configuration'
-                            onPress={() => this.openJsonConfig()}
-                        />
-                        <Separator />
-                        <Button
-                            color="#32a852"
-                            title={scanText}
-                            onPress={() => this.startStopScan()}
-                        />
+                        <View style={styles.multiLineViewMain}>
+                            <View style={styles.multiLineView}>
+                            <Button
+                                color="#32a852"
+                                title={scanText}
+                                onPress={() => this.startStopScan()}
+                            />
+                            </View>
+                            <View style={styles.multiLineView}>
+                                <Button
+                                color="#32a852"
+                                title='Edit configuration'
+                                onPress={() => this.openJsonConfig()}
+                                />
+                            </View>
+                        </View>
                         <Separator />
                         <Text style={styles.title}>
                             Status: {scanStatus}
@@ -896,8 +896,8 @@ const styles = StyleSheet.create({
         width: '48%',
     },
     displayDevices: {
-        paddingBottom: 100,
-        marginBottom: 100,
+        paddingBottom: 70,
+        marginBottom: 70,
     }
 });
 
