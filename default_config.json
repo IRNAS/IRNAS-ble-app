@@ -1,6 +1,6 @@
 {
 	"device_filter" : {
-		"name" : "P420",
+		"name" : "Nordic_UART_Service",
 		"mac" : ""
 	},
 	"commands" : [

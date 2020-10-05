@@ -1,9 +1,9 @@
 import React from 'react';
-import { DecodeBase64, ParseIzData } from '../Helpers';
+import { DecodeBase64, ParseTrackerData } from '../Helpers';
 import { View, Text, TouchableHighlight, StyleSheet } from 'react-native';
 
 const ListDeviceItem = (props) => {
-    let text_default, text_line1, text_line2, text_raw;
+    let text_default, text_line1, text_line2, text_line3, text_raw;
     text_default = (    // print default info (name, mac, rssi)
         <Text key="text_default" style={styles.title}>
             {props.item_in.name}  {props.item_in.id}   rssi: {props.item_in.rssi} dBm
@@ -22,30 +22,28 @@ const ListDeviceItem = (props) => {
                 </Text>
             );
             
-            if (props.item_in.name.includes("iz")) {
-                let iz_data = ParseIzData(decoded_raw_data);
+            if (props.item_in.name.includes("Irnas") || props.item_in.name.includes("TestDomey")) {
+                let tracker_data = ParseTrackerData(decoded_raw_data);  // TODO
                 text_line1 = (
-                    <Text key="text_line1" style={styles.subtitle}>
-                        Leakage: {iz_data.leakage}    Surge: {iz_data.surge}    Battery: {iz_data.battery} mV
+                    <Text key="text_line1" style={styles.subtitle}>    
+                        System status: OK  Battery: 2913 mV  
                     </Text>
                 );
                 text_line2 = (
                     <Text key="text_line2" style={styles.subtitle}>
-                        Op mode: {iz_data.op_mode}   Connection: {iz_data.connection}
+                        Acc: x: 0.-191425; y: 0.535992; z: -9.-743574
                     </Text>
                 );
-            }
-            else if (props.item_in.name === "TestDomey") {  // TODO print raw data as hex
-                text_line1 = (
-                    <Text key="text_line1" style={styles.subtitle}>
-                        Alarm state: {raw_data.data[2]}
+                text_line3 = (
+                    <Text key="text_line3" style={styles.subtitle}>
+                        GPS: 46.555583, 15.632279  time: 2017-2-12 0:0:8
                     </Text>
                 );
             }
         }
     }
 
-    let texts = [text_default, text_line1, text_line2, text_raw];
+    let texts = [text_default, text_line1, text_line2, text_line3, text_raw];
     let item_view = (
         <View>
             { texts }
