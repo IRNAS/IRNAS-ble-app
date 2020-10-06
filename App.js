@@ -14,10 +14,10 @@ import {
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
 import { BleManager, LogLevel } from 'react-native-ble-plx';
-import RNLocation from 'react-native-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
 import { getDeviceId } from 'react-native-device-info';
+import RNLocation from 'react-native-location';
 import RNFileSelector from 'react-native-file-selector';
 import AsyncStorage from '@react-native-community/async-storage';
 

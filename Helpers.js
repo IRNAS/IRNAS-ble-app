@@ -74,7 +74,7 @@ export function ParseDeviceCommands(config) {
     return return_config;
 }
 
-function EncodeTrackerSetting(command) {
+export function EncodeTrackerSetting(command) {
     var cmd = command.toString().split(":");
     let command_name = cmd[0];
     let command_value = cmd[1];
