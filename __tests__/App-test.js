@@ -1,5 +1,5 @@
 /**
- * @format
+ * @format Unit testing main file
  */
 
 import 'react-native';

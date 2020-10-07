@@ -60,19 +60,6 @@ export function ParseTrackerAdvData(data) {
     return null;
 }
 
-// parse tracker commands specified in default_config.json with settings.json -> generate uart_command (raw command to send)
-export function ParseDeviceCommands(config) {
-    var return_config = config;
-    for (var command of config) {
-        if (command.uart_command === null) {
-            let update_command = EncodeTrackerSetting(command.device_command);
-            if (update_command !== null) {
-                return_config.uart_command = update_command;
-            }
-        }
-    }
-    return return_config;
-}
 
 export function EncodeTrackerSetting(command) {
     var cmd = command.toString().split(":");

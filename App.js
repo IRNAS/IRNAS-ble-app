@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, ParseDeviceCommands } from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSetting } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -475,11 +475,10 @@ class App extends React.Component {
             this.setState({ deviceFiltersActive: false });
         }
 
-        // check if device contains commands
+        // check if device contains commands and parse it
         if (data.commands !== undefined) {
             console.log("JSON data: found " + data.commands.length + " commands.");
-            //this.deviceCommands = data.commands;
-            this.deviceCommands = ParseDeviceCommands(data.commands);
+            this.parseDeviceCommands(data.commands);
         }
 
         this.oldJson = data;
@@ -582,6 +581,29 @@ class App extends React.Component {
             Alert.alert("This feature is available only on Android OS.");
             //const DDP = DocumentDirectoryPath + "/";
         }
+    }
+
+    // parse tracker commands specified in default_config.json with settings.json -> generate uart_command (raw command to send)
+    parseDeviceCommands(commands) {
+        var return_cmds = [];
+        for (var command of commands) {
+            if (command.uart_command === null) {
+                let new_uart_command = EncodeTrackerSetting(command.device_command);
+                if (new_uart_command !== null) {
+                    var new_command = command;
+                    new_command.uart_command = new_uart_command;
+                    return_cmds.push(new_command);
+                }
+                else {
+                    console.log("Cannot parse command: " + command);
+                }
+            }
+            else {
+                return_cmds.push(command);
+            }
+        }
+        this.deviceCommands = return_cmds;
+        console.log(this.deviceCommands);
     }
 
     displayUartButtons() {
