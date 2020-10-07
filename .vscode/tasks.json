@@ -53,6 +53,13 @@
             "type": "shell",
             "command": "cd ${workspaceFolder}\\android\\app\\build\\outputs\\apk\\ && start .",
             "problemMatcher": []
+        },
+        {
+            "label": "Run unit tests",
+            "group": "test",
+            "type": "shell",
+            "command": "npm test",
+            "problemMatcher": []
         }
     ]
 }
