@@ -108,7 +108,7 @@ export function EncodeTrackerSetting(command) {
                 return result;
             case "packed values":
                 // TODO
-                break;
+                return null;
             case "int8":
             case "int16":
             case "int32":
