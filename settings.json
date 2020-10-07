@@ -65,7 +65,7 @@
           "enabled": true,
           "default": 50,
           "min": 0,
-          "max": 100,
+          "max": 300,
           "length": 2,
           "conversion": "uint16"
       },
@@ -94,8 +94,8 @@
           "id": "0x15",
           "enabled": true,
           "default": 0,
-          "min": -100,
-          "max": 100,
+          "min": -300,
+          "max": 300,
           "length": 2,
           "conversion": "int16"
       },
@@ -180,7 +180,7 @@
       "conversion": "string"
     }
   },
-  "mesasges": {
+  "messages": {
     "msg_status": {
       "port": 98,
       "id": "0xF1",
