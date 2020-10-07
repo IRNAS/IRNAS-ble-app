@@ -15,9 +15,14 @@
 			"uart_command" : "03 01 04 0A 00 00 00"
 		},
 		{
-			"name" : "Set GPS interval to 5",
-			"device_command": "setting_name_1: 5",
+			"name" : "Set Ublox GPS interval to 5",
+			"device_command": "ublox_send_interval: 5",
 			"uart_command" : null
+		},
+		{
+			"name" : "Set Ublox GPS interval to 5 - raw cmd",
+			"device_command": null,
+			"uart_command" : "03 02 04 0A 00 00 00"
 		},
 		{
 			"name" : "Set GPS interval to 10",

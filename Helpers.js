@@ -14,7 +14,7 @@ export function NotifyMessage(msg) {
     }
 }
 
-export function EncodeBase64(data) {
+export function EncodeBase64(data) {    // TODO rewrite this
     const buff = new Buffer(data);
     const buffStr = buff.toString('base64');
     return buffStr;
@@ -86,23 +86,71 @@ export function EncodeTrackerSetting(command) {
         let max = settings_json.settings[command_name].max;
         let min = settings_json.settings[command_name].min;
         let conversion = settings_json.settings[command_name].conversion;
+        
+        let value = command_value.substring(1);
+        if (value.length === 0) {
+            return null;
+        }
         switch(conversion) {
             case "bool":
-                // TODO
-                break;
+                if (value === "true") {
+                    var result = [port, id, length, 1].join(' ');
+                    return result;
+                }
+                else if (value === "false") {
+                    var result = [port, id, length, 0].join(' ');
+                    return result;
+                }
+                else {
+                    return null;
+                }
             case "string":
-                // TODO
-                break;
-            case "packed values":
-                // TODO
-                break;
-            default:
-                value = parseInt(command_value, 10); 
-                if (value > max || value < min) {
+                if (value.length > length) {
+                    return null;
+                }
+                var result = [port, id, value.length, value].join(' ');
+                return result;
+            case "float":
+                cmd_value = parseFloat(value);
+                if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
                 var header = [port, id, length].join(' ') + ' ';
-                var values = ConvertNumToByteArray(value, length).join(' ');
+                var values = ConvertFloatToByteArray(cmd_value).join(' ');
+                var result = header.concat(values);
+                return result;
+            case "packed values":
+                // TODO
+                break;
+            case "int8":
+            case "int16":
+            case "int32":
+                cmd_value = parseInt(value, 10); 
+                if (cmd_value > max || cmd_value < min) {
+                    return null;
+                }
+                if (cmd_value < 0) {
+                    if (conversion === "int8") {
+                        cmd_value += 256;
+                    }
+                    else if (conversion === "int16") {
+                        cmd_value += 32768;
+                    }
+                    else {
+                        cmd_value += 2147483648;
+                    }
+                }
+                var header = [port, id, length].join(' ') + ' ';
+                var values = ConvertUnsignedNumToByteArray(cmd_value, length).join(' ');
+                var result = header.concat(values);
+                return result;
+            default:    // uint8, uint16, uint32
+                cmd_value = parseInt(value, 10); 
+                if (cmd_value > max || cmd_value < min) {
+                    return null;
+                }
+                var header = [port, id, length].join(' ') + ' ';
+                var values = ConvertUnsignedNumToByteArray(cmd_value, length).join(' ');
                 var result = header.concat(values);
                 return result;
         }
@@ -113,11 +161,17 @@ export function EncodeTrackerSetting(command) {
 }
 
 function DecodeTrackerSetting(setting) {
-
+    // TODO
 }
 
-function ConvertNumToByteArray(num, length) {
+function ConvertUnsignedNumToByteArray(num, length) {
     let b = new ArrayBuffer(4);
-    new DataView(b).setUint32(0, num);
-    return new Uint8Array(b).reverse().slice(0,length);
+    new DataView(b).setUint32(0, num, true);
+    return new Uint8Array(b).slice(0,length);
+}
+
+function ConvertFloatToByteArray(num) {
+    let b = new ArrayBuffer(4);
+    new DataView(b).setFloat32(0, num, true);
+    return new Float32Array(b);
 }
