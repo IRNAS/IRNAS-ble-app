@@ -1,6 +1,6 @@
 {
 	"device_filter" : {
-		"name" : "Nordic_UART_Service",
+		"name" : "Irnas",
 		"mac" : ""
 	},
 	"commands" : [
