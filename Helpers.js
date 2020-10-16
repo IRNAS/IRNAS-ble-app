@@ -127,18 +127,16 @@ export function EncodeTrackerSetting(command) {
                         cmd_value += 2147483648;
                     }
                 }
-                var header = [port, id, length].join(' ') + ' ';
-                var values = ConvertUnsignedNumToByteArray(cmd_value, length).join(' ');
-                var result = header.concat(values);
+                var header = [port, id, length];
+                var result = packToBytes(header, cmd_value);    // TODO test this
                 return result;
             default:    // uint8, uint16, uint32
-                cmd_value = parseInt(value, 10); 
+                cmd_value = parseInt(value, 10);
                 if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
-                var header = [port, id, length].join(' ') + ' ';
-                var values = ConvertUnsignedNumToByteArray(cmd_value, length).join(' ');
-                var result = header.concat(values);
+                var header = [port, id, length];
+                var result = packToBytes(header, cmd_value);    // TODO test this
                 return result;
         }
     }
@@ -151,10 +149,17 @@ function DecodeTrackerSetting(setting) {
     // TODO
 }
 
-function ConvertUnsignedNumToByteArray(num, length) {
-    let b = new ArrayBuffer(4);
-    new DataView(b).setUint32(0, num, true);
-    return new Uint8Array(b).slice(0,length);
+function packToBytes(header, num) {
+    let headerLength = header.length;
+    let valueLength = header[2];
+    arr = new ArrayBuffer(headerLength + 4); // an Int32 takes 4 bytes TODO use valueLength
+    view = new DataView(arr);
+    view.setUint8(0, header[0]);    // TODO for loop
+    view.setUint8(1, header[1]);
+    view.setUint8(2, header[2]);
+    // TODO handle uint8 and uint16
+    view.setUint32(3, num, true); // byteOffset = 0; litteEndian = false
+    return arr;
 }
 
 function ConvertFloatToByteArray(num) {

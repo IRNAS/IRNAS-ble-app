@@ -368,8 +368,9 @@ class App extends React.Component {
         //device.writeCharacteristicWithoutResponseForService(this.nordicUartService, this.uartRx, "heh")
         let encoded; // = EncodeBase64([1]);
         if (this.state.writeText) {   // if user write data send that
-            let textToSend = this.state.writeText.replace(/\s/g,'');    // remove spaces from it
-            encoded = EncodeBase64(textToSend);
+            //let textToSend = this.state.writeText.replace(/\s/g,'');    // remove spaces from it
+            //encoded = EncodeBase64(textToSend);
+            encoded = EncodeBase64(this.state.writeText);
         }
         //console.log("Writing encoded data: " + encoded);
 
@@ -378,7 +379,7 @@ class App extends React.Component {
                 NotifyMessage("Write ok...");
             }, (error) => {
                 console.log(error.message);
-            })
+            });
     }
 
     read() {
