@@ -61,7 +61,7 @@ export function ParseTrackerAdvData(data) {
 }
 
 
-export function EncodeTrackerSetting(command) {
+export function EncodeTrackerSettings(command) {        // TODO handle multiple commands (make array - for loop)
     var cmd = command.toString().split(":");
     let command_name = cmd[0];
     let command_value = cmd[1];
@@ -91,13 +91,13 @@ export function EncodeTrackerSetting(command) {
                 else {
                     return null;
                 }
-            case "string":
+            case "string":  // TODO
                 if (value.length > length) {
                     return null;
                 }
                 var result = [port, id, value.length, value].join(' ');
                 return result;
-            case "float":
+            case "float":   // TODO
                 cmd_value = parseFloat(value);
                 if (cmd_value > max || cmd_value < min) {
                     return null;
@@ -128,7 +128,7 @@ export function EncodeTrackerSetting(command) {
                     }
                 }
                 var header = [port, id, length];
-                var result = packToBytes(header, cmd_value);    // TODO test this
+                var result = packUintToBytes(header, cmd_value);    // TODO test this
                 return result;
             default:    // uint8, uint16, uint32
                 cmd_value = parseInt(value, 10);
@@ -136,7 +136,7 @@ export function EncodeTrackerSetting(command) {
                     return null;
                 }
                 var header = [port, id, length];
-                var result = packToBytes(header, cmd_value);    // TODO test this
+                var result = packUintToBytes(header, cmd_value);    // TODO test this
                 return result;
         }
     }
@@ -145,20 +145,65 @@ export function EncodeTrackerSetting(command) {
     }
 }
 
-function DecodeTrackerSetting(setting) {
-    // TODO
+export function DecodeTrackerSettings(settings) {
+    // TODO write loop for multiple received settings in the same message
+    // TODO use DecodeUintValue
+    return unpackSetting(settings);
 }
 
-function packToBytes(header, num) {
+function unpackSetting(setting) {
+    let view = new DataView(setting);
+    let port = view.getUint8(0);
+    let id = view.getUint8(1);
+    let length = view.getUint8(2);
+    var returnData = [port, id, length];
+
+    // return value as bytes for now
+    for (i=3; i < length+3; i++) {  // copy header to buffer
+        returnData.push(view.getUint8(i));
+    }
+    return returnData;
+}
+
+function DecodeUintValue(number) {      
+    switch (length) {  // copy value to buffer, byteOffset = 3, litteEndian = true
+        case 1:     //uint8
+            value = view.getUint8(3, true);
+            break;
+        case 2:     // uint16
+            value = view.getUint16(3, true);
+            break;
+        default:    //uint32
+            value = view.getUint32(3, true);
+            break;
+    }
+}
+
+function packUintToBytes(header, num) {
     let headerLength = header.length;
-    let valueLength = header[2];
-    arr = new ArrayBuffer(headerLength + 4); // an Int32 takes 4 bytes TODO use valueLength
-    view = new DataView(arr);
-    view.setUint8(0, header[0]);    // TODO for loop
-    view.setUint8(1, header[1]);
-    view.setUint8(2, header[2]);
-    // TODO handle uint8 and uint16
-    view.setUint32(3, num, true); // byteOffset = 0; litteEndian = false
+    if (headerLength !== 3) {
+        console.log("Error when packing UintToBytes - header not OK!");
+        return null;
+    }
+    let valueLength = header[2];        // we expect length information on the third place in the header buffer
+    let arr = new ArrayBuffer(headerLength + valueLength);        // total lenght of the buffer is header + value lengths
+    let view = new DataView(arr);
+
+    for (i=0; i < headerLength; i++) {  // copy header to buffer
+        view.setUint8(i, header[i]);
+    }
+
+    switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, litteEndian = true
+        case 1:     //uint8
+            view.setUint8(headerLength, num, true);
+            break;
+        case 2:     // uint16
+            view.setUint16(headerLength, num, true);
+            break;
+        default:    //uint32
+            view.setUint32(headerLength, num, true);
+            break;
+    }
     return arr;
 }
 

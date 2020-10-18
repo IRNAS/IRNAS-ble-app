@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSetting } from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -344,7 +344,7 @@ class App extends React.Component {
     async setupNotifications() {
         //const characteristic = await device.writeCharacteristicWithResponseForService( service, characteristicW, "AQ==");
 
-        this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
+        this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {       // TODO decode received data from the tracker
             if (error) {
                 console.log("ERROR: " + error.message);
                 return;
@@ -590,7 +590,7 @@ class App extends React.Component {
         var return_cmds = [];
         for (var command of commands) {
             if (command.uart_command === null) {
-                let new_uart_command = EncodeTrackerSetting(command.device_command);
+                let new_uart_command = EncodeTrackerSettings(command.device_command);
                 if (new_uart_command !== null) {
                     var new_command = command;
                     new_command.uart_command = new_uart_command;
