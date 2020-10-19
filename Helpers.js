@@ -196,7 +196,7 @@ function convertCharsToString(charArray) {
     return string;
 }
 
-function packUintToBytes(header, value) {
+export function packUintToBytes(header, value) {
     let headerLength = header.length;
     if (headerLength !== 3) {
         console.log("Error when packing UintToBytes - header not OK!");

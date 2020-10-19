@@ -36,7 +36,7 @@
 		},
 		{
 			"name" : "Request GPS position",
-			"device_command": "cmd_send_single_val: val_name_1",
+			"device_command": "cmd_send_single_val: gps_lon",
 			"uart_command" : null
 		},
 		{

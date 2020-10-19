@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings } from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, packUintToBytes } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -589,7 +589,8 @@ class App extends React.Component {
     parseDeviceCommands(commands) {
         var return_cmds = [];
         for (var command of commands) {
-            if (command.uart_command === null) {
+            console.log(command);
+            if (command.uart_command == null) {
                 let new_device_command = EncodeTrackerSettings(command.device_command);
                 if (new_device_command !== null) {
                     var new_command = command;
@@ -597,12 +598,13 @@ class App extends React.Component {
                     return_cmds.push(new_command);
                 }
                 else {
-                    console.log("Cannot parse command: " + command);
+                    console.log("Cannot parse command: " + command.device_command.toString());
                 }
             }
             else {
-                let new_uart_command = EncodeTrackerSettings(command.uart_command);
-                return_cmds.push(new_uart_command);
+                let new_command = command;  // TODO
+                new_command.uart_command = packUintToBytes(command.uart_command.slice(0, 3), command.uart_command.slice(3));
+                return_cmds.push(new_command);
             }
         }
         this.deviceCommands = return_cmds;
