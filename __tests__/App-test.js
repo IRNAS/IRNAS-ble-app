@@ -20,7 +20,7 @@ test('Sum equals 2', () => {
 });
 
 // test EncodeTrackerSettings function
-import { EncodeTrackerSettings, DecodeTrackerSettings } from '../Helpers';
+import { EncodeTrackerSettings, DecodeTrackerSettings, convertStringToChars } from '../Helpers';
 
 test('encode no data ', () => {
   var input = "lr_send_interval:";   // device_command
@@ -100,14 +100,18 @@ test('encode negative float', () => {
 
 test('encode bool', () => {
   var input = "setting_name_9: true";
-  var output = EncodeTrackerSettings(input);
+  var encoded = EncodeTrackerSettings(input);
+  var output = DecodeTrackerSettings(encoded).join(' ');
   var expectedOutput = "3 25 1 1"; // id 0x19 is 25
   expect(output).toBe(expectedOutput);
 });
 
 test('encode string', () => {
   var input = "setting_name_8: testing string";
-  var output = EncodeTrackerSettings(input);
-  var expectedOutput = "3 24 14 testing string"; // id 0x18 is 24
+  var stringAsChars = convertStringToChars("testing string").join(' ');
+  var encoded = EncodeTrackerSettings(input);
+  var output = DecodeTrackerSettings(encoded).join(' ');
+  var expectedOutput = "3 24 14 ";  // id 0x18 is 24
+  expectedOutput = expectedOutput.concat(stringAsChars); // testing string as char array is 116, 101, 115, 116, 105, 110, 103, 32, 115, 116, 114, 105, 110, 103
   expect(output).toBe(expectedOutput);
 });

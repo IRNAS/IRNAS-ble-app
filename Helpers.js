@@ -78,31 +78,34 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
         if (value.length === 0) {
             return null;
         }
+        var header = [port, id, length];
         switch(conversion) {
             case "bool":
                 if (value === "true") {
-                    var result = [port, id, length, 1].join(' ');
+                    var result = packUintToBytes(header, 1);
                     return result;
                 }
                 else if (value === "false") {
-                    var result = [port, id, length, 0].join(' ');
+                    var result = packUintToBytes(header, 0);
                     return result;
                 }
                 else {
                     return null;
                 }
-            case "string":  // TODO
+            case "string":
                 if (value.length > length) {
                     return null;
                 }
-                var result = [port, id, value.length, value].join(' ');
+                header[2] = value.length;
+                var valueChars = convertStringToChars(value);
+                var result = packUintToBytes(header, valueChars);
                 return result;
             case "float":   // TODO
                 cmd_value = parseFloat(value);
                 if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
-                var header = [port, id, length].join(' ') + ' ';
+                header = header.join(' ') + ' ';
                 var values = ConvertFloatToByteArray(cmd_value).join(' ');
                 var result = header.concat(values);
                 return result;
@@ -127,16 +130,14 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                         cmd_value += 2147483648;
                     }
                 }
-                var header = [port, id, length];
-                var result = packUintToBytes(header, cmd_value);    // TODO test this
+                var result = packUintToBytes(header, cmd_value);
                 return result;
             default:    // uint8, uint16, uint32
                 cmd_value = parseInt(value, 10);
                 if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
-                var header = [port, id, length];
-                var result = packUintToBytes(header, cmd_value);    // TODO test this
+                var result = packUintToBytes(header, cmd_value);
                 return result;
         }
     }
@@ -179,7 +180,23 @@ function DecodeUintValue(number) {
     }
 }
 
-function packUintToBytes(header, num) {
+export function convertStringToChars(string) {
+    charArray = [];
+    for (i = 0; i < string.length; i++) {
+        charArray.push(string.charCodeAt(i));
+    }
+    return charArray;
+}
+
+function convertCharsToString(charArray) {
+    string = "";
+    for (i = 0; i < charArray.length; i++) {
+        string += String.fromCharCode(charArray[i]);
+    }
+    return string;
+}
+
+function packUintToBytes(header, value) {
     let headerLength = header.length;
     if (headerLength !== 3) {
         console.log("Error when packing UintToBytes - header not OK!");
@@ -189,19 +206,24 @@ function packUintToBytes(header, num) {
     let arr = new ArrayBuffer(headerLength + valueLength);        // total lenght of the buffer is header + value lengths
     let view = new DataView(arr);
 
-    for (i=0; i < headerLength; i++) {  // copy header to buffer
+    for (i = 0; i < headerLength; i++) {  // copy header to buffer
         view.setUint8(i, header[i]);
     }
 
     switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, litteEndian = true
-        case 1:     //uint8
-            view.setUint8(headerLength, num, true);
+        case 1:    //uint8 or bool
+            view.setUint8(headerLength, value, true);
             break;
         case 2:     // uint16
-            view.setUint16(headerLength, num, true);
+            view.setUint16(headerLength, value, true);
             break;
-        default:    //uint32
-            view.setUint32(headerLength, num, true);
+        case 4:     //uint32
+            view.setUint32(headerLength, value, true);
+            break;
+        default:    // string
+            for (i = 0; i < valueLength; i++) {  // copy values to buffer
+                view.setUint8(headerLength+i, value[i], true);
+            }
             break;
     }
     return arr;
