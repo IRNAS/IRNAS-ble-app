@@ -590,10 +590,10 @@ class App extends React.Component {
         var return_cmds = [];
         for (var command of commands) {
             if (command.uart_command === null) {
-                let new_uart_command = EncodeTrackerSettings(command.device_command);
-                if (new_uart_command !== null) {
+                let new_device_command = EncodeTrackerSettings(command.device_command);
+                if (new_device_command !== null) {
                     var new_command = command;
-                    new_command.uart_command = new_uart_command;
+                    new_command.uart_command = new_device_command;
                     return_cmds.push(new_command);
                 }
                 else {
@@ -601,7 +601,8 @@ class App extends React.Component {
                 }
             }
             else {
-                return_cmds.push(command);
+                let new_uart_command = EncodeTrackerSettings(command.uart_command);
+                return_cmds.push(new_uart_command);
             }
         }
         this.deviceCommands = return_cmds;
