@@ -43,6 +43,11 @@
 			"name" : "Request GPS position - raw cmd",
 			"device_command": null,
 			"uart_command" : "99 A3 1 D1"
-		}
+		},
+		{
+			"name" : "Request accelerometer - X",
+			"device_command": "cmd_send_single_val: acc_x",
+			"uart_command" : null
+		},
 	]
 }

@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, packUintToBytes } from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, packUintToBytes } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -351,9 +351,10 @@ class App extends React.Component {
             }
             //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
             const result = DecodeBase64(characteristic.value);
+            const resultDecoded = new Uint8Array(result);
             //console.log(result.length);
-            console.log("Received data from device: " + result);
-            const stringResult = GetTimestamp() + ": " + result.toString();
+            console.log("Received data from device: " + resultDecoded);
+            const stringResult = GetTimestamp() + ": " + DecodeTrackerSettings(resultDecoded) + "\n";
             this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
                 NotifyData: [...prevState.NotifyData, stringResult + "\n"]
             }));
