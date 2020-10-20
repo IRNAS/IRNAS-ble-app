@@ -218,23 +218,38 @@ export function packUintToBytes(header, value) {
     for (i = 0; i < headerLength; i++) {  // copy header to buffer
         view.setUint8(i, header[i]);
     }
-
+    
     switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, litteEndian = true
         case 1:    //uint8 or bool
-            view.setUint8(headerLength, value, true);
+            view.setUint8(headerLength, value);
             break;
         case 2:     // uint16
-            view.setUint16(headerLength, value, true);
+            if (Array.isArray(value)) {
+                for (i = 0; i < valueLength; i++) {
+                    view.setUint8(headerLength+i, value[i]);
+                }
+            } 
+            else {
+                view.setUint16(headerLength, value, true);
+            }
             break;
         case 4:     //uint32
-            view.setUint32(headerLength, value, true);
+            if (Array.isArray(value)) {
+                for (i = 0; i < valueLength; i++) {
+                    view.setUint8(headerLength+i, value[i]);
+                }
+            } 
+            else {
+                view.setUint32(headerLength, value, true);
+            }
             break;
         default:    // string
             for (i = 0; i < valueLength; i++) {  // copy values to buffer
-                view.setUint8(headerLength+i, value[i], true);
+                view.setUint8(headerLength+i, value[i]);
             }
             break;
     }
+    console.log(new Uint8Array(arr));
     return arr;
 }
 
