@@ -84,16 +84,18 @@ test('encode negative int32', () => {
   expect(output).toBe(expectedOutput);
 });
 
-test('encode float', () => {
+test('encode float', () => {    // TODO test this
   var input = "setting_name_7: 9.5";
-  var output = EncodeTrackerSettings(input);
+  var encoded = EncodeTrackerSettings(input);
+  var output = DecodeTrackerSettings(encoded).join(' ');
   var expectedOutput = "3 23 4 9.5"; // id 0x17 is 23
   expect(output).toBe(expectedOutput);
 });
 
 test('encode negative float', () => {
   var input = "setting_name_7: -9.5";
-  var output = EncodeTrackerSettings(input);
+  var encoded = EncodeTrackerSettings(input);
+  var output = DecodeTrackerSettings(encoded).join(' ');
   var expectedOutput = "3 23 4 -9.5"; // id 0x17 is 23
   expect(output).toBe(expectedOutput);
 });

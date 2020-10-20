@@ -6,6 +6,10 @@ const IzOpModesEnum = Object.freeze({ 0:"factory", 1:"storage", 2:"deployment", 
 const IzConnectionsEnum = Object.freeze({ 0:"offline", 1:"online", 2:"online-psm" });
 const settings_json = require('./settings.json');    // read settings.json
 
+const MAX_UINT8 = 255;
+const MAX_UINT16 = 65535;
+const MAX_UINT32 = 4294967295;
+
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
         ToastAndroid.show(msg, ToastAndroid.SHORT)
@@ -101,14 +105,15 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                 var valueChars = convertStringToChars(value);
                 var result = packUintToBytes(header, valueChars);
                 return result;
-            case "float":   // TODO
+            case "float":
                 cmd_value = parseFloat(value);
                 if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
-                header = header.join(' ') + ' ';
-                var values = ConvertFloatToByteArray(cmd_value).join(' ');
-                var result = header.concat(values);
+                let intPart = parseInt(cmd_value);
+                let decimalPart = (cmd_value % 1).toFixed(4);
+                var values = [intPart >> 8, intPart & 0xff, decimalPart >> 8, decimalPart & 0xff];   // int and decimal part as separate uint16, in array as uint8
+                var result = packUintToBytes(header, values);
                 return result;
             case "packed values":
                 // TODO
@@ -121,7 +126,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                     return null;
                 }
                 if (cmd_value < 0) {
-                    if (conversion === "int8") {
+                    if (conversion === "int8") {    // TODO
                         cmd_value += 256;
                     }
                     else if (conversion === "int16") {
@@ -155,24 +160,26 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
     }
 }
 
-export function DecodeTrackerSettings(settings) {
+export function DecodeTrackerSettings(settings) {   // TODO fix this
     // TODO write loop for multiple received settings in the same message
-    // TODO use DecodeUintValue
-    return unpackSetting(settings);
+    let unpacked = unpackSetting(settings);
+    
+    let port = unpacked.getUint8(0);
+    let id = unpacked.getUint8(1);
+    let length = unpacked.getUint8(2);
+
+    //for (command_name in settings_json.settings) 
+    
+    let decoded = unpacked;
+    return decoded;
 }
 
 function unpackSetting(setting) {
     let view = new DataView(setting);
-    let port = view.getUint8(0);
-    let id = view.getUint8(1);
-    let length = view.getUint8(2);
-    var returnData = [port, id, length];
-
-    // return value as bytes for now
-    for (i=3; i < length+3; i++) {  // copy header to buffer
+    for (i=0; i < setting.length; i++) {  // copy header to buffer
         returnData.push(view.getUint8(i));
     }
-    return returnData;
+    return returnData;  // return value as bytes
 }
 
 function DecodeUintValue(number) {      
@@ -251,10 +258,4 @@ export function packUintToBytes(header, value) {
     }
     console.log(new Uint8Array(arr));
     return arr;
-}
-
-function ConvertFloatToByteArray(num) {
-    let b = new ArrayBuffer(4);
-    new DataView(b).setFloat32(0, num, true);
-    return new Float32Array(b);
 }
