@@ -66,7 +66,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
     let command_name = cmd[0];
     let command_value = cmd[1];
     
-    if (command_name in settings_json.settings) {
+    if (command_name in settings_json.settings) {       // we are writing some settings to device
         let port = settings_json.settings.port;
         let id = parseInt(settings_json.settings[command_name].id, 16);
         let length = settings_json.settings[command_name].length;
@@ -141,7 +141,8 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                 return result;
         }
     }
-    else {
+    else {      // we are requesting some values from the tracker
+
         return null;
     }
 }

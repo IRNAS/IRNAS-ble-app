@@ -602,13 +602,15 @@ class App extends React.Component {
                 }
             }
             else {
-                let new_command = command;  // TODO
-                new_command.uart_command = packUintToBytes(command.uart_command.slice(0, 3), command.uart_command.slice(3));
+                let new_command = command;
+                let cmdArray = command.uart_command.split(' ').map(x => parseInt(Number("0x" + x, 10)));    // convert string of hex numbers to array of ints
+                let header = cmdArray.slice(0, 3);
+                let values = cmdArray.slice(3);
+                new_command.uart_command = packUintToBytes(header, values);
                 return_cmds.push(new_command);
             }
         }
         this.deviceCommands = return_cmds;
-        console.log(this.deviceCommands);
     }
 
     displayUartButtons() {
