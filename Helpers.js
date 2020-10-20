@@ -1,4 +1,5 @@
 import { ToastAndroid, AlertIOS, Settings } from 'react-native';
+import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
 const IzOpModesEnum = Object.freeze({ 0:"factory", 1:"storage", 2:"deployment", 3:"operation_slow", 4:"operation_fast" });
@@ -66,7 +67,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
     let command_name = cmd[0];
     let command_value = cmd[1];
     
-    if (command_name in settings_json.settings) {       // we are writing some settings to device
+    if (command_name in settings_json.settings) {       // we are writing some settings to the tracker
         let port = settings_json.settings.port;
         let id = parseInt(settings_json.settings[command_name].id, 16);
         let length = settings_json.settings[command_name].length;
@@ -141,8 +142,15 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                 return result;
         }
     }
-    else {      // we are requesting some values from the tracker
-
+    else if (command_name in settings_json.commands) {      // we are requesting some values from the tracker
+        let port = settings_json.commands.port;
+        let id = parseInt(settings_json.commands[command_name].id, 16);
+        let length = settings_json.commands[command_name].length;
+        let value = settings_json.values[command_value.replace(/\s/g,'')].id;
+        var result = packUintToBytes([port, id, length], value);
+        return result;
+    }
+    else {      // unkown command_name, cannot parse
         return null;
     }
 }
