@@ -60,11 +60,31 @@ export function GetFullTimestamp() {
     return (date + "T" + time);
 }
 
+export function GenerateSettingsLookupTable(jsonObject) {
+    var settingsLookup = {};
+    for (const controlCategory in jsonObject) {      // controlCategories means settings, commands, messages, values, etc.
+        if (controlCategory === "fw_version" || controlCategory === "hardware") {
+            continue;   // skip this
+        }
+        for (const settingName in controlCategory) {
+            if (settingName === "type") {
+                continue;   // skip this
+            }
+            if (settingName == "port") {
+                continue; // TODO use this to double check 
+            }
+            // read setting id and save it as key, its value is setting name
+            console.log();
+            settingsLookup[settingName.id] = settingName.toString();
+        }
+    }
+    return settingsLookup;
+}
+
 export function ParseTrackerAdvData(data) {
     // TODO implement this
     return null;
 }
-
 
 export function EncodeTrackerSettings(command) {        // TODO handle multiple commands (make array - for loop)
     var cmd = command.toString().split(":");
@@ -164,9 +184,9 @@ export function DecodeTrackerSettings(settings) {   // TODO fix this
     // TODO write loop for multiple received settings in the same message
     let unpacked = unpackSetting(settings);
     
-    let port = unpacked.getUint8(0);
-    let id = unpacked.getUint8(1);
-    let length = unpacked.getUint8(2);
+    let port = unpacked[0];
+    let id = unpacked[1];
+    let length = unpacked[2];
 
     //for (command_name in settings_json.settings) 
     

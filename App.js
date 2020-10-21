@@ -39,6 +39,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
+// TODO check port when receiving message from tracker
 
 function Separator() {
     return <View style={styles.separator} />;
@@ -76,6 +77,8 @@ class App extends React.Component {
         this.deviceCommands = [];
 
         this.oldJson = {};
+
+        this.settingsLookupTable = [];
     }
 
     handleAppStateChange = (nextAppState) => {
@@ -351,10 +354,12 @@ class App extends React.Component {
             }
             //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
             const result = DecodeBase64(characteristic.value);
-            const resultDecoded = new Uint8Array(result);
+            const resultBuff = new ArrayBuffer(result);
             //console.log(result.length);
+            const resultDecoded = new Uint8Array(result);
             console.log("Received data from device: " + resultDecoded);
-            const stringResult = GetTimestamp() + ": " + DecodeTrackerSettings(resultDecoded) + "\n";
+            //resultDecoded = DecodeTrackerSettings(resultBuff);
+            const stringResult = GetTimestamp() + ": " + resultDecoded  + "\n";
             this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
                 NotifyData: [...prevState.NotifyData, stringResult + "\n"]
             }));
