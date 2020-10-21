@@ -111,8 +111,8 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                     return null;
                 }
                 let intPart = parseInt(cmd_value);
-                let decimalPart = (cmd_value % 1).toFixed(4);
-                var values = [intPart >> 8, intPart & 0xff, decimalPart >> 8, decimalPart & 0xff];   // int and decimal part as separate uint16, in array as uint8
+                let decimalPart = Math.abs((cmd_value % 1).toFixed(4) * 10000);
+                var values = [intPart & 0xff, intPart >> 8, decimalPart & 0xff,  decimalPart >> 8];   // int and decimal part as separate uint16, in array as uint8
                 var result = packUintToBytes(header, values);
                 return result;
             case "packed values":
@@ -174,9 +174,10 @@ export function DecodeTrackerSettings(settings) {   // TODO fix this
     return decoded;
 }
 
-function unpackSetting(setting) {
+export function unpackSetting(setting) {
+    let returnData = [];
     let view = new DataView(setting);
-    for (i=0; i < setting.length; i++) {  // copy header to buffer
+    for (i=0; i < setting.byteLength; i++) {  // copy buffer data to array of uint8
         returnData.push(view.getUint8(i));
     }
     return returnData;  // return value as bytes
@@ -256,6 +257,6 @@ export function packUintToBytes(header, value) {
             }
             break;
     }
-    console.log(new Uint8Array(arr));
+    //console.log(new Uint8Array(arr));
     return arr;
 }
