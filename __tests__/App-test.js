@@ -134,10 +134,31 @@ test('encode string', () => {
     expect(output).toBe(expectedOutput);
 });
 
+test('decode wrong id', () => {
+    var input = new Uint8Array([99,0,4,0,0,186,6]).buffer;
+    var output = DecodeTrackerSettings(input);
+    var expectedOutput = null;
+    expect(output).toBe(expectedOutput);
+});
+
 test('decode float', () => {
     var input = new Uint8Array([99,212,4,0,0,186,6]).buffer;
-    var output = DecodeTrackerSettings(input).join(' ');
-    var expectedOutput = "99 212 4 0.1722";
+    var output = DecodeTrackerSettings(input);
+    var expectedOutput = ["acc_x", 0.1722];
+    expect(output).toStrictEqual(expectedOutput);
+});
+
+test('decode float 2', () => {  // TODO what is this
+    var input = new Uint8Array([99,212,4,0,0,79,237]).buffer;
+    var output = DecodeTrackerSettings(input);
+    var expectedOutput = ["acc_x", 0.1722];
+    expect(output).toStrictEqual(expectedOutput);
+});
+
+test('decode float - wrong length', () => {
+    var input = new Uint8Array([99,212,4,0,0,186]).buffer;
+    var output = DecodeTrackerSettings(input);
+    var expectedOutput = null;
     expect(output).toBe(expectedOutput);
 });
 
@@ -145,7 +166,7 @@ test('lookup table generate one valid setting', () => {
     //const settings_json = require('../settings.json');    // read settings.json
     const settings_json = {"settings": {"port": 3, "lr_send_interval" : { "id": "0x01", "default": 10}}};
     var output = GenerateSettingsLookupTable(settings_json);
-    var expectedOutput = {"0x01": "lr_send_interval"};
+    var expectedOutput = {"1": {"name": "lr_send_interval", "control_category": "settings"}};
     expect(output).toStrictEqual(expectedOutput);
 });
 
@@ -153,7 +174,7 @@ test('lookup table generate valid and skip hardware and fw_version', () => {
     //const settings_json = require('../settings.json');    // read settings.json
     const settings_json = {"fw_version": {"version": {"major": 0, "minor": 1}}, "hardware": {"type": "test"}, "settings": {"port": 3, "lr_send_interval" : { "id": "0x01", "default": 10}}};
     var output = GenerateSettingsLookupTable(settings_json);
-    var expectedOutput = {"0x01": "lr_send_interval"};
+    var expectedOutput = {"1": {"name": "lr_send_interval", "control_category": "settings"}};
     expect(output).toStrictEqual(expectedOutput);
 });
 

@@ -5,6 +5,7 @@ var Buffer = require('buffer/').Buffer;
 const IzOpModesEnum = Object.freeze({ 0:"factory", 1:"storage", 2:"deployment", 3:"operation_slow", 4:"operation_fast" });
 const IzConnectionsEnum = Object.freeze({ 0:"offline", 1:"online", 2:"online-psm" });
 const settings_json = require('./settings.json');    // read settings.json
+const settingsLookupTable = GenerateSettingsLookupTable();
 
 const MAX_UINT8 = 255;
 const MAX_UINT16 = 65535;
@@ -79,7 +80,8 @@ export function GenerateSettingsLookupTable(jsonObject) {
             }
             // read setting id and save it as key, save setting name as value
             let id = jsonObject[controlCategory][settingName].id;
-            settingsLookup[id] = settingName.toString();
+            let idAsNum = parseInt(Number(id, 10));
+            settingsLookup[idAsNum] = {"name": settingName.toString(), "control_category": controlCategory};
         }
     }
     if (!settingsLookup || Object.keys(settingsLookup).length === 0) {
@@ -187,15 +189,52 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
     }
 }
 
-export function DecodeTrackerSettings(settings) {   // TODO fix this
-    // TODO write loop for multiple received settings in the same message
+export function DecodeTrackerSettings(settings) {   // TODO write loop for multiple received settings in the same message
+    // for now this function decodes SINGLE setting received from tracker
     let unpacked = unpackSetting(settings);
-    
+    // get header data
     let port = unpacked[0];
     let id = unpacked[1];
     let length = unpacked[2];
-
-    //for (command_name in settings_json.settings) 
+    // check if id is valid
+    if (settingsLookupTable[id] === undefined) {
+        return null;
+    }
+    // get value data
+    let controlCategory = settingsLookupTable[id].control_category;
+    let name = settingsLookupTable[id].name;
+    // check if value data has proper length
+    if (length !== unpacked.length - 3) {
+        return null;
+    }
+    // parse value data acording to conversion (type)
+    let definedLength = settings_json[controlCategory][name].length;
+    let max = settings_json[controlCategory][name].max;
+    let min = settings_json[controlCategory][name].min;
+    let conversion = settings_json[controlCategory][name].conversion; 
+    switch(conversion) { 
+        case "bool":
+            return null;
+        case "string":
+            return null;;
+        case "float":
+            if (length !== definedLength) {
+                return null;
+            }
+            let intPart = (unpacked[4] << 8) | unpacked[3];
+            let decimalPart = ((unpacked[6] << 8) | unpacked[5]) / 10000;
+            let value = intPart + decimalPart;
+            if (value > max || value < min) {
+                return null;
+            }
+            return [name, value];
+        case "int8":
+        case "int16":
+        case "int32":
+            return null;;
+        default:    // uint8, uint16, uint32
+            return null;;
+    }
     
     let decoded = unpacked;
     return decoded;
