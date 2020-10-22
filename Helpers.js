@@ -61,10 +61,12 @@ export function GetFullTimestamp() {
 }
 
 export function GenerateSettingsLookupTable(jsonObject) {
+    if (!jsonObject) {
+        jsonObject = settings_json;
+    }
     var settingsLookup = {};
 
     for (const controlCategory in jsonObject) {      // controlCategories means settings, commands, messages, values, etc.
-        console.log(controlCategory);
         if (controlCategory === "fw_version" || controlCategory === "hardware") {
             continue;   // skip this
         }
@@ -79,6 +81,9 @@ export function GenerateSettingsLookupTable(jsonObject) {
             let id = jsonObject[controlCategory][settingName].id;
             settingsLookup[id] = settingName.toString();
         }
+    }
+    if (!settingsLookup || Object.keys(settingsLookup).length === 0) {
+        return null;
     }
     return settingsLookup;
 }

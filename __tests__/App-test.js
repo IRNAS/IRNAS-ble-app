@@ -141,10 +141,30 @@ test('decode float', () => {
     expect(output).toBe(expectedOutput);
 });
 
-test('lookup table generate setting', () => {
+test('lookup table generate one valid setting', () => {
     //const settings_json = require('../settings.json');    // read settings.json
     const settings_json = {"settings": {"port": 3, "lr_send_interval" : { "id": "0x01", "default": 10}}};
     var output = GenerateSettingsLookupTable(settings_json);
     var expectedOutput = {"0x01": "lr_send_interval"};
     expect(output).toStrictEqual(expectedOutput);
+});
+
+test('lookup table generate valid and skip hardware and fw_version', () => {
+    //const settings_json = require('../settings.json');    // read settings.json
+    const settings_json = {"fw_version": {"version": {"major": 0, "minor": 1}}, "hardware": {"type": "test"}, "settings": {"port": 3, "lr_send_interval" : { "id": "0x01", "default": 10}}};
+    var output = GenerateSettingsLookupTable(settings_json);
+    var expectedOutput = {"0x01": "lr_send_interval"};
+    expect(output).toStrictEqual(expectedOutput);
+});
+
+test('lookup table generate all settings, check if not null', () => {
+    var output = GenerateSettingsLookupTable();
+    var expectedOutput = null;
+    expect(output).not.toBe(expectedOutput);
+});
+
+test('lookup table generate all settings, check if null', () => {
+    var output = GenerateSettingsLookupTable({});
+    var expectedOutput = null;
+    expect(output).toBe(expectedOutput);
 });

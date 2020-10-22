@@ -23,7 +23,9 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, packUintToBytes } from './Helpers';
+import { 
+    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, packUintToBytes, GenerateSettingsLookupTable 
+} from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -77,8 +79,7 @@ class App extends React.Component {
         this.deviceCommands = [];
 
         this.oldJson = {};
-
-        this.settingsLookupTable = [];
+        this.settingsLookupTable = {};
     }
 
     handleAppStateChange = (nextAppState) => {
@@ -482,6 +483,9 @@ class App extends React.Component {
         else { // // json doesn't contain filter field, disable filtering
             this.setState({ deviceFiltersActive: false });
         }
+
+        // prepare lookup table from settings.json for decoding data received from tracker
+        this.settingsLookupTable = GenerateSettingsLookupTable();
 
         // check if device contains commands and parse it
         if (data.commands !== undefined) {
