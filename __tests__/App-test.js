@@ -36,7 +36,7 @@ test('Sum equals 2', () => {
 });
 
 // test EncodeTrackerSettings function
-import { EncodeTrackerSettings, DecodeTrackerSettings, convertStringToChars, unpackSetting, settings_json, GenerateSettingsLookupTable } from '../Helpers';
+import { EncodeTrackerSettings, DecodeTrackerSettings, convertStringToChars, unpackSetting, GenerateSettingsLookupTable } from '../Helpers';
 
 test('encode no data ', () => {
     var input = "lr_send_interval:";   // device_command
@@ -60,19 +60,19 @@ test('encode uint32', () => {
     expect(output).toBe(expectedOutput);
 });
 
-test('encode uint16', () => {
+test('encode uint16 - command doesn not exist', () => {
     var input = "setting_name_2: 300";   // device_command
     var encoded = EncodeTrackerSettings(input);
-    var output = unpackSetting(encoded).join(' ');
-    var expectedOutput = "3 18 2 44 1";
+    var output = unpackSetting(encoded);
+    var expectedOutput = null;
     expect(output).toBe(expectedOutput);
 });
 
 test('encode uint8', () => {
-    var input = "setting_name_1: 255";   // device_command
+    var input = "lr_port: 99";   // device_command
     var encoded = EncodeTrackerSettings(input);
     var output = unpackSetting(encoded).join(' ');
-    var expectedOutput = "3 17 1 255";
+    var expectedOutput = "3 17 1 99";
     expect(output).toBe(expectedOutput);
 });
 
@@ -141,8 +141,10 @@ test('decode float', () => {
     expect(output).toBe(expectedOutput);
 });
 
-test('generate settings lookup table', () => {
+test('lookup table generate setting', () => {
+    //const settings_json = require('../settings.json');    // read settings.json
+    const settings_json = {"settings": {"port": 3, "lr_send_interval" : { "id": "0x01", "default": 10}}};
     var output = GenerateSettingsLookupTable(settings_json);
-    var expectedOutput = "99 212 4 0.1722";
-    expect(output).toBe(expectedOutput);
+    var expectedOutput = {"0x01": "lr_send_interval"};
+    expect(output).toStrictEqual(expectedOutput);
 });
