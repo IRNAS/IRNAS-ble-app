@@ -62,20 +62,22 @@ export function GetFullTimestamp() {
 
 export function GenerateSettingsLookupTable(jsonObject) {
     var settingsLookup = {};
+
     for (const controlCategory in jsonObject) {      // controlCategories means settings, commands, messages, values, etc.
+        console.log(controlCategory);
         if (controlCategory === "fw_version" || controlCategory === "hardware") {
             continue;   // skip this
         }
-        for (const settingName in controlCategory) {
+        for (const settingName in jsonObject[controlCategory]) {
             if (settingName === "type") {
                 continue;   // skip this
             }
             if (settingName == "port") {
                 continue; // TODO use this to double check 
             }
-            // read setting id and save it as key, its value is setting name
-            console.log();
-            settingsLookup[settingName.id] = settingName.toString();
+            // read setting id and save it as key, save setting name as value
+            let id = jsonObject[controlCategory][settingName].id;
+            settingsLookup[id] = settingName.toString();
         }
     }
     return settingsLookup;
@@ -195,6 +197,10 @@ export function DecodeTrackerSettings(settings) {   // TODO fix this
 }
 
 export function unpackSetting(setting) {
+    if (!setting) { // if not valid setting is received
+        return null;
+    }
+
     let returnData = [];
     let view = new DataView(setting);
     for (i=0; i < setting.byteLength; i++) {  // copy buffer data to array of uint8
