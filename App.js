@@ -79,7 +79,6 @@ class App extends React.Component {
         this.deviceCommands = [];
 
         this.oldJson = {};
-        this.settingsLookupTable = {};
     }
 
     handleAppStateChange = (nextAppState) => {
@@ -156,7 +155,8 @@ class App extends React.Component {
                 NotifyMessage("Bluetooth is OK");
                 subscription.remove();
                 this.scan();
-            } else {
+            } 
+            else {
                 NotifyMessage("Bluetooth is " + state.toString());
             }
         }, true);
@@ -354,13 +354,11 @@ class App extends React.Component {
                 return;
             }
             //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
-            const result = DecodeBase64(characteristic.value);
-            const resultBuff = new ArrayBuffer(result);
-            //console.log(result.length);
-            const resultDecoded = new Uint8Array(result);
-            console.log("Received data from device: " + resultDecoded);
-            //resultDecoded = DecodeTrackerSettings(resultBuff);
-            const stringResult = GetTimestamp() + ": " + resultDecoded  + "\n";
+            let result = DecodeBase64(characteristic.value);
+            let resultDecoded = new Uint8Array(result);
+            console.log("Received data from device (raw): " + resultDecoded);
+            resultDecoded = DecodeTrackerSettings(resultDecoded.buffer).toString().replace(',', ' - ');
+            let stringResult = GetTimestamp() + ": " + resultDecoded  + "\n";
             this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
                 NotifyData: [...prevState.NotifyData, stringResult + "\n"]
             }));
@@ -485,7 +483,7 @@ class App extends React.Component {
         }
 
         // prepare lookup table from settings.json for decoding data received from tracker
-        this.settingsLookupTable = GenerateSettingsLookupTable();
+        //this.settingsLookupTable = GenerateSettingsLookupTable();
 
         // check if device contains commands and parse it
         if (data.commands !== undefined) {
