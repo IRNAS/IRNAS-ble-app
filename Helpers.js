@@ -7,9 +7,9 @@ const IzConnectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-
 const settings_json = require('./settings.json');    // read settings.json
 const settingsLookupTable = GenerateSettingsLookupTable();
 
-const MAX_UINT8 = 255;
-const MAX_UINT16 = 65535;
-const MAX_UINT32 = 4294967295;
+const HALF_UINT8 = 128;
+const HALF_UINT16 = 32768;
+const HALF_UINT32 = 2147483648;
 
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
@@ -153,14 +153,14 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                     return null;
                 }
                 if (cmd_value < 0) {
-                    if (conversion === "int8") {    // TODO
-                        cmd_value += 256;
+                    if (conversion === "int8") {
+                        cmd_value += HALF_UINT8;
                     }
                     else if (conversion === "int16") {
-                        cmd_value += 32768;
+                        cmd_value += HALF_UINT16;
                     }
                     else {
-                        cmd_value += 2147483648;
+                        cmd_value += HALF_UINT32;
                     }
                 }
                 var result = packUintToBytes(header, cmd_value);
@@ -195,7 +195,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
 
 export function DecodeTrackerSettings(settings) {   // TODO write loop for multiple received settings in the same message
     // for now this function decodes SINGLE setting received from tracker
-    let unpacked = unpackSetting(settings);
+    let unpacked = unpackBytesToUint(settings);
     // get header data
     let port = unpacked[0];
     let id = unpacked[1];
@@ -257,40 +257,33 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
         case "int8":
         case "int16":
         case "int32":
-            return null;
+            let intArray = unpacked.slice(3);
+            intArray = intArray.forEach(num => (num = num - HALF_UINT8));
+            console.log(intArray);
+            value = DecodeUintValue(intArray);
+            return [name, value];
         default:    // uint8, uint16, uint32
-            return null;;
+            value = DecodeUintValue(unpacked.slice(3));
+            return [name, value];
     }
 }
 
-export function unpackSetting(setting) {
-    if (!setting) { // if not valid setting is received
-        return null;
-    }
-
-    let returnData = [];
-    let view = new DataView(setting);
-    for (i = 0; i < setting.byteLength; i++) {  // copy buffer data to array of uint8
-        returnData.push(view.getUint8(i));
-    }
-    return returnData;  // return value as bytes
-}
-
-function DecodeUintValue(number) {
-    switch (length) {  // copy value to buffer, byteOffset = 3, litteEndian = true
+function DecodeUintValue(array) {
+    switch (array.length) {  // copy value to buffer, byteOffset = 3, litteEndian = true
         case 1:     //uint8
-            value = view.getUint8(3, true);
+            value = array[0];
             break;
         case 2:     // uint16
-            value = view.getUint16(3, true);
+            value = (array[1] << 8) | array[0];
             break;
         default:    //uint32
-            value = view.getUint32(3, true);
+            value = (array[3] << 24) | (array[2] << 16) | (array[1] << 8) | array[0];
             break;
     }
+    return value;
 }
 
-function DecodeStatusMessage(status) {
+function DecodeStatusMessage(bytes) {
     var reset = bytes[0];
     var err = bytes[1];
     var bat = (bytes[2] * 10) + 2500;
@@ -312,6 +305,7 @@ function DecodeStatusMessage(status) {
         acc_y: acc_y,
         acc_z: acc_z,
     };
+    return decoded;
 }
 
 export function convertStringToChars(string) {
@@ -376,4 +370,17 @@ export function packUintToBytes(header, value) {
     }
     //console.log(new Uint8Array(arr));
     return arr;
+}
+
+export function unpackBytesToUint(setting) {
+    if (!setting) { // if not valid setting is received
+        return null;
+    }
+
+    let returnData = [];
+    let view = new DataView(setting);
+    for (i = 0; i < setting.byteLength; i++) {  // copy buffer data to array of uint8
+        returnData.push(view.getUint8(i));
+    }
+    return returnData;  // return value as bytes
 }
