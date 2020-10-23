@@ -123,9 +123,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                     var result = packUintToBytes(header, 0);
                     return result;
                 }
-                else {
-                    return null;
-                }
+                return null;
             case "string":
                 if (value.length > length) {
                     return null;
@@ -229,7 +227,11 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
             }
             return null;
         case "string":
-            return null;;
+            if (length > definedLength) {
+                return null;
+            }
+            value = convertCharsToString(unpacked.slice(3));
+            return [name, value];
         case "float":
             if (length !== definedLength) {
                 return null;
@@ -244,11 +246,11 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
             }
             return [name, value];
         case "packed values":
-            if (name == "msg_status") {
+            if (name === "msg_status") {
                 value = DecodeStatusMessage(unpacked);
                 return [name, value];
             }
-            else if (name == "msg_location") {
+            else if (name === "msg_location") {
                 return null;
             }
             return null;
