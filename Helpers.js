@@ -149,19 +149,19 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
             case "int16":
             case "int32":
                 cmd_value = parseInt(value, 10);
+                // check borders
                 if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
-                if (cmd_value < 0) {
-                    if (conversion === "int8") {
-                        cmd_value += HALF_UINT8;
-                    }
-                    else if (conversion === "int16") {
-                        cmd_value += HALF_UINT16;
-                    }
-                    else {
-                        cmd_value += HALF_UINT32;
-                    }
+                // convert int to uint
+                if (conversion === "int8") {
+                    cmd_value += HALF_UINT8;
+                }
+                else if (conversion === "int16") {
+                    cmd_value += HALF_UINT16;
+                }
+                else {
+                    cmd_value += HALF_UINT32;
                 }
                 var result = packUintToBytes(header, cmd_value);
                 return result;
@@ -258,12 +258,27 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
         case "int16":
         case "int32":
             let intArray = unpacked.slice(3);
-            intArray = intArray.forEach(num => (num = num - HALF_UINT8));
-            console.log(intArray);
             value = DecodeUintValue(intArray);
+            // convert uint to int
+            if (conversion === "int8") {
+                value -= HALF_UINT8;
+            }
+            else if (conversion === "int16") {
+                value -= HALF_UINT16;
+            }
+            else {
+                value -= HALF_UINT32;
+            }
+            // check borders
+            if (value > max || value < min) {
+                return null;
+            }
             return [name, value];
         default:    // uint8, uint16, uint32
             value = DecodeUintValue(unpacked.slice(3));
+             if (value > max || value < min) {
+                return null;
+            }
             return [name, value];
     }
 }
