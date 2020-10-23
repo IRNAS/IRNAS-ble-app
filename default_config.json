@@ -30,7 +30,7 @@
 			"uart_command" : null
 		},
 		{
-			"name" : "Request GPS position",
+			"name" : "Request GPS longitude",
 			"device_command": "cmd_send_single_val: gps_lon",
 			"uart_command" : null
 		},

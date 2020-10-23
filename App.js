@@ -38,6 +38,7 @@ import {
 // TODO handle back button
 // TODO separate App.js into multiple files, also define some folder structure
 // TODO support reseting configuration json file to default
+// TODO reformat and reorganise code + start using coding standard (function and variable names)
 
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
@@ -66,6 +67,7 @@ class App extends React.Component {
             jsonParsed: {},
             deviceFiltersActive: false,
             writeScreenActive: true,
+            deviceCommands: [],
         };
         this.devices = [];
         this.services = {};
@@ -76,7 +78,6 @@ class App extends React.Component {
 
         this.bleFilterName = "";
         this.bleFilterMac = "";
-        this.deviceCommands = [];
 
         this.oldJson = {};
     }
@@ -109,8 +110,7 @@ class App extends React.Component {
             }
             else {
                 */
-                var data = require('./default_config.json');  // read json file
-                //console.log(data);
+                let data = require('./default_config.json');  // read json file     TODO fix when hot reload - file is not read properly
                 this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
             //}
         } 
@@ -348,7 +348,7 @@ class App extends React.Component {
     async setupNotifications() {
         //const characteristic = await device.writeCharacteristicWithResponseForService( service, characteristicW, "AQ==");
 
-        this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {       // TODO decode received data from the tracker
+        this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
             if (error) {
                 console.log("ERROR: " + error.message);
                 return;
@@ -357,7 +357,7 @@ class App extends React.Component {
             let result = DecodeBase64(characteristic.value);
             let resultDecoded = new Uint8Array(result);
             console.log("Received data from device (raw): " + resultDecoded);
-            resultDecoded = DecodeTrackerSettings(resultDecoded.buffer).toString().replace(',', ' - ');
+            resultDecoded = DecodeTrackerSettings(resultDecoded.buffer).toString().replace(',', ' : ');
             let stringResult = GetTimestamp() + ": " + resultDecoded  + "\n";
             this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
                 NotifyData: [...prevState.NotifyData, stringResult + "\n"]
@@ -596,9 +596,10 @@ class App extends React.Component {
     // parse tracker commands specified in default_config.json with settings.json -> generate uart_command (raw command to send)
     parseDeviceCommands(commands) {
         var return_cmds = [];
+        console.log(commands);
         for (var command of commands) {
-            console.log(command);
-            if (command.uart_command == null) {
+            if (command.uart_command === null) {
+                console.log(command.device_command);
                 let new_device_command = EncodeTrackerSettings(command.device_command);
                 if (new_device_command !== null) {
                     var new_command = command;
@@ -618,12 +619,12 @@ class App extends React.Component {
                 return_cmds.push(new_command);
             }
         }
-        this.deviceCommands = return_cmds;
+        this.setState({ deviceCommands: return_cmds });
     }
 
     displayUartButtons() {
         const views = [];
-        for (var command of this.deviceCommands) {
+        for (var command of this.state.deviceCommands) {
             views.push(<UartButton key={command.name} title={command.name} uart_command={command.uart_command} writeUartCommand={this.writeUartCommand} />)
         }
         return views;
@@ -882,7 +883,7 @@ class App extends React.Component {
                         <ScrollView
                             ref={ref => this.scrollView = ref}
                             onContentSizeChange={(contentWidth, contentHeight) => {
-                                this.scrollView.scrollResponderScrollToEnd({ animated: true });
+                                this.scrollView.scrollResponderScrollTo({ animated: true });        // TODO fix this function - it throws undefined
                             }}>
                             <Text>{logs}</Text>
                         </ScrollView>
