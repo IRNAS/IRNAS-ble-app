@@ -2,8 +2,8 @@ import { ToastAndroid, AlertIOS, Settings } from 'react-native';
 import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
-const IzOpModesEnum = Object.freeze({ 0:"factory", 1:"storage", 2:"deployment", 3:"operation_slow", 4:"operation_fast" });
-const IzConnectionsEnum = Object.freeze({ 0:"offline", 1:"online", 2:"online-psm" });
+const IzOpModesEnum = Object.freeze({ 0: "factory", 1: "storage", 2: "deployment", 3: "operation_slow", 4: "operation_fast" });
+const IzConnectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-psm" });
 const settings_json = require('./settings.json');    // read settings.json
 const settingsLookupTable = GenerateSettingsLookupTable();
 
@@ -81,7 +81,7 @@ export function GenerateSettingsLookupTable(jsonObject) {
             // read setting id and save it as key, save setting name as value
             let id = jsonObject[controlCategory][settingName].id;
             let idAsNum = parseInt(Number(id, 10));
-            settingsLookup[idAsNum] = {"name": settingName.toString(), "control_category": controlCategory};
+            settingsLookup[idAsNum] = { "name": settingName.toString(), "control_category": controlCategory };
         }
     }
     if (!settingsLookup || Object.keys(settingsLookup).length === 0) {
@@ -99,7 +99,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
     var cmd = command.toString().split(":");
     let command_name = cmd[0];
     let command_value = cmd[1];
-    
+
     if (command_name in settings_json.settings) {       // we are writing some settings to the tracker
         let port = settings_json.settings.port;
         let id = parseInt(settings_json.settings[command_name].id, 16);
@@ -107,13 +107,13 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
         let max = settings_json.settings[command_name].max;
         let min = settings_json.settings[command_name].min;
         let conversion = settings_json.settings[command_name].conversion;
-        
+
         let value = command_value.substring(1);
         if (value.length === 0) {
             return null;
         }
         var header = [port, id, length];
-        switch(conversion) {
+        switch (conversion) {
             case "bool":
                 if (value === "true") {
                     var result = packUintToBytes(header, 1);
@@ -141,7 +141,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                 }
                 let intPart = parseInt(cmd_value);
                 let decimalPart = Math.abs((cmd_value % 1).toFixed(4) * 10000);
-                var values = [intPart & 0xff, intPart >> 8, decimalPart & 0xff,  decimalPart >> 8];   // int and decimal part as separate uint16, in array as uint8
+                var values = [intPart & 0xff, intPart >> 8, decimalPart & 0xff, decimalPart >> 8];   // int and decimal part as separate uint16, in array as uint8
                 var result = packUintToBytes(header, values);
                 return result;
             case "packed values":
@@ -150,7 +150,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
             case "int8":
             case "int16":
             case "int32":
-                cmd_value = parseInt(value, 10); 
+                cmd_value = parseInt(value, 10);
                 if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
@@ -181,14 +181,13 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
         let id = parseInt(settings_json.commands[command_name].id, 16);
         let length = settings_json.commands[command_name].length;
         let result;
-        if (length === 0) {
+        if (length === 0) {     // if we don't have any value, just header (ex. cmd_send_status)
             result = packUintToBytes([port, id, length]);
         }
-        else {
-            let value = settings_json.values[command_value.replace(/\s/g,'')].id;
+        else {      // if we have header and the value
+            let value = settings_json.values[command_value.replace(/\s/g, '')].id;
             result = packUintToBytes([port, id, length], value);
         }
-        console.log(result);
         return result;
     }
     else {      // unkown command_name, cannot parse
@@ -218,9 +217,16 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
     let definedLength = settings_json[controlCategory][name].length;
     let max = settings_json[controlCategory][name].max;
     let min = settings_json[controlCategory][name].min;
-    let conversion = settings_json[controlCategory][name].conversion; 
-    switch(conversion) { 
+    let conversion = settings_json[controlCategory][name].conversion;
+    let value = null;
+    switch (conversion) {
         case "bool":
+            if (unpacked[3] === 1) {
+                return [name, true];
+            }
+            else if (unpacked[3] === 0) {
+                return [name, false];
+            }
             return null;
         case "string":
             return null;;
@@ -232,21 +238,27 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
             let decimalArr16 = new Int16Array(1);
             decimalArr16[0] = (unpacked[6] << 8) | unpacked[5];
             let decimalPart = decimalArr16[0] / 10000;
-            let value = intPart + decimalPart;
+            value = intPart + decimalPart;
             if (value > max || value < min) {
                 return null;
             }
             return [name, value];
+        case "packed values":
+            if (name == "msg_status") {
+                value = DecodeStatusMessage(unpacked);
+                return [name, value];
+            }
+            else if (name == "msg_location") {
+                return null;
+            }
+            return null;
         case "int8":
         case "int16":
         case "int32":
-            return null;;
+            return null;
         default:    // uint8, uint16, uint32
             return null;;
     }
-    
-    let decoded = unpacked;
-    return decoded;
 }
 
 export function unpackSetting(setting) {
@@ -256,13 +268,13 @@ export function unpackSetting(setting) {
 
     let returnData = [];
     let view = new DataView(setting);
-    for (i=0; i < setting.byteLength; i++) {  // copy buffer data to array of uint8
+    for (i = 0; i < setting.byteLength; i++) {  // copy buffer data to array of uint8
         returnData.push(view.getUint8(i));
     }
     return returnData;  // return value as bytes
 }
 
-function DecodeUintValue(number) {      
+function DecodeUintValue(number) {
     switch (length) {  // copy value to buffer, byteOffset = 3, litteEndian = true
         case 1:     //uint8
             value = view.getUint8(3, true);
@@ -274,6 +286,30 @@ function DecodeUintValue(number) {
             value = view.getUint32(3, true);
             break;
     }
+}
+
+function DecodeStatusMessage(status) {
+    var reset = bytes[0];
+    var err = bytes[1];
+    var bat = (bytes[2] * 10) + 2500;
+    var volt = bytes[3];
+    var temp = bytes[4];
+    var uptime = bytes[5];
+    var acc_x = bytes[6] / 10;
+    var acc_y = bytes[7] / 10;
+    var acc_z = bytes[8] / 10;
+
+    decoded = {
+        reset: reset,
+        err: err,
+        bat: bat,
+        volt: volt,
+        temp: temp,
+        uptime: uptime,
+        acc_x: acc_x,
+        acc_y: acc_y,
+        acc_z: acc_z,
+    };
 }
 
 export function convertStringToChars(string) {
@@ -305,7 +341,7 @@ export function packUintToBytes(header, value) {
     for (i = 0; i < headerLength; i++) {  // copy header to buffer
         view.setUint8(i, header[i]);
     }
-    
+
     switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, litteEndian = true
         case 1:    //uint8 or bool
             view.setUint8(headerLength, value);
@@ -313,9 +349,9 @@ export function packUintToBytes(header, value) {
         case 2:     // uint16
             if (Array.isArray(value)) {
                 for (i = 0; i < valueLength; i++) {
-                    view.setUint8(headerLength+i, value[i]);
+                    view.setUint8(headerLength + i, value[i]);
                 }
-            } 
+            }
             else {
                 view.setUint16(headerLength, value, true);
             }
@@ -323,16 +359,16 @@ export function packUintToBytes(header, value) {
         case 4:     //uint32
             if (Array.isArray(value)) {
                 for (i = 0; i < valueLength; i++) {
-                    view.setUint8(headerLength+i, value[i]);
+                    view.setUint8(headerLength + i, value[i]);
                 }
-            } 
+            }
             else {
                 view.setUint32(headerLength, value, true);
             }
             break;
         default:    // string
             for (i = 0; i < valueLength; i++) {  // copy values to buffer
-                view.setUint8(headerLength+i, value[i]);
+                view.setUint8(headerLength + i, value[i]);
             }
             break;
     }

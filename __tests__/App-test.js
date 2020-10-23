@@ -169,7 +169,14 @@ test('decode float - wrong length', () => {
     var expectedOutput = null;
     expect(output).toBe(expectedOutput);
 });
-
+/*
+test('decode packed values - status message', () => {   // TODO
+    var input = new Uint8Array([99,212,4,0,0,186]).buffer;
+    var output = DecodeTrackerSettings(input);
+    var expectedOutput = null;
+    expect(output).toBe(expectedOutput);
+});
+*/
 test('lookup table generate one valid setting', () => {
     //const settings_json = require('../settings.json');    // read settings.json
     const settings_json = {"settings": {"port": 3, "lr_send_interval" : { "id": "0x01", "default": 10}}};
