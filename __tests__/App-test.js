@@ -38,10 +38,18 @@ test('Sum equals 2', () => {
 // test EncodeTrackerSettings function
 import { EncodeTrackerSettings, DecodeTrackerSettings, convertStringToChars, unpackSetting, GenerateSettingsLookupTable } from '../Helpers';
 
-test('encode no data ', () => {
+test('encode no data wrong', () => {
     var input = "lr_send_interval:";   // device_command
     var output = EncodeTrackerSettings(input);
     var expectedOutput = null;
+    expect(output).toBe(expectedOutput);
+});
+
+test('encode no data right', () => {
+    var input = "cmd_send_status:";   // device_command
+    var encoded = EncodeTrackerSettings(input);
+    var output = unpackSetting(encoded).join(' ');
+    var expectedOutput = "99 164 0";
     expect(output).toBe(expectedOutput);
 });
 
@@ -148,10 +156,10 @@ test('decode float', () => {
     expect(output).toStrictEqual(expectedOutput);
 });
 
-test('decode float 2', () => {  // TODO what is this
+test('decode negative float below 0', () => {
     var input = new Uint8Array([99,212,4,0,0,79,237]).buffer;
     var output = DecodeTrackerSettings(input);
-    var expectedOutput = ["acc_x", 0.1722];
+    var expectedOutput = ["acc_x", -0.4785];
     expect(output).toStrictEqual(expectedOutput);
 });
 

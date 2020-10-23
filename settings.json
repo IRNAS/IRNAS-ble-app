@@ -159,6 +159,12 @@
         "length": 1,
         "conversion": "uint8",
         "value": 0
+      },
+      "cmd_send_status": {
+        "id": "0xA4",
+        "length": 0,
+        "conversion": "uint8",
+        "value": 0
       }
     },
   "values": {

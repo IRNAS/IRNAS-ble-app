@@ -25,14 +25,9 @@
 			"uart_command" : "03 02 04 0A 00 00 00"
 		},
 		{
-			"name" : "Set GPS interval to 10",
-			"device_command" : "setting_name_1: 10",
+			"name" : "Request device status",
+			"device_command" : "cmd_send_status:",
 			"uart_command" : null
-		},
-		{
-			"name" : "Set GPS interval to 10 - raw cmd",
-			"device_command" : null,
-			"uart_command" : "3 11 1 10"
 		},
 		{
 			"name" : "Request GPS position",

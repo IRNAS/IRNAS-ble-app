@@ -180,8 +180,15 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
         let port = settings_json.commands.port;
         let id = parseInt(settings_json.commands[command_name].id, 16);
         let length = settings_json.commands[command_name].length;
-        let value = settings_json.values[command_value.replace(/\s/g,'')].id;
-        var result = packUintToBytes([port, id, length], value);
+        let result;
+        if (length === 0) {
+            result = packUintToBytes([port, id, length]);
+        }
+        else {
+            let value = settings_json.values[command_value.replace(/\s/g,'')].id;
+            result = packUintToBytes([port, id, length], value);
+        }
+        console.log(result);
         return result;
     }
     else {      // unkown command_name, cannot parse
@@ -222,7 +229,9 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
                 return null;
             }
             let intPart = (unpacked[4] << 8) | unpacked[3];
-            let decimalPart = ((unpacked[6] << 8) | unpacked[5]) / 10000;
+            let decimalArr16 = new Int16Array(1);
+            decimalArr16[0] = (unpacked[6] << 8) | unpacked[5];
+            let decimalPart = decimalArr16[0] / 10000;
             let value = intPart + decimalPart;
             if (value > max || value < min) {
                 return null;
