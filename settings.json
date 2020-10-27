@@ -127,7 +127,7 @@
           "min": "0",
           "max": "123456789012345",
           "length": 16,
-          "conversion": "string"
+          "conversion": "byte_array"
       },
       "setting_name_9":
       {
@@ -255,14 +255,20 @@
     "msg_status": {
       "port": 98,
       "id": "0xF1",
-      "length": 8,
-      "conversion": "packed values"
+      "length": 9,
+      "conversion": "byte_array"
     },
     "msg_location": {
       "port": 98,
       "id": "0xF2",
-      "length": 0,
-      "conversion": "packed values"
+      "length": 12,
+      "conversion": "byte_array"
+    },
+    "msg_all_val": {
+      "port": 98,
+      "id": "0xF3",
+      "length": 255,
+      "conversion": "byte_array"
     }
   }
 }
