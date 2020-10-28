@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
 import { 
-    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, packUintToBytes, GenerateSettingsLookupTable, IrnasGreen 
+    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize, 
 } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
@@ -280,7 +280,11 @@ class App extends React.Component {
         if (device !== undefined) {
             NotifyMessage("connecting to device: " + device.id);
             device.connect()
+                .then((device) => {     // increase MTU to match the tracker buffer size
+                    return device.requestMTU(mtuSize);
+                })
                 .then((device) => {
+                    console.log(device);
                     //let allCharacteristics = device.discoverAllServicesAndCharacteristics()
                     //console.log("chars: ");
                     //console.log(allCharacteristics)
@@ -321,7 +325,7 @@ class App extends React.Component {
 
     notify() {
         if (this.state.device !== undefined) {
-            NotifyMessage("Turning on notifications: " + this.state.device.id.toString());
+            console.log("Turning on notifications: " + this.state.device.id.toString());
             this.setupNotifications()
                 .then(() => {
                     NotifyMessage("Listening...");
@@ -392,7 +396,6 @@ class App extends React.Component {
     }
 
     read() {
-        // TODO GATT request MTU?
         const dev = this.state.device;
         device.readCharacteristicForService(this.nordicUartService, this.readChar)
             .then((chara) => {

@@ -2,6 +2,8 @@ import { ToastAndroid, AlertIOS, Settings } from 'react-native';
 import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
+export const mtuSize = 30;
+
 const IzOpModesEnum = Object.freeze({ 0: "factory", 1: "storage", 2: "deployment", 3: "operation_slow", 4: "operation_fast" });
 const IzConnectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-psm" });
 const settings_json = require('./settings.json');    // read settings.json
