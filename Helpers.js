@@ -252,8 +252,8 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
             return [name, value];
         case "byte_array":
             if (name === "msg_status") {
-                value = DecodeStatusMessage(unpacked);
-                return [name, value.toString()];
+                value = DecodeStatusMessage(unpacked);      // TODO value stays as object
+                return [name, value];
             }
             else if (name === "msg_location") {
                 return null;
@@ -324,7 +324,7 @@ function DecodeStatusMessage(bytes) {
         acc_x: acc_x,
         acc_y: acc_y,
         acc_z: acc_z,
-    };
+    };  
     return decoded;
 }
 

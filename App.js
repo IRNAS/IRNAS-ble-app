@@ -284,7 +284,6 @@ class App extends React.Component {
                     return device.requestMTU(mtuSize);
                 })
                 .then((device) => {
-                    console.log(device);
                     //let allCharacteristics = device.discoverAllServicesAndCharacteristics()
                     //console.log("chars: ");
                     //console.log(allCharacteristics)
