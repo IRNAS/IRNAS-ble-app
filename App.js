@@ -877,9 +877,9 @@ class App extends React.Component {
                             Read logs
                         </Text>
                         <ScrollView
-                            ref={ref => this.scrollView = ref}
-                            onContentSizeChange={(contentWidth, contentHeight) => {
-                                this.scrollView.scrollResponderScrollTo({ animated: true });        // TODO fix this function - it throws undefined
+                            ref={ref => scrollView = ref}
+                            onContentSizeChange={() => {
+                                scrollView.scrollToEnd({ animated: true });        // TODO fix this function - it throws undefined
                             }}>
                             <Text>{logs}</Text>
                         </ScrollView>
