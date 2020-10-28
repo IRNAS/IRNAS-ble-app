@@ -102,17 +102,15 @@ class App extends React.Component {
     recoverData = async () => {     // load latest or default json data
         try {
             const value = await AsyncStorage.getItem('@jsonText');
-            //console.log(value);
-            // TEST
-            /*
+            console.log("async storage json text: ", value);
+            
             if (value !== null) {
                 this.setState({ jsonText: value}, this.cleanJsonText);  // parse json file
             }
             else {
-                */
-                let data = require('./default_config.json');  // read json file     TODO fix when hot reload - file is not read properly
+                let data = require('./default_config.json');  // read json file
                 this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
-            //}
+            }
         } 
         catch(error) {
             console.log(error);
@@ -130,13 +128,19 @@ class App extends React.Component {
     }
     
     componentDidMount() {
+        console.log("componentDidMount");
         //this.removeData();
         this.checkPermissions();  // on launch check all required permissions and start scan if OK
         AppState.addEventListener('change', this.handleAppStateChange);    // add listener for app going into background
-        this.recoverData(); // get data from saved state (async storage)
+        //this.recoverData(); // get data from saved state (async storage)
+
+        let data = require('./default_config.json');  // read json file
+        console.log("Data from file ", data);
+        this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
     }
 
     componentWillUnmount() {
+        console.log("componentWillUnmount");
         if (this.state.device !== undefined) {
             this.disconnect();
             // TODO cancel asynchronous task (notify)
@@ -255,7 +259,7 @@ class App extends React.Component {
 
     stop() {
         this.manager.stopDeviceScan();
-        console.log("Found " + this.devices.length + " devices.");
+        //console.log("Found " + this.devices.length + " devices.");
         this.setState({ scanRunning: false });
     }
 
@@ -879,7 +883,7 @@ class App extends React.Component {
                         <ScrollView
                             ref={ref => scrollView = ref}
                             onContentSizeChange={() => {
-                                scrollView.scrollToEnd({ animated: true });        // TODO fix this function - it throws undefined
+                                scrollView.scrollToEnd({ animated: true });
                             }}>
                             <Text>{logs}</Text>
                         </ScrollView>

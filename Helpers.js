@@ -251,7 +251,7 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
         case "byte_array":
             if (name === "msg_status") {
                 value = DecodeStatusMessage(unpacked);
-                return [name, value];
+                return [name, value.toString()];
             }
             else if (name === "msg_location") {
                 return null;
