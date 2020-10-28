@@ -145,7 +145,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                 var values = [intPart & 0xff, intPart >> 8, decimalPart & 0xff, decimalPart >> 8];   // int and decimal part as separate uint16, in array as uint8
                 var result = packUintToBytes(header, values);
                 return result;
-            case "packed values":
+            case "byte_array":
                 // TODO
                 return null;
             case "int8":
@@ -248,7 +248,7 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
                 return null;
             }
             return [name, value];
-        case "packed values":
+        case "byte_array":
             if (name === "msg_status") {
                 value = DecodeStatusMessage(unpacked);
                 return [name, value];

@@ -165,6 +165,12 @@
         "length": 0,
         "conversion": "uint8",
         "value": 0
+      },
+      "cmd_send_position": {
+        "id": "0xA5",
+        "length": 0,
+        "conversion": "uint8",
+        "value": 0
       }
     },
   "values": {
@@ -262,12 +268,6 @@
       "port": 98,
       "id": "0xF2",
       "length": 12,
-      "conversion": "byte_array"
-    },
-    "msg_all_val": {
-      "port": 98,
-      "id": "0xF3",
-      "length": 255,
       "conversion": "byte_array"
     }
   }
