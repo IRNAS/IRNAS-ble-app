@@ -11,6 +11,9 @@ const HALF_UINT8 = 128;
 const HALF_UINT16 = 32768;
 const HALF_UINT32 = 2147483648;
 
+export const IrnasGreen = '#5baf49';
+export const lightGreen = '#7dbd62';
+
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
         ToastAndroid.show(msg, ToastAndroid.SHORT)
