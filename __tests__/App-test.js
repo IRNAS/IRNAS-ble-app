@@ -132,7 +132,7 @@ test('encode bool', () => {
     expect(output).toBe(expectedOutput);
 });
 
-test('encode string', () => {
+test('encode string - byte_array', () => {
     var input = "setting_name_8: testing string";
     var stringAsChars = convertStringToChars("testing string").join(' ');
     var encoded = EncodeTrackerSettings(input);

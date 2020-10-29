@@ -129,7 +129,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                     return result;
                 }
                 return null;
-            case "string":
+            case "byte_array":
                 if (value.length > length) {
                     return null;
                 }
@@ -147,9 +147,6 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                 var values = [intPart & 0xff, intPart >> 8, decimalPart & 0xff, decimalPart >> 8];   // int and decimal part as separate uint16, in array as uint8
                 var result = packUintToBytes(header, values);
                 return result;
-            case "byte_array":
-                // TODO
-                return null;
             case "int8":
             case "int16":
             case "int32":
@@ -221,22 +218,18 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
     let max = settings_json[controlCategory][name].max;
     let min = settings_json[controlCategory][name].min;
     let conversion = settings_json[controlCategory][name].conversion;
+
+    let data = unpacked.slice(3);
     let value = null;
     switch (conversion) {
         case "bool":
-            if (unpacked[3] === 1) {
+            if (unpacked[0] === 1) {
                 return [name, true];
             }
-            else if (unpacked[3] === 0) {
+            else if (unpacked[0] === 0) {
                 return [name, false];
             }
             return null;
-        case "string":
-            if (length > definedLength) {
-                return null;
-            }
-            value = convertCharsToString(unpacked.slice(3));
-            return [name, value];
         case "float":
             if (length !== definedLength) {
                 return null;
@@ -252,18 +245,23 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
             return [name, value];
         case "byte_array":
             if (name === "msg_status") {
-                value = DecodeStatusMessage(unpacked);      // TODO value stays as object
-                return [name, value];
+                value = DecodeStatusMessage(data);
+                return [name, JSON.stringify(value)];
             }
             else if (name === "msg_location") {
                 return null;
             }
-            return null;
+            else {
+                if (length > definedLength) {
+                    return null;
+                }
+                value = convertCharsToString(data);
+                return [name, value];
+            }
         case "int8":
         case "int16":
         case "int32":
-            let intArray = unpacked.slice(3);
-            value = DecodeUintValue(intArray);
+            value = DecodeUintValue(data);
             // convert uint to int
             if (conversion === "int8") {
                 value -= HALF_UINT8;
@@ -280,7 +278,7 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
             }
             return [name, value];
         default:    // uint8, uint16, uint32
-            value = DecodeUintValue(unpacked.slice(3));
+            value = DecodeUintValue(data);
              if (value > max || value < min) {
                 return null;
             }
@@ -324,7 +322,7 @@ function DecodeStatusMessage(bytes) {
         acc_x: acc_x,
         acc_y: acc_y,
         acc_z: acc_z,
-    };  
+    };
     return decoded;
 }
 
