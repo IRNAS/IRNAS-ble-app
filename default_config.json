@@ -43,6 +43,11 @@
 			"name" : "Request accelerometer - X",
 			"device_command": "cmd_send_single_val: acc_x",
 			"uart_command" : null
+		},
+		{
+			"name" : "Reboot device",
+			"device_command": "cmd_reset:",
+			"uart_command" : null
 		}
 	]
 }
