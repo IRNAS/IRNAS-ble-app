@@ -95,11 +95,6 @@ export function GenerateSettingsLookupTable(jsonObject) {
     return settingsLookup;
 }
 
-export function ParseTrackerAdvData(data) {
-    // TODO implement this
-    return null;
-}
-
 export function EncodeTrackerSettings(command) {        // TODO handle multiple commands (make array - for loop)
     var cmd = command.toString().split(":");
     let command_name = cmd[0];
@@ -301,7 +296,7 @@ function DecodeUintValue(array) {
     return value;
 }
 
-function DecodeStatusMessage(bytes) {
+export function DecodeStatusMessage(bytes) {
     var reset = bytes[0];
     var err = bytes[1];
     var bat = (bytes[2] * 10) + 2500;

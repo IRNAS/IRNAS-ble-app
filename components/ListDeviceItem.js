@@ -1,9 +1,9 @@
 import React from 'react';
-import { DecodeBase64, ParseTrackerAdvData, IrnasGreen, lightGreen } from '../Helpers';
+import { DecodeBase64, ParseTrackerAdvData, IrnasGreen, lightGreen, DecodeStatusMessage } from '../Helpers';
 import { View, Text, TouchableHighlight, StyleSheet } from 'react-native';
 
 const ListDeviceItem = (props) => {
-    let text_default, text_line1, text_line2, text_line3, text_raw;
+    let text_default, text_line1, text_line2, text_line3, text_line4, text_raw;
     text_default = (    // print default info (name, mac, rssi)
         <Text key="text_default" style={styles.title}>
             {props.item_in.name}  {props.item_in.id}   rssi: {props.item_in.rssi} dBm
@@ -22,28 +22,35 @@ const ListDeviceItem = (props) => {
                 </Text>
             );
             
-            if (props.item_in.name.includes("Irnas") || props.item_in.name.includes("TestDomey")) {
-                let tracker_data = ParseTrackerAdvData(decoded_raw_data);  // TODO
+            if (props.item_in.name.includes("Irnas")) {
+                let array_raw_data = new Uint8Array(decoded_raw_data);
+                let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
+                console.log(adv_data);
                 text_line1 = (
                     <Text key="text_line1" style={styles.subtitle}>    
-                        System status: OK  Battery: 2913 mV  
+                        Uptime: {adv_data.uptime} h  Temperature: {adv_data.temp} C
                     </Text>
                 );
                 text_line2 = (
                     <Text key="text_line2" style={styles.subtitle}>
-                        Acc: x: 0.-191425; y: 0.535992; z: -9.-743574
+                        Battery: {adv_data.bat} mV  Charging vol: {adv_data.volt} mV
                     </Text>
                 );
                 text_line3 = (
                     <Text key="text_line3" style={styles.subtitle}>
-                        GPS: 46.555583, 15.632279  time: 2017-2-12 0:0:8
+                        Error status: {adv_data.err} Reset reason: {adv_data.reset}
+                    </Text>
+                );
+                text_line4 = (
+                    <Text key="text_line4" style={styles.subtitle}>
+                        Accelerometer: x: {adv_data.acc_x} y: {adv_data.acc_y} z: {adv_data.acc_z}
                     </Text>
                 );
             }
         }
     }
 
-    let texts = [text_default, text_line1, text_line2, text_line3, text_raw];
+    let texts = [text_default, text_line1, text_line2, text_line3, text_line4, text_raw];
     let item_view = (
         <View>
             { texts }

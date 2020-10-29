@@ -24,7 +24,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
 import { 
-    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize, 
+    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, 
+    packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize,
 } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
@@ -243,7 +244,7 @@ class App extends React.Component {
                             filterOK = false;
                         }
                     }
-                    if (filterOK && this.bleFilterMac !== "") { // device filter by mac active, check if mac adresses match
+                    if (filterOK && this.bleFilterMac !== "") { // device filter by mac active, check if mac addresses match
                         if (scannedDevice.id === null || scannedDevice.id !== this.bleFilterMac) {
                             //console.log("Device " + scannedDevice.id + " filtered out because mac should be " + this.bleFilterMac);
                             filterOK = false;
