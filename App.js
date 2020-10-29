@@ -89,6 +89,11 @@ class App extends React.Component {
             this.storeData();
             console.log('dataToSave');
         }
+        if (nextAppState === 'active') {
+            this.recoverData();
+            console.log("dataToLoad");
+        }
+        //console.log("nextAppState: ", nextAppState);
     };
     
     storeData = async () => {   // save latest json data
@@ -112,7 +117,12 @@ class App extends React.Component {
             else {
                 let data = require('./default_config.json');  // read json file
                 //console.log("Data from file ", data);
-                this.setState({ jsonText: JSON.stringify(data)}, this.parseJsonConfig);  // parse json file
+                //console.log("Data from file ", JSON.stringify(data));
+                console.log(data.commands[0]["uart_command"]);
+                console.log(data.commands[1]["uart_command"]);
+                this.setState({jsonText: JSON.stringify(data), jsonParsed: data }, this.cleanJsonText);  // parse json file
+                //console.log(this.state.jsonText);
+                //console.log(this.state.jsonParsed);
             }
         }
         catch(error) {
@@ -122,21 +132,21 @@ class App extends React.Component {
     
     removeData = async () => {  // delete json data from async storage
         try {
-            await AsyncStorage.removeItem('@jsonText')
+            await AsyncStorage.removeItem('@jsonText');
         } 
         catch(error) {
             console.log(error);
         }
-        console.log('Done removing.')
+        console.log('Done removing.');
     }
     
     componentDidMount() {
         console.log("componentDidMount");
         this._isMounted = true;
-        //this.removeData();
+        //this.removeData();    // TEST
         this.checkPermissions();  // on launch check all required permissions
         AppState.addEventListener('change', this.handleAppStateChange);    // add listener for app going into background
-        this.recoverData(); // get data from saved state (async storage)
+        this.recoverData(); // get data from saved state (async storage) or load defaults
     }
 
     componentWillUnmount() {
