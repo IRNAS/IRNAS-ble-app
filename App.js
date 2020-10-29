@@ -51,6 +51,8 @@ function Separator() {
 class App extends React.Component {
     constructor() {
         super();
+        this._isMounted = false;
+
         this.manager = new BleManager();
         this.manager.setLogLevel(LogLevel.Debug);
         this.state = {
@@ -129,8 +131,9 @@ class App extends React.Component {
     
     componentDidMount() {
         console.log("componentDidMount");
+        this._isMounted = true;
         //this.removeData();
-        this.checkPermissions();  // on launch check all required permissions and start scan if OK
+        this.checkPermissions();  // on launch check all required permissions
         AppState.addEventListener('change', this.handleAppStateChange);    // add listener for app going into background
         //this.recoverData(); // get data from saved state (async storage)
 
@@ -141,9 +144,9 @@ class App extends React.Component {
 
     componentWillUnmount() {
         console.log("componentWillUnmount");
+        this._isMounted = false;
         if (this.state.device !== undefined) {
             this.disconnect();
-            // TODO cancel asynchronous task (notify)
             this.notificationsOnOff();
         }
         if (this.state.scanRunning) { // stop scan if running
@@ -158,7 +161,6 @@ class App extends React.Component {
             if (state === 'PoweredOn') {
                 NotifyMessage("Bluetooth is OK");
                 subscription.remove();
-                this.scan();
             } 
             else {
                 NotifyMessage("Bluetooth is " + state.toString());
@@ -171,7 +173,8 @@ class App extends React.Component {
             android: {
                 detail: "coarse"
             }
-        }).then(granted => {
+        })
+        .then(granted => {
             if (granted) {
                 console.log("Location OK");
             }
@@ -215,7 +218,6 @@ class App extends React.Component {
     }
 
     scan() {
-        //console.log("Scanning...");
         this.setState({ scanRunning: true });
         this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
             if (error) {
