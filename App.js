@@ -34,7 +34,6 @@ import {
 // TODO fix connection behaving randomly sometimes
 // TODO avtomatiziraj celoten build proces za android
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
-// TODO write screen - naredi knofe dva po dva
 // TODO handle back button
 // TODO separate App.js into multiple files, also define some folder structure
 // TODO support reseting configuration json file to default
@@ -103,7 +102,8 @@ class App extends React.Component {
     
     recoverData = async () => {     // load latest or default json data
         try {
-            const value = await AsyncStorage.getItem('@jsonText');
+            //const value = await AsyncStorage.getItem('@jsonText');
+            const value = null;     // TEST
             console.log("async storage json text: ", value);
             
             if (value !== null) {
@@ -111,9 +111,10 @@ class App extends React.Component {
             }
             else {
                 let data = require('./default_config.json');  // read json file
-                this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
+                //console.log("Data from file ", data);
+                this.setState({ jsonText: JSON.stringify(data)}, this.parseJsonConfig);  // parse json file
             }
-        } 
+        }
         catch(error) {
             console.log(error);
         }
@@ -135,11 +136,7 @@ class App extends React.Component {
         //this.removeData();
         this.checkPermissions();  // on launch check all required permissions
         AppState.addEventListener('change', this.handleAppStateChange);    // add listener for app going into background
-        //this.recoverData(); // get data from saved state (async storage)
-
-        let data = require('./default_config.json');  // read json file
-        console.log("Data from file ", data);
-        this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
+        this.recoverData(); // get data from saved state (async storage)
     }
 
     componentWillUnmount() {
