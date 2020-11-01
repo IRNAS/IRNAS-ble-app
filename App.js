@@ -30,16 +30,6 @@ import {
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
-// TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
-// TODO add scan timeout
-// TODO fix connection behaving randomly sometimes
-// TODO avtomatiziraj celoten build proces za android
-// TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
-// TODO handle back button
-// TODO separate App.js into multiple files, also define some folder structure
-// TODO support resetting configuration json file to default
-// TODO reformat and reorganize code + start using coding standard (function and variable names)
-
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
 // TODO check port when receiving message from tracker
