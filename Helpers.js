@@ -5,9 +5,7 @@ var Buffer = require('buffer/').Buffer;
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
 
-const HALF_UINT8 = 128;
-const HALF_UINT16 = 32768;
-const HALF_UINT32 = 2147483648;
+const MAX_UINT32 = 4294967295;
 
 const settings_json = require('./settings.json');    // read settings.json
 const settingsLookupTable = GenerateSettingsLookupTable();
@@ -151,16 +149,8 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
                 if (cmd_value > max || cmd_value < min) {
                     return null;
                 }
-                // convert int to uint
-                if (conversion === "int8") {
-                    cmd_value += HALF_UINT8;
-                }
-                else if (conversion === "int16") {
-                    cmd_value += HALF_UINT16;
-                }
-                else {
-                    cmd_value += HALF_UINT32;
-                }
+                // convert to binary
+                cmd_value = toTwosComplement(cmd_value, length);
                 var result = packUintToBytes(header, cmd_value);
                 return result;
             default:    // uint8, uint16, uint32
@@ -200,6 +190,7 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
     let length = unpacked[2];
     // check if id is valid
     if (settingsLookupTable[id] === undefined) {
+        console.log("error: id is not valid:", id);
         return null;
     }
     // get value data
@@ -207,6 +198,7 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
     let name = settingsLookupTable[id].name;
     // check if value data has proper length
     if (length !== unpacked.length - 3) {
+        console.log("error: value data has invalid length:", length);
         return null;
     }
     // parse value data according to conversion (type)
@@ -258,24 +250,16 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
         case "int16":
         case "int32":
             value = DecodeUintValue(data);
-            // convert uint to int
-            if (conversion === "int8") {
-                value -= HALF_UINT8;
-            }
-            else if (conversion === "int16") {
-                value -= HALF_UINT16;
-            }
-            else {
-                value -= HALF_UINT32;
-            }
             // check borders
             if (value > max || value < min) {
+                console.log("error: value outside borders:", value);
                 return null;
             }
             return [name, value];
         default:    // uint8, uint16, uint32
             value = DecodeUintValue(data);
              if (value > max || value < min) {
+                console.log("error: value outside borders:", value);
                 return null;
             }
             return [name, value];
@@ -336,6 +320,30 @@ function convertCharsToString(charArray) {
         string += String.fromCharCode(charArray[i]);
     }
     return string;
+}
+
+function toTwosComplement(int, numberBytes) {
+    var numberBits = (numberBytes || 1) * 8;
+    if (int < 0) {  // if negative add 2^numBits, then convert to binary
+        return (int + Math.pow(2, numberBits) >>> 0);
+    }
+    else {      // just convert to binary
+        return (int >>> 0);
+    }
+}
+
+function fromTwosComplement(twosComplement, numberBytes)    // TODO maybe not needed
+{   
+    var numberBits = (numberBytes || 1) * 8;
+    if (twosComplement < 0 || twosComplement > MAX_UINT32)
+        throw "Two's complement out of range given " + numberBytes + " byte(s) to represent.";
+    
+    // If less than the maximum positive: 2^(n-1)-1, the number stays positive
+    if (twosComplement <= Math.pow(2, numberBits - 1) - 1)
+        return twosComplement;
+    
+    // Else subtract 2^numBits from the decimal number
+    return (twosComplement - Math.pow(2, numberBits));
 }
 
 export function packUintToBytes(header, value) {

@@ -88,7 +88,7 @@ test('encode negative int8', () => {
     var input = "setting_name_4: -4";
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded).join(' ');
-    var expectedOutput = "3 20 1 124"; // id 0x14 is 20
+    var expectedOutput = "3 20 1 252"; // id 0x14 is 20
     expect(output).toBe(expectedOutput);
 });
 
@@ -96,7 +96,7 @@ test('encode negative int16', () => {
     var input = "setting_name_5: -300";
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded).join(' ');
-    var expectedOutput = "3 21 2 212 126"; // id 0x15 is 21
+    var expectedOutput = "3 21 2 212 254"; // id 0x15 is 21
     expect(output).toBe(expectedOutput);
 });
 
@@ -104,7 +104,7 @@ test('encode negative int32', () => {
     var input = "setting_name_6: -999";
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded).join(' ');
-    var expectedOutput = "3 22 4 25 252 255 127"; // id 0x16 is 22
+    var expectedOutput = "3 22 4 25 252 255 255"; // id 0x16 is 22
     expect(output).toBe(expectedOutput);
 });
 
@@ -184,8 +184,15 @@ test('decode uint32', () => {
     expect(output).toStrictEqual(expectedOutput);
 });
 
+test('decode int32', () => {
+    var input = new Uint8Array([98,209,4,63,203,81,9]).buffer;
+    var output = DecodeTrackerSettings(input);
+    var expectedOutput = ["gps_lon", 156355391];
+    expect(output).toStrictEqual(expectedOutput);
+});
+
 test('decode negative int32', () => {
-    var input = new Uint8Array([98,211,4,25,252,255,127]).buffer;
+    var input = new Uint8Array([98,211,4,25,252,255,255]).buffer;
     var output = DecodeTrackerSettings(input);
     var expectedOutput = ["gps_alt", -999];
     expect(output).toStrictEqual(expectedOutput);
