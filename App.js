@@ -395,10 +395,16 @@ class App extends React.Component {
             }
             //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
             let result = DecodeBase64(characteristic.value);
-            let resultDecoded = new Uint8Array(result);
-            console.log("Received data from device (raw): " + resultDecoded);
-            resultDecoded = DecodeTrackerSettings(resultDecoded.buffer).toString().replace(',', ' : ');
-            let stringResult = GetTimestamp() + ": " + resultDecoded  + "\n";
+            let resultDecodedRaw = new Uint8Array(result);
+            console.log("Received data from device (raw): " + resultDecodedRaw);
+            let resultDecoded = DecodeTrackerSettings(resultDecodedRaw.buffer);
+            let stringResult = null;
+            if (resultDecoded !== null) {
+                stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
+            }
+            else {
+                stringResult = GetTimestamp() + ": RAW : " + resultDecodedRaw  + "\n";
+            }
             this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
                 NotifyData: [...prevState.NotifyData, stringResult + "\n"]
             }));
