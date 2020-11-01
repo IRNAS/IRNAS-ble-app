@@ -27,11 +27,14 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
-// TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
+// TODO NotifyData add info for which device the log belongs so, so we can keep logs between connections to multiple devices
 // TODO fix connection behaving randomly sometimes
-// TODO avtomatiziraj celoten build proces za android
+// TODO made android build process fully automatic
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
-// TODO write screen - naredi knofe dva po dva
+// TODO handle back button
+// TODO separate App.js into multiple files, also define some folder structure
+// TODO support resetting configuration json file to default
+// TODO reformat and reorganize code + start using coding standard (function and variable names)
 
 function Separator() {
     return <View style={styles.separator} />;
