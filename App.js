@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
-import { BleManager, LogLevel } from 'react-native-ble-plx';
+import { BleAndroidErrorCode, BleErrorCode, BleManager, LogLevel } from 'react-native-ble-plx';
 import RNLocation from 'react-native-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
@@ -23,16 +23,18 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp } from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, BLE_RETRY_COUNT, IrnasGreen } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
-// TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
-// TODO ko se disconnecta naredi reconnect
+// TODO NotifyData add info for which device the log belongs so, so we can keep logs between connections to multiple devices
 // TODO fix connection behaving randomly sometimes
-// TODO avtomatiziraj celoten build proces za android
+// TODO made android build process fully automatic
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
-// TODO write screen - naredi knofe dva po dva
+// TODO handle back button
+// TODO separate App.js into multiple files, also define some folder structure
+// TODO support resetting configuration json file to default
+// TODO reformat and reorganize code + start using coding standard (function and variable names)
 
 function Separator() {
     return <View style={styles.separator} />;
@@ -41,6 +43,8 @@ function Separator() {
 class App extends React.Component {
     constructor() {
         super();
+        this._isMounted = false;
+
         this.manager = new BleManager();
         this.manager.setLogLevel(LogLevel.Debug);
         this.state = {
@@ -57,6 +61,7 @@ class App extends React.Component {
             jsonParsed: {},
             deviceFiltersActive: false,
             writeScreenActive: true,
+            retryCount: 0,
         };
         this.devices = [];
         this.services = {};
@@ -72,11 +77,27 @@ class App extends React.Component {
         this.oldJson = {};
     }
 
+    writeState(object, fun) {        // wrapper function to set state, which prevents warnings can't call setState on an unmounted component
+        if (this._isMounted) {
+            this.setState(object, fun);
+        }
+        else {
+            console.log("Can't set state: ", object, fun);
+        }
+    }
+
     handleAppStateChange = (nextAppState) => {
         if (nextAppState === 'background' || nextAppState === 'inactive') {
             // save current config to app storage
             this.storeData();
             console.log('dataToSave');
+        }
+        else if (nextAppState === 'active') {
+            this.recoverData();
+            console.log("dataToLoad");
+        }
+        else {
+            console.log("nextAppState: ", nextAppState);
         }
     };
     
@@ -94,12 +115,13 @@ class App extends React.Component {
             const value = await AsyncStorage.getItem('@jsonText');
             //console.log(value);
             if (value !== null) {
-                this.setState({ jsonText: value}, this.cleanJsonText);  // parse json file
+                this.writeState({ jsonText: value}, this.cleanJsonText);  // parse json file
             }
             else {
                 var data = require('./default_config.json');  // read json file
-                //console.log(data);
-                this.setState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
+                console.log(data.commands[0]["uart_command"]);
+                console.log(data.commands[1]["uart_command"]);
+                this.writeState({ jsonText: JSON.stringify(data), jsonParsed: data }, this.parseJsonConfig);  // parse json file
             }
         } 
         catch(e) {
@@ -118,6 +140,8 @@ class App extends React.Component {
     }
     
     componentDidMount() {
+        console.log("componentDidMount");
+        this._isMounted = true;
         //this.removeData();
         this.checkPermissions();  // on launch check all required permissions and start scan if OK
         AppState.addEventListener('change', this.handleAppStateChange);    // add listener for app going into background
@@ -125,6 +149,8 @@ class App extends React.Component {
     }
 
     componentWillUnmount() {
+        console.log("componentWillUnmount");
+        this._isMounted = true;
         if (this.state.device !== undefined) {
             this.disconnect();
             // TODO cancel asynchronous task (notify)
@@ -199,11 +225,11 @@ class App extends React.Component {
 
     scan() {
         //console.log("Scanning...");
-        this.setState({ scanRunning: true });
+        this.writeState({ scanRunning: true });
         this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
             if (error) {
                 NotifyMessage("Scan error: " + JSON.stringify(error.message));
-                this.setState({ scanRunning: false });
+                this.writeState({ scanRunning: false });
                 return;
             }
             if (scannedDevice) {
@@ -229,7 +255,7 @@ class App extends React.Component {
                     let objIndex = this.devices.findIndex(obj => obj.id == scannedDevice.id);  // seach if we already have current scanned device saved
                     if (objIndex < 0) { // new device, add to array
                         this.devices.push(scannedDevice);
-                        this.setState({ numOfDevices: this.state.numOfDevices++ })
+                        this.writeState({ numOfDevices: this.state.numOfDevices++ })
                     } 
                     else {  // old device, update its values    // TODO handle redraw better
                         this.devices[objIndex].rssi = scannedDevice.rssi;
@@ -243,7 +269,7 @@ class App extends React.Component {
     stop() {
         this.manager.stopDeviceScan();
         console.log("Found " + this.devices.length + " devices.");
-        this.setState({ scanRunning: false });
+        this.writeState({ scanRunning: false });
     }
 
     connectToDevice = item => {
@@ -257,11 +283,13 @@ class App extends React.Component {
     connect(item) {
         console.log("connect()");
         const device = item;
-        this.setState({ connectionInProgress: true });
+        this.writeState({ connectionInProgress: true });
         //console.log(device);
 
         if (device !== undefined) {
-            NotifyMessage("connecting to device: " + device.id);
+            if (this.state.retryCount === 0) {  // only display message to user when first connect try
+                NotifyMessage("connecting to device: " + device.id);
+            }
             device.connect()
                 .then((device) => {
                     //let allCharacteristics = device.discoverAllServicesAndCharacteristics()
@@ -278,13 +306,10 @@ class App extends React.Component {
                     console.log("found services");
                     this.services = services;
                     NotifyMessage("Connect OK");
-                    this.setState({ device: item, connectionInProgress: false }, this.notificationsOnOff);
+                    this.writeState({ device: item, connectionInProgress: false }, this.notificationsOnOff);
                 })
                 .catch((error) => {
-                    NotifyMessage("Error when connecting to selected device.");
-                    // TODO add connect retry
-                    console.log(error.message);
-                    this.setState({ device: undefined, connectionInProgress: false });
+                    this.handleConnectError(error, device);
                 });
         }
     }
@@ -293,13 +318,43 @@ class App extends React.Component {
         console.log("disconnect()");
         var device = this.state.device;
         if (device !== undefined) {
-            NotifyMessage("disconnecting from device: ", device.id);
+            this.notifyStop();
             this.manager.cancelDeviceConnection(device.id)
                 .then((device) => {
-                    NotifyMessage("Disconnect OK");
-                    this.setState({ device: undefined, connectionInProgress: false, NotifyData: [] });
+                    console.log("Disconnect OK");
+                    
+                })
+                .catch((error) => {
+                    console.log(error);
                 });
+            this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [] });
+            NotifyMessage("Device was disconnected.");
+        }       
+    }
+
+    handleConnectError(error, item) {
+        console.log("handling connect error: ", error);
+        if (error.androidErrorCode == BleAndroidErrorCode.Error) {      // generic Android BLE stack error
+            let retries = this.state.retryCount;
+            if (retries < BLE_RETRY_COUNT) {
+                this.setState({ retryCount: ++retries });
+                this.connect(item);     // connect retry
+            }
+            else {
+                NotifyMessage("Connecting unsuccessful!");
+                this.setState({ retryCount: 0, device: undefined, connectionInProgress: false });
+            }
         }
+        // more errors to be added
+        else {      // other error - log it
+            NotifyMessage("Error when connecting to selected device.");
+            console.log(error.message);
+            console.log(error.reason);
+            console.log(error.errorCode);
+            //console.log(error.attErrorCode);
+            //console.log(error.androidErrorCode);
+            this.setState({ retryCount: 0, device: undefined, connectionInProgress: false });
+        } 
     }
 
     notify() {
@@ -308,10 +363,10 @@ class App extends React.Component {
             this.setupNotifications()
                 .then(() => {
                     NotifyMessage("Listening...");
-                    this.setState({ notificationsRunning: true });
+                    this.writeState({ notificationsRunning: true });
                 }, (error) => {
                     console.log(error.message);
-                    this.setState({ notificationsRunning: false });
+                    this.writeState({ notificationsRunning: false });
                 });
         }
     }
@@ -319,7 +374,7 @@ class App extends React.Component {
     notifyStop() {
         if (this.state.device !== undefined) {
             //NotifyMessage("Turning off notifications");
-            this.setState({ notificationsRunning: false });
+            this.writeState({ notificationsRunning: false });
         }
     }
 
@@ -337,7 +392,13 @@ class App extends React.Component {
 
         this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
             if (error) {
-                console.log("ERROR: " + error.message);
+                if (error.errorCode === BleErrorCode.DeviceDisconnected) {
+                    this.disconnect();
+                }
+                else {
+                    console.log("Notifications error:", error.message);
+                    console.log("Error codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
+                }
                 return;
             }
             //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
@@ -345,14 +406,14 @@ class App extends React.Component {
             //console.log(result.length);
             console.log("Received data from device: " + result);
             const stringResult = GetTimestamp() + ": " + result.toString();
-            this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
+            this.writeState(prevState => ({   // updater function to prevent race conditions (append new data)
                 NotifyData: [...prevState.NotifyData, stringResult + "\n"]
             }));
         });
     }
 
     handleWriteText = text => {
-        this.setState({ writeText: text });
+        this.writeState({ writeText: text });
     }
 
     write() {
@@ -439,7 +500,7 @@ class App extends React.Component {
 
     onScanResultRefresh() {   // pull down on BLE devices list gesture handler
         this.devices = [];
-        this.setState({ numOfDevices: 0, refreshing: false });
+        this.writeState({ numOfDevices: 0, refreshing: false });
         if (!this.state.scanRunning) {
             this.scan();
         }
@@ -456,15 +517,15 @@ class App extends React.Component {
             this.bleFilterMac = data.device_filter.mac;   // mac filtering
 
             if (this.bleFilterName !== "" || this.bleFilterMac !== "") {
-                this.setState({ deviceFiltersActive: true });
+                this.writeState({ deviceFiltersActive: true });
                 console.log("JSON data: found filters: " + this.bleFilterName + " " + this.bleFilterMac);
             }
             else {  // filter value fields are empty, disable filtering
-                this.setState({ deviceFiltersActive: false });
+                this.writeState({ deviceFiltersActive: false });
             }
         }
         else { // // json doesn't contain filter field, disable filtering
-            this.setState({ deviceFiltersActive: false });
+            this.writeState({ deviceFiltersActive: false });
         }
 
         // check if device contains commands
@@ -479,7 +540,7 @@ class App extends React.Component {
 
     changeJsonText = text => {
         console.log("changeJsonText");
-        this.setState({ jsonText: text });
+        this.writeState({ jsonText: text });
     }
 
     cleanJsonText() {
@@ -487,12 +548,12 @@ class App extends React.Component {
         this.onScanResultRefresh();
         try {
             let parsedText = JSON.parse(this.state.jsonText);
-            this.setState({ jsonParsed: parsedText }, this.parseJsonConfig);
+            this.writeState({ jsonParsed: parsedText }, this.parseJsonConfig);
         }
         catch (error) {
             console.log(error);
             NotifyMessage("JSON parse error, please try again");
-            this.setState({ jsonText: this.oldJson }, this.closeJsonConfig);
+            this.writeState({ jsonText: this.oldJson }, this.closeJsonConfig);
         }
     }
 
@@ -501,7 +562,7 @@ class App extends React.Component {
         if (this.state.scanRunning) { // stop scan if running
             this.stop();
         }
-        this.setState({ jsonEditActive: true });
+        this.writeState({ jsonEditActive: true });
     }
 
     closeJsonConfig(save) {
@@ -510,9 +571,9 @@ class App extends React.Component {
             this.cleanJsonText();
         }
         else {
-            this.setState({ jsonText: JSON.stringify(this.oldJson) });
+            this.writeState({ jsonText: JSON.stringify(this.oldJson) });
         }
-        this.setState({ jsonEditActive: false });
+        this.writeState({ jsonEditActive: false });
     }
 
     exportJsonConfig() {
@@ -556,7 +617,7 @@ class App extends React.Component {
                                 // log the file contents
                                 //console.log(contents);
                                 NotifyMessage("Config read OK");
-                                this.setState({ jsonText: contents });
+                                this.writeState({ jsonText: contents });
                             })
                             .catch((err) => {
                                 NotifyMessage("Config file read error");
@@ -586,20 +647,20 @@ class App extends React.Component {
 
     writeUartCommand = uart => {
         console.log('button clicked, writing command: ' + uart);
-        this.setState({ writeText: uart }, this.write);
+        this.writeState({ writeText: uart }, this.write);
     }
 
     displayLogs() {
         if (this.state.writeScreenActive) {
-            this.setState({ writeScreenActive: false });
+            this.writeState({ writeScreenActive: false });
         }
         else {
-            this.setState({ writeScreenActive: true });
+            this.writeState({ writeScreenActive: true });
         }
     }
 
     clearLog() {
-        this.setState({ NotifyData: [] });
+        this.writeState({ NotifyData: [] });
     }
 
     saveLog() {
@@ -644,7 +705,7 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Save"
                                     style={styles.customBtn}
                                     onPress={() => this.closeJsonConfig(true)}
@@ -652,7 +713,7 @@ class App extends React.Component {
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Back"
                                     style={styles.customBtn}
                                     onPress={() => this.closeJsonConfig(false)}
@@ -662,7 +723,7 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Import"
                                     style={styles.customBtn}
                                     onPress={() => this.importJsonConfig()}
@@ -670,7 +731,7 @@ class App extends React.Component {
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Export"
                                     style={styles.customBtn}
                                     onPress={() => this.exportJsonConfig()}
@@ -714,14 +775,14 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                             <Button
-                                color="#32a852"
+                                color={IrnasGreen}
                                 title={scanText}
                                 onPress={() => this.startStopScan()}
                             />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                color="#32a852"
+                                color={IrnasGreen}
                                 title='Edit configuration'
                                 onPress={() => this.openJsonConfig()}
                                 />
@@ -751,14 +812,14 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Disconnect'
                                     onPress={() => this.disconnect()}
                                 />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Read logs'
                                     onPress={() => this.displayLogs()}
                                 />
@@ -773,10 +834,12 @@ class App extends React.Component {
                                 {this.displayUartButtons()}
                             </View>
                             <Separator />
-                            <Button
-                                title='Send custom data to RX char'
-                                onPress={() => this.write()}
-                            />
+                            <View style = {{ marginHorizontal: 10, alignContent: 'center', }}>
+                                <Button
+                                    title='Send custom data to RX char'
+                                    onPress={() => this.write()}
+                                />
+                            </View>
                             <TextInput
                                 placeholder="Write custom string here"
                                 style={styles.input}
@@ -801,21 +864,21 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Disconnect'
                                     onPress={() => this.disconnect()}
                                 />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Write commands'
                                     onPress={() => this.displayLogs()}
                                 />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Clear logs'
                                     buttonStyle={styles.multiLineBtn}
                                     onPress={() => this.clearLog()}
@@ -823,7 +886,7 @@ class App extends React.Component {
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Save logs'
                                     buttonStyle={styles.multiLineBtn}
                                     onPress={() => this.saveLog()}
@@ -860,7 +923,7 @@ const styles = StyleSheet.create({
     },
     mainTitle: {
         fontSize: 20,
-        color: '#32a852',
+        color: IrnasGreen,
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 10,

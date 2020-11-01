@@ -4,6 +4,11 @@ var Buffer = require('buffer/').Buffer;
 const IzOpModesEnum = Object.freeze({ 0:"factory", 1:"storage", 2:"deployment", 3:"operation_slow", 4:"operation_fast" });
 const IzConnectionsEnum = Object.freeze({ 0:"offline", 1:"online", 2:"online-psm" });
 
+export const BLE_RETRY_COUNT = 5;
+
+export const IrnasGreen = '#5baf49';
+export const lightGreen = '#7dbd62';
+
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
         ToastAndroid.show(msg, ToastAndroid.SHORT)

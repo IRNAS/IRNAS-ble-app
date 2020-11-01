@@ -1,5 +1,5 @@
 import React from 'react';
-import { DecodeBase64, ParseIzData } from '../Helpers';
+import { DecodeBase64, ParseIzData, IrnasGreen, lightGreen } from '../Helpers';
 import { View, Text, TouchableHighlight, StyleSheet } from 'react-native';
 
 const ListDeviceItem = (props) => {
@@ -66,7 +66,7 @@ const ListDeviceItem = (props) => {
 
 const styles = StyleSheet.create({
     item: {
-        backgroundColor: '#fcd703',
+        backgroundColor: '#808080',
         paddingVertical: 8,
         fontSize: 5,
         marginVertical: 5,
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     },
     title: {
         textAlign: 'center',
-        color: 'green',
+        color: 'white',
         fontWeight: 'bold',
         fontSize: 15,
         marginVertical: 5,
