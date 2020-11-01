@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
-import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, BLE_RETRY_COUNT } from './Helpers';
+import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, GetFullTimestamp, BLE_RETRY_COUNT, IrnasGreen } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -702,7 +702,7 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Save"
                                     style={styles.customBtn}
                                     onPress={() => this.closeJsonConfig(true)}
@@ -710,7 +710,7 @@ class App extends React.Component {
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Back"
                                     style={styles.customBtn}
                                     onPress={() => this.closeJsonConfig(false)}
@@ -720,7 +720,7 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Import"
                                     style={styles.customBtn}
                                     onPress={() => this.importJsonConfig()}
@@ -728,7 +728,7 @@ class App extends React.Component {
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title="Export"
                                     style={styles.customBtn}
                                     onPress={() => this.exportJsonConfig()}
@@ -772,14 +772,14 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                             <Button
-                                color="#32a852"
+                                color={IrnasGreen}
                                 title={scanText}
                                 onPress={() => this.startStopScan()}
                             />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                color="#32a852"
+                                color={IrnasGreen}
                                 title='Edit configuration'
                                 onPress={() => this.openJsonConfig()}
                                 />
@@ -809,14 +809,14 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Disconnect'
                                     onPress={() => this.disconnect()}
                                 />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Read logs'
                                     onPress={() => this.displayLogs()}
                                 />
@@ -831,10 +831,12 @@ class App extends React.Component {
                                 {this.displayUartButtons()}
                             </View>
                             <Separator />
-                            <Button
-                                title='Send custom data to RX char'
-                                onPress={() => this.write()}
-                            />
+                            <View style = {{ marginHorizontal: 10, alignContent: 'center', }}>
+                                <Button
+                                    title='Send custom data to RX char'
+                                    onPress={() => this.write()}
+                                />
+                            </View>
                             <TextInput
                                 placeholder="Write custom string here"
                                 style={styles.input}
@@ -859,21 +861,21 @@ class App extends React.Component {
                         <View style={styles.multiLineViewMain}>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Disconnect'
                                     onPress={() => this.disconnect()}
                                 />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Write commands'
                                     onPress={() => this.displayLogs()}
                                 />
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Clear logs'
                                     buttonStyle={styles.multiLineBtn}
                                     onPress={() => this.clearLog()}
@@ -881,7 +883,7 @@ class App extends React.Component {
                             </View>
                             <View style={styles.multiLineView}>
                                 <Button
-                                    color="#32a852"
+                                    color={IrnasGreen}
                                     title='Save logs'
                                     buttonStyle={styles.multiLineBtn}
                                     onPress={() => this.saveLog()}
@@ -918,7 +920,7 @@ const styles = StyleSheet.create({
     },
     mainTitle: {
         fontSize: 20,
-        color: '#32a852',
+        color: IrnasGreen,
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 10,

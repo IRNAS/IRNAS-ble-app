@@ -6,6 +6,9 @@ const IzConnectionsEnum = Object.freeze({ 0:"offline", 1:"online", 2:"online-psm
 
 export const BLE_RETRY_COUNT = 5;
 
+export const IrnasGreen = '#5baf49';
+export const lightGreen = '#7dbd62';
+
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
         ToastAndroid.show(msg, ToastAndroid.SHORT)
