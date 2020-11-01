@@ -85,6 +85,15 @@ class App extends React.Component {
         this.oldJson = {};
     }
 
+    writeState(object, fun) {        // wrapper function to set state, which prevents warnings can't call setState on an unmounted component
+        if (this._isMounted) {
+            this.setState(object, fun);
+        }
+        else {
+            console.log("Can't set state: ", object, fun);
+        }
+    }
+
     handleAppStateChange = (nextAppState) => {
         if (nextAppState === 'background' || nextAppState === 'inactive') {
             // save current config to app storage
@@ -114,13 +123,13 @@ class App extends React.Component {
             console.log("async storage json text: ", value);
             
             if (value !== null) {
-                this.setState({ jsonText: value}, this.cleanJsonText);  // parse json file
+                this.writeState({ jsonText: value}, this.cleanJsonText);  // parse json file
             }
             else {
                 let data = require('./default_config.json');  // read json file
                 console.log(data.commands[0]["uart_command"]);
                 console.log(data.commands[1]["uart_command"]);
-                this.setState({jsonText: JSON.stringify(data), jsonParsed: data }, this.cleanJsonText);  // parse json file
+                this.writeState({jsonText: JSON.stringify(data), jsonParsed: data }, this.cleanJsonText);  // parse json file
             }
         }
         catch(error) {
@@ -223,11 +232,11 @@ class App extends React.Component {
     }
 
     scan() {
-        this.setState({ scanRunning: true });
+        this.writeState({ scanRunning: true });
         this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
             if (error) {
                 NotifyMessage("Scan error: " + JSON.stringify(error.message));
-                this.setState({ scanRunning: false });
+                this.writeState({ scanRunning: false });
                 return;
             }
             if (scannedDevice) {
@@ -253,7 +262,7 @@ class App extends React.Component {
                     let objIndex = this.devices.findIndex(obj => obj.id == scannedDevice.id);  // search if we already have current scanned device saved
                     if (objIndex < 0) { // new device, add to array
                         this.devices.push(scannedDevice);
-                        this.setState({ numOfDevices: this.state.numOfDevices++ })
+                        this.writeState({ numOfDevices: this.state.numOfDevices++ })
                     } 
                     else {  // old device, update its values    // TODO handle redraw better
                         this.devices[objIndex].rssi = scannedDevice.rssi;
@@ -267,7 +276,7 @@ class App extends React.Component {
     stop() {
         this.manager.stopDeviceScan();
         //console.log("Found " + this.devices.length + " devices.");
-        this.setState({ scanRunning: false });
+        this.writeState({ scanRunning: false });
     }
 
     connectToDevice = item => {
@@ -281,7 +290,7 @@ class App extends React.Component {
     connect(item) {
         console.log("connect()");
         const device = item;
-        this.setState({ connectionInProgress: true });
+        this.writeState({ connectionInProgress: true });
 
         if (device !== undefined) {
             if (this.state.retryCount === 0) {  // only display message to user when first connect try
@@ -309,7 +318,7 @@ class App extends React.Component {
                     console.log("found services");
                     this.services = services;
                     NotifyMessage("Connect OK");
-                    this.setState({ device: item, connectionInProgress: false }, this.notificationsOnOff);
+                    this.writeState({ device: item, connectionInProgress: false }, this.notificationsOnOff);
                 })
                 .catch((error) => {
                     this.handleConnectError(error, device);
@@ -325,7 +334,7 @@ class App extends React.Component {
             this.manager.cancelDeviceConnection(device.id)
                 .then((device) => {
                     NotifyMessage("Disconnect OK");
-                    this.setState({ device: undefined, connectionInProgress: false, NotifyData: [] });
+                    this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [] });
                 });
         }
     }
@@ -335,12 +344,12 @@ class App extends React.Component {
         if (error.androidErrorCode == BleAndroidErrorCode.Error) {      // generic Android BLE stack error
             let retries = this.state.retryCount;
             if (retries < BLE_RETRY_COUNT) {
-                this.setState({ retryCount: ++retries });
+                this.writeState({ retryCount: ++retries });
                 this.connect(item);     // connect retry
             }
             else {
                 NotifyMessage("Connecting unsuccessful!");
-                this.setState({ retryCount: 0, device: undefined, connectionInProgress: false });
+                this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
             }
         }
         // more errors to be added
@@ -351,7 +360,7 @@ class App extends React.Component {
             console.log(error.errorCode);
             //console.log(error.attErrorCode);
             //console.log(error.androidErrorCode);
-            this.setState({ retryCount: 0, device: undefined, connectionInProgress: false });
+            this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
         } 
     }
 
@@ -361,10 +370,10 @@ class App extends React.Component {
             this.setupNotifications()
                 .then(() => {
                     NotifyMessage("Listening...");
-                    this.setState({ notificationsRunning: true });
+                    this.writeState({ notificationsRunning: true });
                 }, (error) => {
                     console.log(error.message);
-                    this.setState({ notificationsRunning: false });
+                    this.writeState({ notificationsRunning: false });
                 });
         }
     }
@@ -372,7 +381,7 @@ class App extends React.Component {
     notifyStop() {
         if (this.state.device !== undefined) {
             //NotifyMessage("Turning off notifications");
-            this.setState({ notificationsRunning: false });
+            this.writeState({ notificationsRunning: false });
         }
     }
 
@@ -405,14 +414,14 @@ class App extends React.Component {
             else {
                 stringResult = GetTimestamp() + ": RAW : " + resultDecodedRaw  + "\n";
             }
-            this.setState(prevState => ({   // updater function to prevent race conditions (append new data)
+            this.writeState(prevState => ({   // updater function to prevent race conditions (append new data)
                 NotifyData: [...prevState.NotifyData, stringResult + "\n"]
             }));
         });
     }
 
     handleWriteText = text => {
-        this.setState({ writeText: text });
+        this.writeState({ writeText: text });
     }
 
     write() {
@@ -499,7 +508,7 @@ class App extends React.Component {
 
     onScanResultRefresh() {   // pull down on BLE devices list gesture handler
         this.devices = [];
-        this.setState({ numOfDevices: 0, refreshing: false });
+        this.writeState({ numOfDevices: 0, refreshing: false });
         if (!this.state.scanRunning) {
             this.scan();
         }
@@ -516,15 +525,15 @@ class App extends React.Component {
             this.bleFilterMac = data.device_filter.mac;   // mac filtering
 
             if (this.bleFilterName !== "" || this.bleFilterMac !== "") {
-                this.setState({ deviceFiltersActive: true });
+                this.writeState({ deviceFiltersActive: true });
                 console.log("JSON data: found filters: " + this.bleFilterName + " " + this.bleFilterMac);
             }
             else {  // filter value fields are empty, disable filtering
-                this.setState({ deviceFiltersActive: false });
+                this.writeState({ deviceFiltersActive: false });
             }
         }
         else { // // json doesn't contain filter field, disable filtering
-            this.setState({ deviceFiltersActive: false });
+            this.writeState({ deviceFiltersActive: false });
         }
 
         // prepare lookup table from settings.json for decoding data received from tracker
@@ -542,7 +551,7 @@ class App extends React.Component {
 
     changeJsonText = text => {
         console.log("changeJsonText");
-        this.setState({ jsonText: text });
+        this.writeState({ jsonText: text });
     }
 
     cleanJsonText() {
@@ -550,12 +559,12 @@ class App extends React.Component {
         this.onScanResultRefresh();
         try {
             let parsedText = JSON.parse(this.state.jsonText);
-            this.setState({ jsonParsed: parsedText }, this.parseJsonConfig);
+            this.writeState({ jsonParsed: parsedText }, this.parseJsonConfig);
         }
         catch (error) {
             console.log(error);
             NotifyMessage("JSON parse error, please try again");
-            this.setState({ jsonText: this.oldJson }, this.closeJsonConfig);
+            this.writeState({ jsonText: this.oldJson }, this.closeJsonConfig);
         }
     }
 
@@ -564,7 +573,7 @@ class App extends React.Component {
         if (this.state.scanRunning) { // stop scan if running
             this.stop();
         }
-        this.setState({ jsonEditActive: true });
+        this.writeState({ jsonEditActive: true });
     }
 
     closeJsonConfig(save) {
@@ -573,9 +582,9 @@ class App extends React.Component {
             this.cleanJsonText();
         }
         else {
-            this.setState({ jsonText: JSON.stringify(this.oldJson) });
+            this.writeState({ jsonText: JSON.stringify(this.oldJson) });
         }
-        this.setState({ jsonEditActive: false });
+        this.writeState({ jsonEditActive: false });
     }
 
     exportJsonConfig() {
@@ -619,7 +628,7 @@ class App extends React.Component {
                                 // log the file contents
                                 //console.log(contents);
                                 NotifyMessage("Config read OK");
-                                this.setState({ jsonText: contents });
+                                this.writeState({ jsonText: contents });
                             })
                             .catch((err) => {
                                 NotifyMessage("Config file read error");
@@ -662,7 +671,7 @@ class App extends React.Component {
                 return_cmds.push(new_command);
             }
         }
-        this.setState({ deviceCommands: return_cmds });
+        this.writeState({ deviceCommands: return_cmds });
     }
 
     displayUartButtons() {
@@ -675,20 +684,20 @@ class App extends React.Component {
 
     writeUartCommand = uart => {
         console.log('button clicked, writing command: ' + uart);
-        this.setState({ writeText: uart }, this.write);
+        this.writeState({ writeText: uart }, this.write);
     }
 
     displayLogs() {
         if (this.state.writeScreenActive) {
-            this.setState({ writeScreenActive: false });
+            this.writeState({ writeScreenActive: false });
         }
         else {
-            this.setState({ writeScreenActive: true });
+            this.writeState({ writeScreenActive: true });
         }
     }
 
     clearLog() {
-        this.setState({ NotifyData: [] });
+        this.writeState({ NotifyData: [] });
     }
 
     saveLog() {
