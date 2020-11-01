@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
-import { BleAndroidErrorCode, BleManager, LogLevel } from 'react-native-ble-plx';
+import { BleAndroidErrorCode, BleErrorCode, BleManager, LogLevel } from 'react-native-ble-plx';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
 import { getDeviceId } from 'react-native-device-info';
@@ -97,7 +97,7 @@ class App extends React.Component {
     handleAppStateChange = (nextAppState) => {
         if (nextAppState === 'background' || nextAppState === 'inactive') {
             // save current config to app storage
-            this.storeData();
+            //this.storeData();     // TEST
             console.log('dataToSave');
         }
         if (nextAppState === 'active') {
@@ -330,12 +330,16 @@ class App extends React.Component {
         console.log("disconnect()");
         var device = this.state.device;
         if (device !== undefined) {
-            NotifyMessage("disconnecting from device: ", device.id);
-            this.manager.cancelDeviceConnection(device.id)
+            this.notifyStop();      // stop notifications from device
+            this.manager.cancelDeviceConnection(device.id)  // perform disconnect
                 .then((device) => {
-                    NotifyMessage("Disconnect OK");
-                    this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [] });
+                    console.log("Disconnect OK");
+                })
+                .catch((error) => {
+                    console.log(error);
                 });
+            this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [] });
+            NotifyMessage("Device was disconnected.");
         }
     }
 
@@ -399,7 +403,13 @@ class App extends React.Component {
 
         this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
             if (error) {
-                console.log("ERROR: " + error.message);
+                if (error.errorCode === BleErrorCode.DeviceDisconnected) {
+                    this.disconnect();
+                }
+                else {
+                    console.log("Notifications error:", error.message);
+                    console.log("Eror codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
+                }
                 return;
             }
             //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
