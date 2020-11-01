@@ -3,15 +3,16 @@ import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
 export const mtuSize = 30;
-
-const IzOpModesEnum = Object.freeze({ 0: "factory", 1: "storage", 2: "deployment", 3: "operation_slow", 4: "operation_fast" });
-const IzConnectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-psm" });
-const settings_json = require('./settings.json');    // read settings.json
-const settingsLookupTable = GenerateSettingsLookupTable();
+export const BLE_RETRY_COUNT = 5;
 
 const HALF_UINT8 = 128;
 const HALF_UINT16 = 32768;
 const HALF_UINT32 = 2147483648;
+
+const settings_json = require('./settings.json');    // read settings.json
+const settingsLookupTable = GenerateSettingsLookupTable();
+//const opModesEnum = Object.freeze({ 0: "factory", 1: "storage", 2: "deployment", 3: "operation_slow", 4: "operation_fast" });
+//const connectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-psm" });
 
 export const IrnasGreen = '#5baf49';
 export const lightGreen = '#7dbd62';
@@ -185,7 +186,7 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
         }
         return result;
     }
-    else {      // unkown command_name, cannot parse
+    else {      // unknown command_name, cannot parse
         return null;
     }
 }
@@ -208,7 +209,7 @@ export function DecodeTrackerSettings(settings) {   // TODO write loop for multi
     if (length !== unpacked.length - 3) {
         return null;
     }
-    // parse value data acording to conversion (type)
+    // parse value data according to conversion (type)
     let definedLength = settings_json[controlCategory][name].length;
     let max = settings_json[controlCategory][name].max;
     let min = settings_json[controlCategory][name].min;

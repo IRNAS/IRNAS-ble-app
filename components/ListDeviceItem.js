@@ -25,7 +25,6 @@ const ListDeviceItem = (props) => {
             if (props.item_in.name.includes("Irnas")) {
                 let array_raw_data = new Uint8Array(decoded_raw_data);
                 let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
-                console.log(adv_data);
                 text_line1 = (
                     <Text key="text_line1" style={styles.subtitle}>    
                         Uptime: {adv_data.uptime} h  Temperature: {adv_data.temp} C
@@ -33,7 +32,7 @@ const ListDeviceItem = (props) => {
                 );
                 text_line2 = (
                     <Text key="text_line2" style={styles.subtitle}>
-                        Battery: {adv_data.bat} mV  Charging vol: {adv_data.volt} mV
+                        Battery: {adv_data.bat} mV  Charging voltage: {adv_data.volt} mV
                     </Text>
                 );
                 text_line3 = (
@@ -43,7 +42,7 @@ const ListDeviceItem = (props) => {
                 );
                 text_line4 = (
                     <Text key="text_line4" style={styles.subtitle}>
-                        Accelerometer: x: {adv_data.acc_x} y: {adv_data.acc_y} z: {adv_data.acc_z}
+                        Accelerometer data: x: {adv_data.acc_x} y: {adv_data.acc_y} z: {adv_data.acc_z}
                     </Text>
                 );
             }

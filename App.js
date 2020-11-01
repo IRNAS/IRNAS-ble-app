@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
-import { BleManager, LogLevel } from 'react-native-ble-plx';
+import { BleAndroidErrorCode, BleManager, LogLevel } from 'react-native-ble-plx';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
 import { getDeviceId } from 'react-native-device-info';
@@ -25,20 +25,20 @@ import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, 
-    packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize,
+    packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT,
 } from './Helpers';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
 // TODO NotifyData dodaj informacijo keri device je, da lahko ohranjaš read loge
-// TODO ko se disconnecta naredi reconnect
+// TODO add scan timeout
 // TODO fix connection behaving randomly sometimes
 // TODO avtomatiziraj celoten build proces za android
 // TODO fix ReferenceError: Can't find variable: device (screenshot na P10)
 // TODO handle back button
 // TODO separate App.js into multiple files, also define some folder structure
-// TODO support reseting configuration json file to default
-// TODO reformat and reorganise code + start using coding standard (function and variable names)
+// TODO support resetting configuration json file to default
+// TODO reformat and reorganize code + start using coding standard (function and variable names)
 
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
@@ -70,6 +70,7 @@ class App extends React.Component {
             deviceFiltersActive: false,
             writeScreenActive: true,
             deviceCommands: [],
+            retryCount: 0,
         };
         this.devices = [];
         this.services = {};
@@ -117,13 +118,9 @@ class App extends React.Component {
             }
             else {
                 let data = require('./default_config.json');  // read json file
-                //console.log("Data from file ", data);
-                //console.log("Data from file ", JSON.stringify(data));
                 console.log(data.commands[0]["uart_command"]);
                 console.log(data.commands[1]["uart_command"]);
                 this.setState({jsonText: JSON.stringify(data), jsonParsed: data }, this.cleanJsonText);  // parse json file
-                //console.log(this.state.jsonText);
-                //console.log(this.state.jsonParsed);
             }
         }
         catch(error) {
@@ -253,7 +250,7 @@ class App extends React.Component {
                 }
 
                 if (filterOK) {
-                    let objIndex = this.devices.findIndex(obj => obj.id == scannedDevice.id);  // seach if we already have current scanned device saved
+                    let objIndex = this.devices.findIndex(obj => obj.id == scannedDevice.id);  // search if we already have current scanned device saved
                     if (objIndex < 0) { // new device, add to array
                         this.devices.push(scannedDevice);
                         this.setState({ numOfDevices: this.state.numOfDevices++ })
@@ -285,12 +282,14 @@ class App extends React.Component {
         console.log("connect()");
         const device = item;
         this.setState({ connectionInProgress: true });
-        //console.log(device);
 
         if (device !== undefined) {
-            NotifyMessage("connecting to device: " + device.id);
+            if (this.state.retryCount === 0) {  // only display message to user when first connect try
+                NotifyMessage("connecting to device: " + device.id);
+            }
             device.connect()
                 .then((device) => {     // increase MTU to match the tracker buffer size
+                    console.log("MTU");
                     return device.requestMTU(mtuSize);
                 })
                 .then((device) => {
@@ -298,9 +297,11 @@ class App extends React.Component {
                     //console.log("chars: ");
                     //console.log(allCharacteristics)
                     //console.log(allCharacteristics)
-                    return device.discoverAllServicesAndCharacteristics();
+                    console.log("discoverServices");
+                    return device.discoverAllServicesAndCharacteristics();      // TODO connect together with save services
                 })
                 .then((device) => {
+                    console.log("save services");
                     let services = device.services(device.id);
                     return services;
                 })
@@ -311,10 +312,7 @@ class App extends React.Component {
                     this.setState({ device: item, connectionInProgress: false }, this.notificationsOnOff);
                 })
                 .catch((error) => {
-                    NotifyMessage("Error when connecting to selected device.");
-                    // TODO add connect retry
-                    console.log(error.message);
-                    this.setState({ device: undefined, connectionInProgress: false });
+                    this.handleConnectError(error, device);
                 });
         }
     }
@@ -330,6 +328,31 @@ class App extends React.Component {
                     this.setState({ device: undefined, connectionInProgress: false, NotifyData: [] });
                 });
         }
+    }
+
+    handleConnectError(error, item) {
+        console.log("handling connect error: ", error);
+        if (error.androidErrorCode == BleAndroidErrorCode.Error) {      // generic Android BLE stack error
+            let retries = this.state.retryCount;
+            if (retries < BLE_RETRY_COUNT) {
+                this.setState({ retryCount: ++retries });
+                this.connect(item);     // connect retry
+            }
+            else {
+                NotifyMessage("Connecting unsuccessful!");
+                this.setState({ retryCount: 0, device: undefined, connectionInProgress: false });
+            }
+        }
+        // more errors to be added
+        else {      // other error - log it
+            NotifyMessage("Error when connecting to selected device.");
+            console.log(error.message);
+            console.log(error.reason);
+            console.log(error.errorCode);
+            //console.log(error.attErrorCode);
+            //console.log(error.androidErrorCode);
+            this.setState({ retryCount: 0, device: undefined, connectionInProgress: false });
+        } 
     }
 
     notify() {
@@ -612,10 +635,8 @@ class App extends React.Component {
     // parse tracker commands specified in default_config.json with settings.json -> generate uart_command (raw command to send)
     parseDeviceCommands(commands) {
         var return_cmds = [];
-        console.log(commands);
         for (var command of commands) {
             if (command.uart_command === null) {
-                console.log(command.device_command);
                 let new_device_command = EncodeTrackerSettings(command.device_command);
                 if (new_device_command !== null) {
                     var new_command = command;
