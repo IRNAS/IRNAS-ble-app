@@ -27,6 +27,7 @@ import { EncodeBase64, DecodeBase64, NotifyMessage, ReplaceAll, GetTimestamp, Ge
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
+// TODO npm update dev branch of irnas ble app and fix bugs
 // TODO NotifyData add info for which device the log belongs so, so we can keep logs between connections to multiple devices
 // TODO fix connection behaving randomly sometimes
 // TODO made android build process fully automatic
