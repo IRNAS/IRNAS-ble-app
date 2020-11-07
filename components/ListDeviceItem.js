@@ -27,7 +27,7 @@ const ListDeviceItem = (props) => {
                 let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
                 text_line1 = (
                     <Text key="text_line1" style={styles.subtitle}>    
-                        Uptime: {adv_data.uptime} h  Temperature: {adv_data.temp} C
+                        Uptime: {adv_data.uptime} h  Temperature: {adv_data.temp.toFixed(3)} C
                     </Text>
                 );
                 text_line2 = (
