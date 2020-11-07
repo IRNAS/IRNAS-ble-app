@@ -42,7 +42,7 @@ const ListDeviceItem = (props) => {
                 );
                 text_line4 = (
                     <Text key="text_line4" style={styles.subtitle}>
-                        Accelerometer data: x: {adv_data.acc_x} y: {adv_data.acc_y} z: {adv_data.acc_z}
+                        Accelerometer data: x: {adv_data.acc_x.toFixed(3)} y: {adv_data.acc_y.toFixed(3)} z: {adv_data.acc_z.toFixed(3)}
                     </Text>
                 );
             }

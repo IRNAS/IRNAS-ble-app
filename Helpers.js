@@ -281,27 +281,44 @@ function DecodeUintValue(array) {
     return value;
 }
 
+function decode_uint8(byte, min, max) {
+    var val;
+    val = byte * (max - min) / 255 + min;
+
+    return val;
+}
+
 export function DecodeStatusMessage(bytes) {
     var reset = bytes[0];
     var err = bytes[1];
     var bat = (bytes[2] * 10) + 2500;
     var volt = bytes[3];
-    var temp = bytes[4];
+    var temp = decode_uint8(bytes[4], -100, 100);       // TODO check why this is needed
     var uptime = bytes[5];
-    var acc_x = bytes[6] / 10;
-    var acc_y = bytes[7] / 10;
-    var acc_z = bytes[8] / 10;
+    var acc_x = decode_uint8(bytes[6], -100, 100);
+    var acc_y = decode_uint8(bytes[7], -100, 100);
+    var acc_z = decode_uint8(bytes[8], -100, 100);
+    var lr_sat = bytes[9];
+    var lr_fix = bytes[10];
+    var value = bytes[13] << 16 | bytes[12] << 8 | bytes[11];
+    var lat = (value - 900000) / 10000;
+    value = bytes[16] << 16 | bytes[15] << 8 | bytes[14];
+    var lon = (value - 1800000) / 10000;
 
     decoded = {
-        reset: reset,
-        err: err,
-        bat: bat,
-        volt: volt,
-        temp: temp,
-        uptime: uptime,
-        acc_x: acc_x,
-        acc_y: acc_y,
-        acc_z: acc_z,
+        reset       : reset,
+        err         : err,
+        bat         : bat,
+        volt        : volt,
+        temp        : temp,
+        uptime      : uptime,
+        acc_x       : acc_x,
+        acc_y       : acc_y,
+        acc_z       : acc_z,
+        lr_sat      : lr_sat,
+        lr_fix      : lr_fix,
+        lat         : lat,
+        lon         : lon,
     };
     return decoded;
 }

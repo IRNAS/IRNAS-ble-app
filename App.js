@@ -398,7 +398,7 @@ class App extends React.Component {
                 }
                 else {
                     console.log("Notifications error:", error.message);
-                    console.log("Eror codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
+                    console.log("Error codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
                 }
                 return;
             }
