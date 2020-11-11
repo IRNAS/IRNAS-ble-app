@@ -293,7 +293,7 @@ export function DecodeStatusMessage(bytes) {
     var err = bytes[1];
     var bat = (bytes[2] * 10) + 2500;
     var volt = bytes[3];
-    var temp = decode_uint8(bytes[4], -100, 100);       // TODO check why this is needed
+    var temp = decode_uint8(bytes[4], -100, 100);
     var uptime = bytes[5];
     var acc_x = decode_uint8(bytes[6], -100, 100);
     var acc_y = decode_uint8(bytes[7], -100, 100);
@@ -305,9 +305,22 @@ export function DecodeStatusMessage(bytes) {
     value = bytes[16] << 16 | bytes[15] << 8 | bytes[14];
     var lon = (value - 1800000) / 10000;
 
+    //Errors
+    var lr_err = 0;
+    if(err & 1) lr_err = 1;
+    var ble_err = 0;
+    if(err & 2) ble_err = 1;
+    var ublox_err = 0;
+    if(err & 4) ublox_err = 1;
+    var acc_err = 0;
+    if(err & 8) acc_err = 1;
+    var bat_err = 0;
+    if(err & 16) bat_err = 1;
+    var time_err = 0;
+    if(err & 32) time_err = 1;
+
     decoded = {
         reset       : reset,
-        err         : err,
         bat         : bat,
         volt        : volt,
         temp        : temp,
@@ -319,6 +332,12 @@ export function DecodeStatusMessage(bytes) {
         lr_fix      : lr_fix,
         lat         : lat,
         lon         : lon,
+        lr_err      : lr_err,
+        ble_err     : ble_err,
+        ublox_err   : ublox_err,
+        acc_err     : acc_err,
+        bat_err     : bat_err,
+        time_err    : time_err,
     };
     return decoded;
 }

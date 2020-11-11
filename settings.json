@@ -40,12 +40,12 @@
           "length": 4,
           "conversion": "uint32"
       },
-      "D": {
+      "satellite_send_interval": {
           "id": "0x04",
           "enabled": true,
-          "default": 50,
+          "default": 86400,
           "min": 0,
-          "max": 100,
+          "max": 86400,
           "length": 4,
           "conversion": "uint32"
       },
@@ -79,45 +79,45 @@
           "length": 1,
           "conversion": "uint8"
       },
-      "setting_name_4":
+      "cold_fix_retry":
       {
           "id": "0x14",
           "enabled": true,
-          "default": 0,
-          "min": -5,
-          "max": 5,
+          "default": 10,
+          "min": 1,
+          "max": 255,
           "length": 1,
-          "conversion": "int8"
+          "conversion": "uint8"
       },
-      "setting_name_5":
+      "hot_fix_retry":
       {
           "id": "0x15",
           "enabled": true,
-          "default": 0,
-          "min": -300,
-          "max": 300,
-          "length": 2,
-          "conversion": "int16"
+          "default": 3,
+          "min": 1,
+          "max": 255,
+          "length": 1,
+          "conversion": "uint8"
       },
-      "setting_name_6":
+      "cold_fix_timeout":
       {
           "id": "0x16",
           "enabled": true,
-          "default": 0,
-          "min": -1000,
-          "max": 1000,
-          "length": 4,
-          "conversion": "int32"
+          "default": 200,
+          "min": 1,
+          "max": 600,
+          "length": 2,
+          "conversion": "uint16"
       },
-      "setting_name_7":
+      "hot_fix_timeout":
       {
           "id": "0x17",
           "enabled": true,
-          "default": 5.2,
-          "min": -10.5,
-          "max": 10.5,
-          "length": 4,
-          "conversion": "float"
+          "default": 3,
+          "min": 1,
+          "max": 600,
+          "length": 2,
+          "conversion": "uint16"
       },
       "setting_name_8":
       {
@@ -168,6 +168,12 @@
       },
       "cmd_send_position": {
         "id": "0xA5",
+        "length": 0,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_reset_gps": {
+        "id": "0xA6",
         "length": 0,
         "conversion": "uint8",
         "value": 0
