@@ -50,6 +50,7 @@ class App extends React.Component {
             scanRunning: false,
             refreshingScanList: false,
             NotifyData: [],
+            devices: [],
             device: undefined,
             connectionInProgress: false,
             numOfDevices: 0,
@@ -63,7 +64,6 @@ class App extends React.Component {
             deviceCommands: [],
             retryCount: 0,
         };
-        this.devices = [];
         this.services = {};
 
         this.uartService = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
@@ -250,14 +250,19 @@ class App extends React.Component {
                 }
 
                 if (filterOK) {
-                    let objIndex = this.devices.findIndex(obj => obj.id == scannedDevice.id);  // search if we already have current scanned device saved
+                    let objIndex = this.state.devices.findIndex(obj => obj.id == scannedDevice.id);  // search if we already have current scanned device saved
                     if (objIndex < 0) { // new device, add to array
-                        this.devices.push(scannedDevice);
+                        this.writeState(prevState => ({ devices: [...prevState.devices, scannedDevice]}));
+                        //this.devices.push(scannedDevice);
                         this.writeState({ numOfDevices: this.state.numOfDevices++ })
                     } 
-                    else {  // old device, update its values    // TODO handle redraw better
-                        this.devices[objIndex].rssi = scannedDevice.rssi;
-                        this.devices[objIndex].manufacturerData = scannedDevice.manufacturerData;
+                    else {  // old device, update its values
+                        let items = [...this.state.devices];
+                        let item = {... items[objIndex]};
+                        item.rssi = scannedDevice.rssi;
+                        item.manufacturerData = scannedDevice.manufacturerData;
+                        items[objIndex] = item;
+                        this.writeState({devices: items});
                     }   
                 }
             }
@@ -266,7 +271,7 @@ class App extends React.Component {
 
     stop() {
         this.manager.stopDeviceScan();
-        //console.log("Found " + this.devices.length + " devices.");
+        //console.log("Found " + this.state.devices.length + " devices.");
         this.writeState({ scanRunning: false });
     }
 
@@ -467,7 +472,7 @@ class App extends React.Component {
     }
 
     displayResults() {
-        const devices = this.devices;
+        const devices = this.state.devices;
         if (devices.length > 0) { // show devices found
             return (
                 <FlatList
@@ -508,7 +513,7 @@ class App extends React.Component {
     }
 
     onScanResultRefresh() {   // pull down on BLE devices list gesture handler
-        this.devices = [];
+        this.writeState({ devices: [] });
         this.writeState({ numOfDevices: 0, refreshing: false });
         if (!this.state.scanRunning) {
             this.scan();
