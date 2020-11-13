@@ -35,16 +35,19 @@ const ListDeviceItem = (props) => {
                         Battery: {adv_data.bat} mV  Charging voltage: {adv_data.volt} mV
                     </Text>
                 );
+                let error_text = (
+                    adv_data.lr_err ? " LR" : '',
+                    adv_data.ble_err ? " BLE" : '',
+                    adv_data.ublox_err ? " Ublox" : '',
+                    adv_data.acc_err ? " Accel" : '',
+                    adv_data.bat_err ? " batt" : '',
+                    adv_data.time_err ? " time" : ''
+                );  // TODO display no errors
                 text_line3 = (
                     <Text key="text_line3" style={styles.subtitle}>
-                        Errors: 
-                        {adv_data.lr_err ? " LR" : ''}
-                        {adv_data.ble_err ? " BLE" : ''}
-                        {adv_data.ublox_err ? " Ublox" : ''}
-                        {adv_data.acc_err ? " Accel" : ''}
-                        {adv_data.bat_err ? " Batt" : ''}
-                        {adv_data.time_err ? " Time" : ''}
-                    </Text>
+                        Errors:
+                        {error_text}
+                    </Text>      
                 );
                 text_line4 = (
                     <Text key="text_line4" style={styles.subtitle}>
@@ -77,7 +80,8 @@ const ListDeviceItem = (props) => {
 const styles = StyleSheet.create({
     item: {
         backgroundColor: '#808080',
-        paddingVertical: 8,
+        paddingVertical: 5,
+        paddingHorizontal: 5,
         fontSize: 5,
         marginVertical: 5,
         marginHorizontal: 3,
@@ -86,8 +90,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: 'white',
         fontWeight: 'bold',
-        fontSize: 15,
-        marginVertical: 5,
+        fontSize: 16,
+        marginVertical: 3,
     },
     subtitle: {
         textAlign: 'center',

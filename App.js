@@ -33,7 +33,7 @@ import {
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
 // TODO check port when receiving message from tracker
-// TODO check if auto refresh of advertised data is working properly
+// TODO add scan timeout and auto restart
 
 function Separator() {
     return <View style={styles.separator} />;
