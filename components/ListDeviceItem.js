@@ -27,7 +27,7 @@ const ListDeviceItem = (props) => {
                 let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
                 text_line1 = (
                     <Text key="text_line1" style={styles.subtitle}>    
-                        Uptime: {adv_data.uptime} h  Temperature: {adv_data.temp.toFixed(3)} C
+                        Uptime: {adv_data.uptime} h Reset reason: {adv_data.reset}  Temp: {adv_data.temp.toFixed(2)} °C
                     </Text>
                 );
                 text_line2 = (
@@ -37,12 +37,18 @@ const ListDeviceItem = (props) => {
                 );
                 text_line3 = (
                     <Text key="text_line3" style={styles.subtitle}>
-                        Error status: {adv_data.err} Reset reason: {adv_data.reset}
+                        Errors: 
+                        {adv_data.lr_err ? " LR" : ''}
+                        {adv_data.ble_err ? " BLE" : ''}
+                        {adv_data.ublox_err ? " Ublox" : ''}
+                        {adv_data.acc_err ? " Accel" : ''}
+                        {adv_data.bat_err ? " Batt" : ''}
+                        {adv_data.time_err ? " Time" : ''}
                     </Text>
                 );
                 text_line4 = (
                     <Text key="text_line4" style={styles.subtitle}>
-                        Accelerometer data: x: {adv_data.acc_x.toFixed(3)} y: {adv_data.acc_y.toFixed(3)} z: {adv_data.acc_z.toFixed(3)}
+                        Acc data: x: {adv_data.acc_x.toFixed(3)} y: {adv_data.acc_y.toFixed(3)} z: {adv_data.acc_z.toFixed(3)}
                     </Text>
                 );
             }
