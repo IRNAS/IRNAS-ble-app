@@ -4,6 +4,7 @@ var Buffer = require('buffer/').Buffer;
 
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
+export const chargingTreshold = 5000;
 
 const MAX_UINT32 = 4294967295;
 
@@ -292,7 +293,7 @@ export function DecodeStatusMessage(bytes) {
     var reset = bytes[0];
     var err = bytes[1];
     var bat = (bytes[2] * 10) + 2500;
-    var volt = bytes[3];
+    var volt = bytes[3] * 100;
     var temp = decode_uint8(bytes[4], -100, 100);
     var uptime = bytes[5];
     var acc_x = decode_uint8(bytes[6], -100, 100);
@@ -307,37 +308,37 @@ export function DecodeStatusMessage(bytes) {
 
     //Errors
     var lr_err = 0;
-    if(err & 1) lr_err = 1;
+    if (err & 1) lr_err = 1;
     var ble_err = 0;
-    if(err & 2) ble_err = 1;
+    if (err & 2) ble_err = 1;
     var ublox_err = 0;
-    if(err & 4) ublox_err = 1;
+    if (err & 4) ublox_err = 1;
     var acc_err = 0;
-    if(err & 8) acc_err = 1;
+    if (err & 8) acc_err = 1;
     var bat_err = 0;
-    if(err & 16) bat_err = 1;
+    if (err & 16) bat_err = 1;
     var time_err = 0;
-    if(err & 32) time_err = 1;
+    if (err & 32) time_err = 1;
 
     decoded = {
-        reset       : reset,
-        bat         : bat,
-        volt        : volt,
-        temp        : temp,
-        uptime      : uptime,
-        acc_x       : acc_x,
-        acc_y       : acc_y,
-        acc_z       : acc_z,
-        lr_sat      : lr_sat,
-        lr_fix      : lr_fix,
-        lat         : lat,
-        lon         : lon,
-        lr_err      : lr_err,
-        ble_err     : ble_err,
-        ublox_err   : ublox_err,
-        acc_err     : acc_err,
-        bat_err     : bat_err,
-        time_err    : time_err,
+        reset: reset,
+        bat: bat,
+        volt: volt,
+        temp: temp,
+        uptime: uptime,
+        acc_x: acc_x,
+        acc_y: acc_y,
+        acc_z: acc_z,
+        lr_sat: lr_sat,
+        lr_fix: lr_fix,
+        lat: lat,
+        lon: lon,
+        lr_err: lr_err,
+        ble_err: ble_err,
+        ublox_err: ublox_err,
+        acc_err: acc_err,
+        bat_err: bat_err,
+        time_err: time_err,
     };
     return decoded;
 }

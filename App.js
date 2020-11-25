@@ -27,6 +27,7 @@ import {
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, 
     packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT,
 } from './Helpers';
+import ScanDeviceCard from './components/ScanDeviceCard';
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
@@ -477,7 +478,7 @@ class App extends React.Component {
             return (
                 <FlatList
                     data={devices}
-                    renderItem={({ item }) => <ListDeviceItem item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
+                    renderItem={({ item }) => <ScanDeviceCard item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
                     refreshControl={
                         <RefreshControl
                             refreshing={this.state.refreshingScanList}
