@@ -5,48 +5,23 @@
 	},
 	"commands" : [
 		{
-			"name" : "Set LoRa send to 10 sec",
+			"name" : "Send status to LoRa",
 			"device_command": "lr_send_interval: 10",
 			"uart_command" : null
 		},
 		{
-			"name" : "Set LoRa send to 10 sec - raw cmd",
-			"device_command": null,
-			"uart_command" : "03 01 04 0A 00 00 00"
-		},
-		{
-			"name" : "Set Ublox GPS interval to 5",
-			"device_command": "ublox_send_interval: 5",
+			"name" : "Send GPS data to LoRa",
+			"device_command": "cmd_send_status:",
 			"uart_command" : null
 		},
 		{
-			"name" : "Set Ublox GPS interval to 5 - raw cmd",
-			"device_command": null,
-			"uart_command" : "03 02 04 0A 00 00 00"
-		},
-		{
-			"name" : "Request device status",
+			"name" : "Reset to factory defaults",
 			"device_command" : "cmd_send_status:",
 			"uart_command" : null
 		},
 		{
-			"name" : "Request GPS longitude",
-			"device_command": "cmd_send_single_val: gps_lon",
-			"uart_command" : null
-		},
-		{
-			"name" : "Request GPS position - raw cmd",
-			"device_command": null,
-			"uart_command" : "99 A3 1 D1"
-		},
-		{
-			"name" : "Request accelerometer - X",
-			"device_command": "cmd_send_single_val: acc_x",
-			"uart_command" : null
-		},
-		{
-			"name" : "Reboot device",
-			"device_command": "cmd_reset:",
+			"name" : "Set initial position and time",
+			"device_command": "cmd_send_status:",
 			"uart_command" : null
 		}
 	]

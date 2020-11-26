@@ -1,12 +1,15 @@
 import React from 'react';
 import { StyleSheet, View, Button } from 'react-native';
+import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right } from 'native-base';
+import { IrnasGreen } from '../Helpers';
 
 // TODO solve each child should have unique key prop
 
 const UartButton = (props) => {
     return (
-        <View style={styles.button_1}>
+        <View style={styles.button}>
             <Button
+                color={IrnasGreen}
                 title={props.title}
                 onPress={() => props.writeUartCommand(props.uart_command)}
             />
@@ -15,10 +18,9 @@ const UartButton = (props) => {
 }
 
 const styles = StyleSheet.create({
-    button_1: {
-        marginHorizontal: 10,
+    button: {
         paddingBottom: 10,
-        alignContent: 'center',
+        marginHorizontal: 10,
       },
 })
 

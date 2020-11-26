@@ -5,6 +5,30 @@ var Buffer = require('buffer/').Buffer;
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
 export const chargingTreshold = 5000;
+export const rebootCommand = "cmd_reset:";
+export const lrSendIntervalCommand = "lr_send_interval:";
+export const statusSendIntervalCommand = "status_send_interval:"
+export const statusMessage = "msg_status:";
+export const initialStatus = {
+    reset: 0,
+    bat: 0,
+    volt: 0,
+    temp: 0,
+    uptime: 0,
+    acc_x: 0,
+    acc_y: 0,
+    acc_z: 0,
+    lr_sat: 0,
+    lr_fix: 0,
+    lat: 0,
+    lon: 0,
+    lr_err: 0,
+    ble_err: 0,
+    ublox_err: 0,
+    acc_err: 0,
+    bat_err: 0,
+    time_err: 0,
+}
 
 const MAX_UINT32 = 4294967295;
 
