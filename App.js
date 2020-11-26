@@ -428,8 +428,8 @@ class App extends React.Component {
             let stringResult = null;
             if (resultDecoded !== null) {
                 console.log(resultDecoded);
-                if (resultDecoded.keys[0] == "msg_status") {
-                    let status_data = DecodeStatusMessage(resultDecoded);
+                if (resultDecoded[0] == "msg_status") {
+                    let status_data = resultDecoded[1];
                     console.log("Status data received: " + status_data);
                     this.writeState({statusData: status_data});
                 }
@@ -485,8 +485,8 @@ class App extends React.Component {
     }
 
     refreshData() {
-        this.writeUartCommand(statusMessageCommand);
-        //this.writeUartCommand();
+        this.writeTrackerCommand(statusMessageCommand);
+        //this.writeTrackerCommand
     }
 
     displayAllServices() {
@@ -721,6 +721,12 @@ class App extends React.Component {
         this.writeState({ writeText: uart }, this.write);
     }
 
+    writeTrackerCommand = cmd => {
+        console.log('button clicked, writing command: ' + cmd);
+        let encoded_cmd = EncodeTrackerSettings(cmd);
+        this.writeState({ writeText: encoded_cmd }, this.write);
+    }
+
     displayLogs() {
         if (this.state.writeScreenActive) {
             this.writeState({ writeScreenActive: false });
@@ -892,6 +898,17 @@ class App extends React.Component {
             if (error_text == "") {
                 error_text = "No errors";
             }
+
+            console.log("Test" + statusText);       // TODO fix this
+            console.log("Test" + statusText.uptime);
+            console.log("Test" + statusText['uptime']);
+            let uptime = statusText.uptime;
+            let reset = statusText.reset;
+            let bat = statusText.bat;
+            let volt = statusText.volt;
+            let temp = statusText.temp;
+            //console.log(this.state.statusData.acc_x);
+
             if (this.state.writeScreenActive) {  // write screen
                 return (
                     <View style={styles.container}>
@@ -922,18 +939,18 @@ class App extends React.Component {
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
                                     <Icon name="clock-fast" size={20} style={styles.normal_icon}/>
-                                    <Text>{statusText.uptime} h</Text>
+                                    <Text>{uptime} h</Text>
                                     <Icon name="restore-alert" size={20} style={styles.normal_icon}/>
-                                    <Text>{statusText.reset}</Text>
+                                    <Text>{}</Text>
                                     <Icon name="battery" size={20} style={styles.normal_icon}/>
-                                    <Text>{statusText.bat} mV</Text>
-                                    <Icon name="battery-charging" size={20} color={statusText.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
+                                    <Text>{bat} mV</Text>
+                                    <Icon name="battery-charging" size={20} color={volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
                                     <Icon name="thermometer" size={20} style={{ marginTop: 3 }}/>
-                                    <Text>{parseInt(statusText.temp).toFixed(1)} °C</Text>
+                                    {/* <Text>{temp.toFixed(1)} °C</Text> */}
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
                                     <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
-                                    <Text>X: {parseInt(statusText.acc_x).toFixed(1)}   Y: {parseInt(statusText.acc_y).toFixed(1)}   Z: {parseInt(statusText.acc_z).toFixed(1)} </Text>
+                                    {/* <Text>X: {acc_x.toFixed(1)}   Y: {acc_y.toFixed(1)}   Z: {statusText.acc_z.toFixed(1)} </Text> */}
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
                                     <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
