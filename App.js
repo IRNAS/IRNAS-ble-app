@@ -29,8 +29,9 @@ import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
     GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
-    statusSendIntervalCommand, lrSendIntervalCommand, rebootCommand
+    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand
 } from './Helpers';
+import { Value } from 'react-native-reanimated';
 
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
@@ -69,8 +70,8 @@ class App extends React.Component {
             writeScreenActive: true,
             deviceCommands: [],
             retryCount: 0,
-            pickerLoraSelected: 60,
-            pickerStatusSelected: 60,
+            pickerLoraSelected: "60",
+            pickerStatusSelected: "60",
         };
         this.services = {};
 
@@ -295,15 +296,14 @@ class App extends React.Component {
 
     connect(item) {
         console.log("connect()");
-        const device = item;
+        let device = item;
         this.writeState({ connectionInProgress: true });
 
         if (device !== undefined) {
-            console.log(device);
             if (this.state.retryCount === 0) {  // only display message to user when first connect try
                 NotifyMessage("connecting to device: " + device.id);
             }
-            device.connect()
+            this.manager.connectToDevice(device.id)
                 .then((device) => {     // increase MTU to match the tracker buffer size
                     console.log("MTU");
                     return device.requestMTU(mtuSize);
@@ -408,6 +408,7 @@ class App extends React.Component {
     async setupNotifications() {
         //const characteristic = await device.writeCharacteristicWithResponseForService( service, characteristicW, "AQ==");
 
+        console.log(this.uartService, this.uartTx);
         this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
             if (error) {
                 if (error.errorCode === BleErrorCode.DeviceDisconnected) {
@@ -440,7 +441,7 @@ class App extends React.Component {
                 stringResult = GetTimestamp() + ": RAW : " + resultDecodedRaw  + "\n";
             }
             
-            if (!logScreenDisabled) {
+            if (!this.logScreenDisabled) {
                 this.writeState(prevState => ({   // updater function to prevent race conditions (append new data)
                     NotifyData: [...prevState.NotifyData, stringResult + "\n"]
                 }));
@@ -484,7 +485,7 @@ class App extends React.Component {
     }
 
     refreshData() {
-        this.writeUartCommand(statusMessage);
+        this.writeUartCommand(statusMessageCommand);
         //this.writeUartCommand();
     }
 
@@ -764,6 +765,14 @@ class App extends React.Component {
         }
     }
 
+    updatePickerLora(value) {
+       this.writeState({pickerLoraSelected: value}, this.writeUartCommand(loraSendIntervalCommand + this.state.pickerLoraSelected));
+    }
+
+    updatePickerStatus(value) {
+        this.writeState({pickerStatusSelected: value}, this.writeUartCommand(statusSendIntervalCommand + this.state.pickerStatusSelected));
+    }
+
     render() {
         if (this.state.device === undefined) {
             if (this.state.jsonEditActive) {  // edit json file screen
@@ -872,7 +881,7 @@ class App extends React.Component {
                 statusText = initialStatus;
             }
             let displayName = this.state.device.name;
-            error_text = "".concat(
+            let error_text = "".concat(
                 statusText.lr_err ? " LR" : '',
                 statusText.ble_err ? " BLE" : '',
                 statusText.ublox_err ? " Ublox" : '',
@@ -933,7 +942,7 @@ class App extends React.Component {
                             </Card>
                             <Card>
                                 <CardItem cardBody style={{ justifyContent: "center"}}>
-                                        <Text>Sending intervals</Text>
+                                        <Text>Set sending intervals</Text>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_additional}>
                                     <Left>
@@ -943,19 +952,14 @@ class App extends React.Component {
                                         mode="dropdown"
                                         iosIcon={<Icon name="arrow-down" />}
                                         style={{ width: undefined }}
-                                        selectedValue={this.state.selected2}
-                                        onValueChange={NotifyMessage("heh")}>
+                                        selectedValue={this.state.pickerLoraSelected}
+                                        onValueChange={this.updatePickerLora.bind(this)}>
                                         <Picker.Item label="1 min" value="60" />
                                         <Picker.Item label="15 mins" value="900" />
                                         <Picker.Item label="1 hour" value="3600" />
                                         <Picker.Item label="2 hours" value="7200" />
                                         <Picker.Item label="4 hours" value="14400" />
                                     </Picker>
-                                    <Button
-                                        color={IrnasGreen}
-                                        title='Update'
-                                        onPress={NotifyMessage("heh")}
-                                    />
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_additional}>
                                     <Left>
@@ -965,19 +969,14 @@ class App extends React.Component {
                                         mode="dropdown"
                                         iosIcon={<Icon name="arrow-down" />}
                                         style={{ width: undefined }}
-                                        selectedValue={this.state.selected2}
-                                        onValueChange={NotifyMessage("heh")}>
+                                        selectedValue={this.state.pickerStatusSelected}
+                                        onValueChange={this.updatePickerStatus.bind(this)}>
                                         <Picker.Item label="1 min" value="60" />
                                         <Picker.Item label="15 mins" value="900" />
                                         <Picker.Item label="1 hour" value="3600" />
                                         <Picker.Item label="2 hours" value="7200" />
                                         <Picker.Item label="4 hours" value="14400" />
                                     </Picker>
-                                    <Button
-                                        color={IrnasGreen}
-                                        title='Update'
-                                        onPress={NotifyMessage("heh")}
-                                    />
                                 </CardItem>
                             </Card>
                             <Card>

@@ -6,7 +6,7 @@
 	"commands" : [
 		{
 			"name" : "Send status to LoRa",
-			"device_command": "lr_send_interval: 10",
+			"device_command": "cmd_send_status:",
 			"uart_command" : null
 		},
 		{
@@ -22,11 +22,6 @@
 		{
 			"name" : "Reset to factory defaults",
 			"device_command" : "cmd_send_status:",
-			"uart_command" : null
-		},
-		{
-			"name" : "Set initial position and time",
-			"device_command": "cmd_send_status:",
 			"uart_command" : null
 		}
 	]

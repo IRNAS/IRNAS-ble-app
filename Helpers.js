@@ -6,8 +6,8 @@ export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
 export const chargingTreshold = 5000;
 export const rebootCommand = "cmd_reset:";
-export const lrSendIntervalCommand = "lr_send_interval:";
-export const statusSendIntervalCommand = "status_send_interval:"
+export const loraSendIntervalCommand = "lr_send_interval: ";
+export const statusSendIntervalCommand = "status_send_interval: "
 export const statusMessageCommand = "cmd_send_status:";
 export const initialStatus = {
     reset: 0,
