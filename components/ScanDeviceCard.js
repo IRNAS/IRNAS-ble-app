@@ -5,11 +5,16 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { DecodeBase64, ParseTrackerAdvData, IrnasGreen, lightGreen, DecodeStatusMessage, chargingTreshold } from '../Helpers';
 
 const ScanDeviceCard = (props) => {
+    let device_name = "N/A";
+    if (props.item_in.name != null) {
+        device_name = props.item_in.name;
+    }
+    
     let basic_data = (
-        <CardItem button bordered>
+        <CardItem bordered button onPress={() => props.connectToDevice(props.item_in)}>
             <Icon name="bluetooth" size={40} />
             <Body>
-                <Text style={styles.title}> {props.item_in.name}</Text>
+                <Text style={styles.title}> {device_name} </Text>
                 <Text style={styles.subtitle}> {props.item_in.id} </Text>
             </Body>
             <Right>
@@ -19,13 +24,12 @@ const ScanDeviceCard = (props) => {
         </CardItem>
     );
 
-    if (props.item_in.manufacturerData) {
+    if (props.item_in.manufacturerData && props.item_in.name != null && props.item_in.name.includes("Irnas")) {
         let additional_data_status, additional_data_accel, additional_data_error;
         let decoded_raw_data = DecodeBase64(props.item_in.manufacturerData);
         //console.log(decoded_raw_data);
         let raw_data = decoded_raw_data.toJSON();
         if (props.item_in.name !== null && props.item_in.name.includes(props.filter_name)) {
-            
             /* // TODO use some kind of debug flag (add switch in the settings)
             text_raw = (    // print raw manufacturer data in any case
                 <Text key="text_raw" style={styles.subtitle}>
@@ -51,7 +55,7 @@ const ScanDeviceCard = (props) => {
                     <Text>X: {adv_data.acc_x.toFixed(1)}   Y: {adv_data.acc_y.toFixed(1)}   Z: {adv_data.acc_z.toFixed(1)} </Text>
                 </CardItem>
             );
-            if (array_raw_data.slice(2)[1] === 0){
+            if (array_raw_data.slice(2)[1] === 0) {
                 additional_data_error = (
                     <CardItem cardBody style={styles.card_additional}>
                         <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
@@ -60,7 +64,7 @@ const ScanDeviceCard = (props) => {
                 );
             }
             else {
-                let error_text = (
+                let error_text = "".concat(
                     adv_data.lr_err ? " LR" : '',
                     adv_data.ble_err ? " BLE" : '',
                     adv_data.ublox_err ? " Ublox" : '',
@@ -75,29 +79,21 @@ const ScanDeviceCard = (props) => {
                     </CardItem>
                 );
             }
+            return (
+                <Card>
+                    {basic_data}
+                    {additional_data_status}
+                    {additional_data_accel}
+                    {additional_data_error}
+                </Card>
+            );
         }
-        return (
-            <Container>
-                <Content>
-                    <Card>
-                        {basic_data}
-                        {additional_data_status}
-                        {additional_data_accel}
-                        {additional_data_error}
-                    </Card>
-                </Content>
-            </Container>
-        );
     }
     else {
         return (
-            <Container>
-                <Content>
-                    <Card>
-                        {basic_data}
-                    </Card>
-                </Content>
-            </Container>
+            <Card>
+                {basic_data}
+            </Card>
         );
     }
 }
