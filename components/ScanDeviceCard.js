@@ -37,29 +37,25 @@ const ScanDeviceCard = (props) => {
             let array_raw_data = new Uint8Array(decoded_raw_data);
             let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
             additional_data_status = (
-                <CardItem cardBody>
+                <CardItem cardBody style={styles.card_additional}>
                     <Icon name="battery" size={20} style={styles.normal_icon}/>
-                    <Body><Text>{adv_data.bat} mV</Text></Body>
-                    <Icon name="battery-charging" size={20} color={adv_data.volt < chargingTreshold ? 'gray' : 'green'} />
+                    <Text>{adv_data.bat} mV</Text>
+                    <Icon name="battery-charging" size={20} color={adv_data.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
                     <Icon name="thermometer" size={20} style={styles.normal_icon}/>
-                    <Body><Text>{adv_data.temp.toFixed(1)} °C</Text></Body>
+                    <Text>{adv_data.temp.toFixed(1)} °C</Text>
                 </CardItem>
             );
             additional_data_accel = (
-                <CardItem cardBody>
+                <CardItem cardBody style={styles.card_additional}>
                     <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
-                    <Body>
-                        <Text>X: {adv_data.acc_x.toFixed(1)}   Y: {adv_data.acc_y.toFixed(1)}   Z: {adv_data.acc_z.toFixed(1)} </Text>
-                    </Body>
+                    <Text>X: {adv_data.acc_x.toFixed(1)}   Y: {adv_data.acc_y.toFixed(1)}   Z: {adv_data.acc_z.toFixed(1)} </Text>
                 </CardItem>
             );
             if (array_raw_data.slice(2)[1] === 0){
                 additional_data_error = (
-                    <CardItem cardBody>
+                    <CardItem cardBody style={styles.card_additional}>
                         <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
-                        <Body>
-                            <Text>No errors</Text>
-                        </Body>
+                        <Text>No errors</Text>
                     </CardItem>
                 );
             }
@@ -73,8 +69,9 @@ const ScanDeviceCard = (props) => {
                     adv_data.time_err ? " time" : ''
                 );
                 additional_data_error = (
-                    <CardItem cardBody>
-                        <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> <Text>{error_text}</Text>
+                    <CardItem cardBody style={styles.card_additional}>
+                        <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
+                        <Text>{error_text}</Text>
                     </CardItem>
                 );
             }
@@ -107,7 +104,11 @@ const ScanDeviceCard = (props) => {
 
 const styles = StyleSheet.create({
     normal_icon: {
+        marginTop: 3,
         marginHorizontal: 5,
+    },
+    card_additional: {
+        marginHorizontal: 50,
     },
     title: {
         fontSize: 20,
@@ -120,6 +121,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 10,
     }
-})
+});
 
 export default ScanDeviceCard;
