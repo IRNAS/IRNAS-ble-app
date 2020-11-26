@@ -8,7 +8,7 @@ export const chargingTreshold = 5000;
 export const rebootCommand = "cmd_reset:";
 export const lrSendIntervalCommand = "lr_send_interval:";
 export const statusSendIntervalCommand = "status_send_interval:"
-export const statusMessage = "msg_status:";
+export const statusMessageCommand = "cmd_send_status:";
 export const initialStatus = {
     reset: 0,
     bat: 0,

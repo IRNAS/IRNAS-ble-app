@@ -15,6 +15,11 @@
 			"uart_command" : null
 		},
 		{
+			"name" : "Reboot device",
+			"device_command": "cmd_reset:",
+			"uart_command" : null
+		},
+		{
 			"name" : "Reset to factory defaults",
 			"device_command" : "cmd_send_status:",
 			"uart_command" : null

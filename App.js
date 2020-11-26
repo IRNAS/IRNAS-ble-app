@@ -27,8 +27,9 @@ import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
 import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
-    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus,
-    packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, rebootCommand, DecodeStatusMessage,
+    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
+    GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
+    statusSendIntervalCommand, lrSendIntervalCommand, rebootCommand
 } from './Helpers';
 
 
@@ -68,6 +69,8 @@ class App extends React.Component {
             writeScreenActive: true,
             deviceCommands: [],
             retryCount: 0,
+            pickerLoraSelected: 60,
+            pickerStatusSelected: 60,
         };
         this.services = {};
 
@@ -378,8 +381,7 @@ class App extends React.Component {
             this.setupNotifications()
                 .then(() => {
                     NotifyMessage("Listening...");
-                    this.writeState({ notificationsRunning: true });
-                    sendInitialRequests();
+                    this.writeState({ notificationsRunning: true }, this.refreshData());
                 }, (error) => {
                     console.log(error.message);
                     this.writeState({ notificationsRunning: false });
@@ -481,7 +483,7 @@ class App extends React.Component {
             })
     }
 
-    sendInitialRequests() {
+    refreshData() {
         this.writeUartCommand(statusMessage);
         //this.writeUartCommand();
     }
@@ -870,18 +872,17 @@ class App extends React.Component {
                 statusText = initialStatus;
             }
             let displayName = this.state.device.name;
-            let error_text = "No errors";
-            if (statusText.err != 0) {
-                error_text = "".concat(
-                    statusText.lr_err ? " LR" : '',
-                    statusText.ble_err ? " BLE" : '',
-                    statusText.ublox_err ? " Ublox" : '',
-                    statusText.acc_err ? " accel" : '',
-                    statusText.bat_err ? " batt" : '',
-                    statusText.time_err ? " time" : ''
-                );
+            error_text = "".concat(
+                statusText.lr_err ? " LR" : '',
+                statusText.ble_err ? " BLE" : '',
+                statusText.ublox_err ? " Ublox" : '',
+                statusText.acc_err ? " accel" : '',
+                statusText.bat_err ? " batt" : '',
+                statusText.time_err ? " time" : ''
+            );
+            if (error_text == "") {
+                error_text = "No errors";
             }
-            console.log(statusText);
             if (this.state.writeScreenActive) {  // write screen
                 return (
                     <View style={styles.container}>
@@ -899,8 +900,8 @@ class App extends React.Component {
                             <View style={styles.multiLineView}>
                                 <Button
                                     color={IrnasGreen}
-                                    title='Reboot device'
-                                    onPress={() => this.writeUartCommand(rebootCommand)}
+                                    title='Refresh data'
+                                    onPress={() => this.refreshData()}
                                 />
                             </View>
                         </View>
@@ -944,11 +945,11 @@ class App extends React.Component {
                                         style={{ width: undefined }}
                                         selectedValue={this.state.selected2}
                                         onValueChange={NotifyMessage("heh")}>
-                                        <Picker.Item label="1 min" value="key0" />
-                                        <Picker.Item label="15 mins" value="key1" />
-                                        <Picker.Item label="1 hour" value="key2" />
-                                        <Picker.Item label="2 hours" value="key3" />
-                                        <Picker.Item label="4 hours" value="key4" />
+                                        <Picker.Item label="1 min" value="60" />
+                                        <Picker.Item label="15 mins" value="900" />
+                                        <Picker.Item label="1 hour" value="3600" />
+                                        <Picker.Item label="2 hours" value="7200" />
+                                        <Picker.Item label="4 hours" value="14400" />
                                     </Picker>
                                     <Button
                                         color={IrnasGreen}
@@ -966,11 +967,11 @@ class App extends React.Component {
                                         style={{ width: undefined }}
                                         selectedValue={this.state.selected2}
                                         onValueChange={NotifyMessage("heh")}>
-                                        <Picker.Item label="1 min" value="key0" />
-                                        <Picker.Item label="15 mins" value="key1" />
-                                        <Picker.Item label="1 hour" value="key2" />
-                                        <Picker.Item label="2 hours" value="key3" />
-                                        <Picker.Item label="4 hours" value="key4" />
+                                        <Picker.Item label="1 min" value="60" />
+                                        <Picker.Item label="15 mins" value="900" />
+                                        <Picker.Item label="1 hour" value="3600" />
+                                        <Picker.Item label="2 hours" value="7200" />
+                                        <Picker.Item label="4 hours" value="14400" />
                                     </Picker>
                                     <Button
                                         color={IrnasGreen}
