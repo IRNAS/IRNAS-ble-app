@@ -28,7 +28,7 @@ import UartButton from './components/UartButton';
 import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
-    GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
+    GenerateSettingsLookupTable, IrnasGreen, lightGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
     statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues
 } from './Helpers';
 import { Value } from 'react-native-reanimated';
@@ -543,7 +543,7 @@ class App extends React.Component {
                 filtersText += "\nmac: " + this.bleFilterMac;
             }
             return (
-                <View>
+                <View style={{backgroundColor: 'white', marginTop: 10, marginHorizontal: 3, padding: 5}}>
                     <Text style={styles.title}>No devices found yet</Text>
                     <Text style={styles.sectionTitle}>{filtersText}</Text>
                 </View>
@@ -551,7 +551,7 @@ class App extends React.Component {
         }
         else {  // No devices and no active filters
             return (
-                <View>
+                <View style={{backgroundColor: 'white', marginTop: 10, marginHorizontal: 3, padding: 5}}>
                     <Text style={styles.title}>No devices found yet</Text>
                     <Text style={styles.sectionTitle}>No filters active</Text>
                 </View>
@@ -803,50 +803,52 @@ class App extends React.Component {
             if (this.state.jsonEditActive) {  // edit json file screen
                 return (
                     <View style={styles.container}>
-                        <Text style={styles.mainTitle}>
-                            Json editor screen
-                        </Text>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Save"
-                                    onPress={() => this.closeJsonConfig(true)}
-                                />
+                        <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
+                            <Text style={styles.mainTitle}>
+                                Json editor screen
+                            </Text>
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={IrnasGreen}
+                                        title="Save"
+                                        onPress={() => this.closeJsonConfig(true)}
+                                    />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={IrnasGreen}
+                                        title="Back"
+                                        onPress={() => this.closeJsonConfig(false)}
+                                    />
+                                </View>
                             </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Back"
-                                    onPress={() => this.closeJsonConfig(false)}
-                                />
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={IrnasGreen}
+                                        title="Import"
+                                        onPress={() => this.importJsonConfig()}
+                                    />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={IrnasGreen}
+                                        title="Export"
+                                        onPress={() => this.exportJsonConfig()}
+                                    />
+                                </View>
                             </View>
+                            <Separator />
+                            <KeyboardAwareScrollView>
+                                <TextInput
+                                    placeholder="Json config wll be displayed here"
+                                    style={styles.inputMulti}
+                                    onChangeText={this.changeJsonText}
+                                    value={this.state.jsonText}
+                                    multiline={true} />
+                            </KeyboardAwareScrollView>
                         </View>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Import"
-                                    onPress={() => this.importJsonConfig()}
-                                />
-                            </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Export"
-                                    onPress={() => this.exportJsonConfig()}
-                                />
-                            </View>
-                        </View>
-                        <Separator />
-                        <KeyboardAwareScrollView>
-                            <TextInput
-                                placeholder="Json config wll be displayed here"
-                                style={styles.inputMulti}
-                                onChangeText={this.changeJsonText}
-                                value={this.state.jsonText}
-                                multiline={true} />
-                        </KeyboardAwareScrollView>
                     </View>
                 );
             }
@@ -869,30 +871,31 @@ class App extends React.Component {
 
                 return (
                     <View style={styles.container}>
-                        <Text style={styles.mainTitle}>
-                            IRNAS BLE app - tracker
-                        </Text>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                            <Button
-                                color={IrnasGreen}
-                                title={scanText}
-                                onPress={() => this.startStopScan()}
-                            />
-                            </View>
-                            <View style={styles.multiLineView}>
+                        <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
+                            <Text style={styles.mainTitle}>
+                                IRNAS BLE app - tracker
+                            </Text>
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
                                 <Button
                                     color={IrnasGreen}
-                                    title='Edit config'
-                                    onPress={() => this.openJsonConfig()}
+                                    title={scanText}
+                                    onPress={() => this.startStopScan()}
                                 />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={IrnasGreen}
+                                        title='Edit config'
+                                        onPress={() => this.openJsonConfig()}
+                                    />
+                                </View>
                             </View>
+                            <Separator />
+                            <Text style={styles.title}>
+                                Status: {scanStatus}
+                            </Text>
                         </View>
-                        <Separator />
-                        <Text style={styles.title}>
-                            Status: {scanStatus}
-                        </Text>
-                        <Separator />
                         <View style={styles.displayDevices}>
                             {this.displayResults()}
                         </View>
@@ -923,26 +926,27 @@ class App extends React.Component {
             if (this.state.writeScreenActive) {  // write screen
                 return (
                     <View style={styles.container}>
-                        <Text style={styles.mainTitle}>
-                            Connected to {displayName}
-                        </Text>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Disconnect'
-                                    onPress={() => this.disconnect()}
-                                />
-                            </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Refresh data'
-                                    onPress={() => this.refreshData()}
-                                />
+                        <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
+                            <Text style={styles.mainTitle}>
+                                Connected to {displayName}
+                            </Text>
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={IrnasGreen}
+                                        title='Disconnect'
+                                        onPress={() => this.disconnect()}
+                                    />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={IrnasGreen}
+                                        title='Refresh data'
+                                        onPress={() => this.refreshData()}
+                                    />
+                                </View>
                             </View>
                         </View>
-                        <Separator />
                         <KeyboardAwareScrollView>
                             <Card>
                                 <CardItem cardBody style={{ justifyContent: "center" }}>
@@ -976,7 +980,7 @@ class App extends React.Component {
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_additional}>
                                     <Left>
-                                        <Text>LoRa send:</Text>
+                                        <Text>LoRa send</Text>
                                     </Left>
                                     <Picker
                                         mode="dropdown"
@@ -993,7 +997,7 @@ class App extends React.Component {
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_additional}>
                                     <Left>
-                                        <Text>Status send:</Text>
+                                        <Text>Status send</Text>
                                     </Left>
                                     <Picker
                                         mode="dropdown"
@@ -1043,6 +1047,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
+        backgroundColor: lightGreen,
     },
     title: {
         fontSize: 16,
@@ -1088,8 +1093,8 @@ const styles = StyleSheet.create({
         width: '48%',
     },
     displayDevices: {
-        paddingBottom: 70,
-        marginBottom: 70,
+        paddingBottom: 10,
+        flex: 1,
     },
     normal_icon: {
         marginTop: 3,

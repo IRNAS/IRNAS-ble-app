@@ -108,7 +108,9 @@ const styles = StyleSheet.create({
         paddingBottom: 5,
     },
     title: {
-        fontSize: 20,
+        fontSize: 22,
+        fontWeight: "bold",
+        color: IrnasGreen,
     },
     subtitle: {
         fontSize: 16,
@@ -117,6 +119,8 @@ const styles = StyleSheet.create({
         marginTop: 2,
         textAlign: 'center',
         fontSize: 10,
+        fontWeight: "bold",
+        color: lightGreen,
     }
 });
 
