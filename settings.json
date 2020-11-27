@@ -43,7 +43,7 @@
       "satellite_send_interval": {
           "id": "0x04",
           "enabled": true,
-          "default": 86400,
+          "default": 0,
           "min": 0,
           "max": 86400,
           "length": 4,
@@ -70,8 +70,8 @@
       "init_time": {
         "id": "0x07",
         "enabled": true,
-        "default": 1603198074,
-        "min": 1603198074,
+        "default": 1606314575,
+        "min": 1606314575,
         "max": 4294967295,
         "length": 4,
         "conversion": "uint32"
@@ -216,7 +216,49 @@
         "length": 1,
         "conversion": "uint8",
         "value": 0
-      }
+      },
+      "cmd_reset_initial_position": {
+        "id": "0xA9",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_reset_initial_time": {
+        "id": "0xAA",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_clear_nvs": {
+        "id": "0xAB",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_reset_to_def_settings": {
+        "id": "0xAC",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_send_status_lr": {
+        "id": "0xAD",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_send_lr_fix": {
+        "id": "0xAE",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_set_location_and_time": {
+          "id": "0xAF",
+          "length": 12,
+          "conversion": "byte_array",
+          "value": 0
+        }
     },
   "values": {
     "port": 98,
@@ -313,7 +355,7 @@
     "charge_mV": {
       "id": "0xDB",
       "enabled": true,
-      "default": 15000,
+      "default": 0,
       "min": 0,
       "max": 32000,
       "length": 4,

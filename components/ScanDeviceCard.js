@@ -24,70 +24,68 @@ const ScanDeviceCard = (props) => {
         </CardItem>
     );
 
-    if (props.item_in.manufacturerData && props.item_in.name != null && props.item_in.name.includes("Irnas")) {
+    if (props.item_in.manufacturerData && props.item_in.name != null && props.item_in.name.includes(props.filter_name)) {
         let additional_data_status, additional_data_accel, additional_data_error;
         let decoded_raw_data = DecodeBase64(props.item_in.manufacturerData);
         //console.log(decoded_raw_data);
         let raw_data = decoded_raw_data.toJSON();
-        if (props.item_in.name !== null && props.item_in.name.includes(props.filter_name)) {
-            /* // TODO use some kind of debug flag (add switch in the settings)
-            text_raw = (    // print raw manufacturer data in any case
-                <Text key="text_raw" style={styles.subtitle}>
-                    Raw data: {raw_data.data.toString()}
-                </Text>
-            );
-            */
+        /* // TODO use some kind of debug flag (add switch in the settings)
+        text_raw = (    // print raw manufacturer data in any case
+            <Text key="text_raw" style={styles.subtitle}>
+                Raw data: {raw_data.data.toString()}
+            </Text>
+        );
+        */
 
-            let array_raw_data = new Uint8Array(decoded_raw_data);
-            let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
-            additional_data_status = (
+        let array_raw_data = new Uint8Array(decoded_raw_data);
+        let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
+        additional_data_status = (
+            <CardItem cardBody style={styles.card_additional}>
+                <Icon name="battery" size={20} style={styles.normal_icon}/>
+                <Text>{adv_data.bat} mV</Text>
+                <Icon name="battery-charging" size={20} color={adv_data.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
+                <Icon name="thermometer" size={20} style={styles.normal_icon}/>
+                <Text>{adv_data.temp.toFixed(1)} °C</Text>
+            </CardItem>
+        );
+        additional_data_accel = (
+            <CardItem cardBody style={styles.card_additional}>
+                <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
+                <Text>X: {adv_data.acc_x.toFixed(1)}   Y: {adv_data.acc_y.toFixed(1)}   Z: {adv_data.acc_z.toFixed(1)} </Text>
+            </CardItem>
+        );
+        if (array_raw_data.slice(2)[1] === 0) {
+            additional_data_error = (
                 <CardItem cardBody style={styles.card_additional}>
-                    <Icon name="battery" size={20} style={styles.normal_icon}/>
-                    <Text>{adv_data.bat} mV</Text>
-                    <Icon name="battery-charging" size={20} color={adv_data.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
-                    <Icon name="thermometer" size={20} style={styles.normal_icon}/>
-                    <Text>{adv_data.temp.toFixed(1)} °C</Text>
+                    <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
+                    <Text>No errors</Text>
                 </CardItem>
-            );
-            additional_data_accel = (
-                <CardItem cardBody style={styles.card_additional}>
-                    <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
-                    <Text>X: {adv_data.acc_x.toFixed(1)}   Y: {adv_data.acc_y.toFixed(1)}   Z: {adv_data.acc_z.toFixed(1)} </Text>
-                </CardItem>
-            );
-            if (array_raw_data.slice(2)[1] === 0) {
-                additional_data_error = (
-                    <CardItem cardBody style={styles.card_additional}>
-                        <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
-                        <Text>No errors</Text>
-                    </CardItem>
-                );
-            }
-            else {
-                let error_text = "".concat(
-                    adv_data.lr_err ? " LR" : '',
-                    adv_data.ble_err ? " BLE" : '',
-                    adv_data.ublox_err ? " Ublox" : '',
-                    adv_data.acc_err ? " accel" : '',
-                    adv_data.bat_err ? " batt" : '',
-                    adv_data.time_err ? " time" : ''
-                );
-                additional_data_error = (
-                    <CardItem cardBody style={styles.card_additional}>
-                        <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
-                        <Text>{error_text}</Text>
-                    </CardItem>
-                );
-            }
-            return (
-                <Card>
-                    {basic_data}
-                    {additional_data_status}
-                    {additional_data_accel}
-                    {additional_data_error}
-                </Card>
             );
         }
+        else {
+            let error_text = "".concat(
+                adv_data.lr_err ? " LR" : '',
+                adv_data.ble_err ? " BLE" : '',
+                adv_data.ublox_err ? " Ublox" : '',
+                adv_data.acc_err ? " accel" : '',
+                adv_data.bat_err ? " batt" : '',
+                adv_data.time_err ? " time" : ''
+            );
+            additional_data_error = (
+                <CardItem cardBody style={styles.card_additional}>
+                    <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
+                    <Text>{error_text}</Text>
+                </CardItem>
+            );
+        }
+        return (
+            <Card>
+                {basic_data}
+                {additional_data_status}
+                {additional_data_accel}
+                {additional_data_error}
+            </Card>
+        );
     }
     else {
         return (

@@ -878,7 +878,7 @@ class App extends React.Component {
                             <View style={styles.multiLineView}>
                                 <Button
                                     color={IrnasGreen}
-                                    title='Edit configuration'
+                                    title='Edit config'
                                     onPress={() => this.openJsonConfig()}
                                 />
                             </View>
