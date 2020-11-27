@@ -79,7 +79,7 @@ const ScanDeviceCard = (props) => {
             );
         }
         return (
-            <Card>
+            <Card style={styles.card}>
                 {basic_data}
                 {additional_data_status}
                 {additional_data_accel}
@@ -103,6 +103,9 @@ const styles = StyleSheet.create({
     },
     card_additional: {
         marginHorizontal: 50,
+    },
+    card: {
+        paddingBottom: 5,
     },
     title: {
         fontSize: 20,
