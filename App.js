@@ -430,20 +430,18 @@ class App extends React.Component {
                 if (resultDecoded[0] == "msg_status") {
                     this.writeState({statusData: resultDecoded[1]});
                 }
-                /*
-                else if (resultDecoded[0] == "msg_status") {    // TODO
+                else if (resultDecoded[0] == "lr_send_interval") {
                     let receivedLoraInterval = resultDecoded[1].toString();
                     if (validPickerIntervalValues.includes(receivedLoraInterval)) {
                         this.writeState({pickerLoraSelected: receivedLoraInterval});
                     }
                 }
-                else if (resultDecoded[0] == "msg_status") {    // TODO
+                else if (resultDecoded[0] == "status_send_interval") {
                     let receivedStatusInterval = resultDecoded[1].toString();
                     if (validPickerIntervalValues.includes(receivedStatusInterval)) {
                         this.writeState({pickerStatusSelected: receivedStatusInterval});
                     }
                 }
-                */
                 else {
                     console.log(resultDecoded);
                     stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
@@ -497,10 +495,9 @@ class App extends React.Component {
     }
 
     refreshData() {
-        this.writeTrackerCommand(statusMessageCommand);
-        // TODO
-        //this.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
-        //this.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
+        this.writeTrackerCommand(statusMessageCommand);             // Request status
+        this.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
+        this.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
     }
 
     displayAllServices() {

@@ -197,7 +197,14 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
             result = packUintToBytes([port, id, length]);
         }
         else {      // if we have header and the value
-            let value = settings_json.values[command_value.replace(/\s/g, '')].id;
+            let value = null;
+            if (command_value in settings_json.values) {    // value is actually id of a value
+                value = settings_json.values[command_value.replace(/\s/g, '')].id;
+            }
+            else {      // value is actually id of a setting
+                let command_name = settingsLookupTable[parseInt(command_value)].name;
+                value = settings_json.settings[command_name].id;
+            }
             result = packUintToBytes([port, id, length], value);
         }
         return result;
