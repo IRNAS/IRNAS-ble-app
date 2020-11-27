@@ -57,7 +57,7 @@ const ScanDeviceCard = (props) => {
         if (array_raw_data.slice(2)[1] === 0) {
             additional_data_error = (
                 <CardItem cardBody style={styles.card_additional}>
-                    <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
+                    <Icon name="close-circle" size={20} style={styles.normal_icon}/> 
                     <Text>No errors</Text>
                 </CardItem>
             );

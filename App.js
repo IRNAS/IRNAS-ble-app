@@ -378,6 +378,7 @@ class App extends React.Component {
     notify() {
         if (this.state.device !== undefined) {
             console.log("Turning on notifications: " + this.state.device.id.toString());
+            NotifyMessage("Please wait for device to load latest status data...");
             this.setupNotifications()
                 .then(() => {
                     NotifyMessage("Listening...");
@@ -408,55 +409,57 @@ class App extends React.Component {
     async setupNotifications() {
         //const characteristic = await device.writeCharacteristicWithResponseForService( service, characteristicW, "AQ==");
 
-        console.log(this.uartService, this.uartTx);
-        this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
-            if (error) {
-                if (error.errorCode === BleErrorCode.DeviceDisconnected) {
-                    this.disconnect();
-                }
-                else {
-                    console.log("Notifications error:", error.message);
-                    console.log("Error codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
-                }
-                return;
-            }
-            //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
-            let result = DecodeBase64(characteristic.value);
-            let resultDecodedRaw = new Uint8Array(result);
-            console.log("Received data from device (raw): " + resultDecodedRaw);
-            let resultDecoded = DecodeTrackerSettings(resultDecodedRaw.buffer);
-            let stringResult = null;
-            if (resultDecoded !== null) {
-                if (resultDecoded[0] == "msg_status") {
-                    this.writeState({statusData: resultDecoded[1]});
-                }
-                else if (resultDecoded[0] == "lr_send_interval") {
-                    let receivedLoraInterval = resultDecoded[1].toString();
-                    if (validPickerIntervalValues.includes(receivedLoraInterval)) {
-                        this.writeState({pickerLoraSelected: receivedLoraInterval});
+        //console.log(this.uartService, this.uartTx);
+        if (this.state.device) {
+            this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
+                if (error) {
+                    if (error.errorCode === BleErrorCode.DeviceDisconnected) {
+                        this.disconnect();
                     }
-                }
-                else if (resultDecoded[0] == "status_send_interval") {
-                    let receivedStatusInterval = resultDecoded[1].toString();
-                    if (validPickerIntervalValues.includes(receivedStatusInterval)) {
-                        this.writeState({pickerStatusSelected: receivedStatusInterval});
+                    else {
+                        console.log("Notifications error:", error.message);
+                        console.log("Error codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
                     }
+                    return;
                 }
-                else {
+                //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
+                let result = DecodeBase64(characteristic.value);
+                let resultDecodedRaw = new Uint8Array(result);
+                console.log("Received data from device (raw): " + resultDecodedRaw);
+                let resultDecoded = DecodeTrackerSettings(resultDecodedRaw.buffer);
+                let stringResult = null;
+                if (resultDecoded !== null) {
                     console.log(resultDecoded);
-                    stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
+                    if (resultDecoded[0] == "msg_status") {
+                        this.writeState({statusData: resultDecoded[1]});
+                    }
+                    else if (resultDecoded[0] == "lr_send_interval") {
+                        let receivedLoraInterval = resultDecoded[1].toString();
+                        if (validPickerIntervalValues.includes(receivedLoraInterval)) {
+                            this.writeState({pickerLoraSelected: receivedLoraInterval});
+                        }
+                    }
+                    else if (resultDecoded[0] == "status_send_interval") {
+                        let receivedStatusInterval = resultDecoded[1].toString();
+                        if (validPickerIntervalValues.includes(receivedStatusInterval)) {
+                            this.writeState({pickerStatusSelected: receivedStatusInterval});
+                        }
+                    }
+                    else {
+                        stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
+                    }
                 }
-            }
-            else {
-                stringResult = GetTimestamp() + ": RAW : " + resultDecodedRaw  + "\n";
-            }
-            
-            if (!this.logScreenDisabled) {
-                this.writeState(prevState => ({   // updater function to prevent race conditions (append new data)
-                    NotifyData: [...prevState.NotifyData, stringResult + "\n"]
-                }));
-            }
-        });
+                else {
+                    stringResult = GetTimestamp() + ": RAW : " + resultDecodedRaw  + "\n";
+                }
+                
+                if (!this.logScreenDisabled) {
+                    this.writeState(prevState => ({   // updater function to prevent race conditions (append new data)
+                        NotifyData: [...prevState.NotifyData, stringResult + "\n"]
+                    }));
+                }
+            });
+        }
     }
 
     handleWriteText = text => {
@@ -464,6 +467,7 @@ class App extends React.Component {
     }
 
     write() {
+        let device = this.state.device;
         //device.writeCharacteristicWithoutResponseForService(this.nordicUartService, this.uartRx, "heh")
         let encoded; // = EncodeBase64([1]);
         if (this.state.writeText) {   // if user write data send that
@@ -471,9 +475,8 @@ class App extends React.Component {
             //encoded = EncodeBase64(textToSend);
             encoded = EncodeBase64(this.state.writeText);
         }
-        //console.log("Writing encoded data: " + encoded);
-
-        this.state.device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
+        console.log("Writing encoded data: " + encoded);
+        device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
             .then(() => {
                 NotifyMessage("Write ok...");
             }, (error) => {
@@ -496,8 +499,13 @@ class App extends React.Component {
 
     refreshData() {
         this.writeTrackerCommand(statusMessageCommand);             // Request status
-        this.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
-        this.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
+        const that = this;
+        setTimeout(() => {      // workaround for multiple commands TODO chain them together
+                that.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
+            },100);
+        setTimeout(() => { 
+                that.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
+            },100);
     }
 
     displayAllServices() {
@@ -938,6 +946,7 @@ class App extends React.Component {
                         <KeyboardAwareScrollView>
                             <Card>
                                 <CardItem cardBody style={{ justifyContent: "center" }}>
+                                    <Icon name="message-text-outline" size={20} style={styles.normal_icon}/>
                                     <Text>Device status</Text>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
@@ -962,7 +971,8 @@ class App extends React.Component {
                             </Card>
                             <Card>
                                 <CardItem cardBody style={{ justifyContent: "center"}}>
-                                        <Text>Set sending intervals</Text>
+                                    <Icon name="cloud-upload-outline" size={20} style={styles.normal_icon}/>
+                                    <Text>Set sending intervals</Text>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_additional}>
                                     <Left>
@@ -1001,13 +1011,17 @@ class App extends React.Component {
                             </Card>
                             <Card>
                                 <CardItem cardBody style={{ justifyContent: "center", marginBottom: 5 }}>
+                                    <Icon name="tools" size={20} style={styles.normal_icon}/>
                                     <Text>Device commands</Text>
                                 </CardItem>
                                 {this.displayUartButtons()}
                             </Card>
                             <Card>
                                 <CardItem cardBody style={styles.card_additional}>
-                                    <Label>Custom command:</Label>
+                                    <Left>
+                                        <Icon name="wrench-outline" size={20} style={styles.normal_icon}/>
+                                        <Label>Custom command</Label>
+                                    </Left>
                                     <Input 
                                         onChangeText={this.handleWriteText}
                                         style={{ margin: 10, backgroundColor: '#ebebeb' }}/>
