@@ -2,9 +2,12 @@ import { ToastAndroid, AlertIOS, Settings } from 'react-native';
 import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
+const MAX_UINT32 = 4294967295;
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
 export const chargingTreshold = 5000;
+export const validPickerIntervalValues = ["60","900","3600","7200","14400"];
+
 export const rebootCommand = "cmd_reset:";
 export const loraSendIntervalCommand = "lr_send_interval: ";
 export const statusSendIntervalCommand = "status_send_interval: "
@@ -29,8 +32,6 @@ export const initialStatus = {
     "bat_err": 0,
     "time_err": 0,
 }
-
-const MAX_UINT32 = 4294967295;
 
 const settings_json = require('./settings.json');    // read settings.json
 const settingsLookupTable = GenerateSettingsLookupTable();

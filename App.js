@@ -29,7 +29,7 @@ import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
     GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
-    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand
+    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues
 } from './Helpers';
 import { Value } from 'react-native-reanimated';
 
@@ -427,11 +427,25 @@ class App extends React.Component {
             let resultDecoded = DecodeTrackerSettings(resultDecodedRaw.buffer);
             let stringResult = null;
             if (resultDecoded !== null) {
-                //console.log(resultDecoded);
                 if (resultDecoded[0] == "msg_status") {
                     this.writeState({statusData: resultDecoded[1]});
                 }
+                /*
+                else if (resultDecoded[0] == "msg_status") {    // TODO
+                    let receivedLoraInterval = resultDecoded[1].toString();
+                    if (validPickerIntervalValues.includes(receivedLoraInterval)) {
+                        this.writeState({pickerLoraSelected: receivedLoraInterval});
+                    }
+                }
+                else if (resultDecoded[0] == "msg_status") {    // TODO
+                    let receivedStatusInterval = resultDecoded[1].toString();
+                    if (validPickerIntervalValues.includes(receivedStatusInterval)) {
+                        this.writeState({pickerStatusSelected: receivedStatusInterval});
+                    }
+                }
+                */
                 else {
+                    console.log(resultDecoded);
                     stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
                 }
             }
@@ -484,7 +498,9 @@ class App extends React.Component {
 
     refreshData() {
         this.writeTrackerCommand(statusMessageCommand);
-        //this.writeTrackerCommand
+        // TODO
+        //this.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
+        //this.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
     }
 
     displayAllServices() {
@@ -961,11 +977,11 @@ class App extends React.Component {
                                         style={{ width: undefined }}
                                         selectedValue={this.state.pickerLoraSelected}
                                         onValueChange={this.updatePickerLora.bind(this)}>
-                                        <Picker.Item label="1 min" value="60" />
-                                        <Picker.Item label="15 mins" value="900" />
-                                        <Picker.Item label="1 hour" value="3600" />
-                                        <Picker.Item label="2 hours" value="7200" />
-                                        <Picker.Item label="4 hours" value="14400" />
+                                        <Picker.Item label="1 min" value={validPickerIntervalValues[0]} />
+                                        <Picker.Item label="15 mins" value={validPickerIntervalValues[1]} />
+                                        <Picker.Item label="1 hour" value={validPickerIntervalValues[2]} />
+                                        <Picker.Item label="2 hours" value={validPickerIntervalValues[3]} />
+                                        <Picker.Item label="4 hours" value={validPickerIntervalValues[4]} />
                                     </Picker>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_additional}>
@@ -978,11 +994,11 @@ class App extends React.Component {
                                         style={{ width: undefined }}
                                         selectedValue={this.state.pickerStatusSelected}
                                         onValueChange={this.updatePickerStatus.bind(this)}>
-                                        <Picker.Item label="1 min" value="60" />
-                                        <Picker.Item label="15 mins" value="900" />
-                                        <Picker.Item label="1 hour" value="3600" />
-                                        <Picker.Item label="2 hours" value="7200" />
-                                        <Picker.Item label="4 hours" value="14400" />
+                                        <Picker.Item label="1 min" value={validPickerIntervalValues[0]} />
+                                        <Picker.Item label="15 mins" value={validPickerIntervalValues[1]} />
+                                        <Picker.Item label="1 hour" value={validPickerIntervalValues[2]} />
+                                        <Picker.Item label="2 hours" value={validPickerIntervalValues[3]} />
+                                        <Picker.Item label="4 hours" value={validPickerIntervalValues[4]} />
                                     </Picker>
                                 </CardItem>
                             </Card>
