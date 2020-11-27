@@ -427,11 +427,9 @@ class App extends React.Component {
             let resultDecoded = DecodeTrackerSettings(resultDecodedRaw.buffer);
             let stringResult = null;
             if (resultDecoded !== null) {
-                console.log(resultDecoded);
+                //console.log(resultDecoded);
                 if (resultDecoded[0] == "msg_status") {
-                    let status_data = resultDecoded[1];
-                    console.log("Status data received: " + status_data);
-                    this.writeState({statusData: status_data});
+                    this.writeState({statusData: resultDecoded[1]});
                 }
                 else {
                     stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
@@ -882,11 +880,13 @@ class App extends React.Component {
             }
         }
         else {   // connect screen
-            let statusText = this.state.statusData;
-            if (statusText == undefined) {
-                statusText = initialStatus;
-            }
+            console.log("connect redraw");
             let displayName = this.state.device.name;
+            let statusText = initialStatus;
+            if (this.state.statusData) {
+                console.log("Status data received");
+                statusText = JSON.parse(this.state.statusData);
+            }
             let error_text = "".concat(
                 statusText.lr_err ? " LR" : '',
                 statusText.ble_err ? " BLE" : '',
@@ -898,16 +898,6 @@ class App extends React.Component {
             if (error_text == "") {
                 error_text = "No errors";
             }
-
-            console.log("Test" + statusText);       // TODO fix this
-            console.log("Test" + statusText.uptime);
-            console.log("Test" + statusText['uptime']);
-            let uptime = statusText.uptime;
-            let reset = statusText.reset;
-            let bat = statusText.bat;
-            let volt = statusText.volt;
-            let temp = statusText.temp;
-            //console.log(this.state.statusData.acc_x);
 
             if (this.state.writeScreenActive) {  // write screen
                 return (
@@ -939,18 +929,18 @@ class App extends React.Component {
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
                                     <Icon name="clock-fast" size={20} style={styles.normal_icon}/>
-                                    <Text>{uptime} h</Text>
+                                    <Text>{statusText.uptime} h</Text>
                                     <Icon name="restore-alert" size={20} style={styles.normal_icon}/>
-                                    <Text>{}</Text>
+                                    <Text>{statusText.reset}</Text>
                                     <Icon name="battery" size={20} style={styles.normal_icon}/>
-                                    <Text>{bat} mV</Text>
-                                    <Icon name="battery-charging" size={20} color={volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
+                                    <Text>{statusText.bat} mV</Text>
+                                    <Icon name="battery-charging" size={20} color={statusText.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
                                     <Icon name="thermometer" size={20} style={{ marginTop: 3 }}/>
-                                    {/* <Text>{temp.toFixed(1)} °C</Text> */}
+                                    <Text>{statusText.temp.toFixed(1)} °C</Text>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
                                     <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
-                                    {/* <Text>X: {acc_x.toFixed(1)}   Y: {acc_y.toFixed(1)}   Z: {statusText.acc_z.toFixed(1)} </Text> */}
+                                    <Text>X: {statusText.acc_x.toFixed(1)}   Y: {statusText.acc_y.toFixed(1)}   Z: {statusText.acc_z.toFixed(1)} </Text>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
                                     <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
