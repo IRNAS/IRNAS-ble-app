@@ -296,39 +296,39 @@ class App extends React.Component {
 
     connect(item) {
         console.log("connect()");
-        let device = item;
+        let dev = item;
         this.writeState({ connectionInProgress: true });
 
-        if (device !== undefined) {
+        if (dev !== undefined) {
             if (this.state.retryCount === 0) {  // only display message to user when first connect try
-                NotifyMessage("connecting to device: " + device.id);
+                NotifyMessage("connecting to device: " + dev.id);
             }
-            this.manager.connectToDevice(device.id)
-                .then((device) => {     // increase MTU to match the tracker buffer size
+            this.manager.connectToDevice(dev.id)
+                .then((dev) => {     // increase MTU to match the tracker buffer size
                     console.log("MTU");
-                    return device.requestMTU(mtuSize);
+                    return dev.requestMTU(mtuSize);
                 })
-                .then((device) => {
+                .then((dev) => {
                     //let allCharacteristics = device.discoverAllServicesAndCharacteristics()
                     //console.log("chars: ");
                     //console.log(allCharacteristics)
                     //console.log(allCharacteristics)
                     console.log("discoverServices");
-                    return device.discoverAllServicesAndCharacteristics();      // TODO connect together with save services
+                    return dev.discoverAllServicesAndCharacteristics();      // TODO connect together with save services
                 })
-                .then((device) => {
+                .then((dev) => {
                     console.log("save services");
-                    let services = device.services(device.id);
+                    let services = dev.services(dev.id);
                     return services;
                 })
                 .then((services) => {
                     console.log("found services");
                     this.services = services;
                     NotifyMessage("Connect OK");
-                    this.writeState({ device: item, connectionInProgress: false }, this.notificationsOnOff);
+                    this.writeState({ device: dev, connectionInProgress: false }, this.notificationsOnOff);
                 })
                 .catch((error) => {
-                    this.handleConnectError(error, device);
+                    this.handleConnectError(error, dev);
                 });
         }
     }
