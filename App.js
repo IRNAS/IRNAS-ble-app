@@ -363,6 +363,10 @@ class App extends React.Component {
                 this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
             }
         }
+        else if (error.errorCode == BleErrorCode.DeviceAlreadyConnected) {
+            console.log("Device was already connected");
+            this.writeState({ retryCount: 0, device: item, connectionInProgress: false });
+        }
         // more errors to be added
         else {      // other error - log it
             NotifyMessage("Error when connecting to selected device.");
