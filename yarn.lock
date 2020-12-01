@@ -6065,9 +6065,9 @@ react-native-color-picker@^0.6.0:
     tinycolor2 "^1.4.1"
 
 react-native-device-info@^7.0.1:
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-7.1.0.tgz#82610d190bf94ae5ee7ed28f693b230aba276b05"
-  integrity sha512-H0fQ9fi6DNq85SUmJK8Opo8twHKXKp86FI4jL1Abg2tH6CjVbQ871QibD12ZMjKLMy4kKHL7BRxNEPUcI79JNg==
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-7.2.0.tgz#9694f0bba4edd5842d6af13217019760f5ce058c"
+  integrity sha512-QEJ/6a+P309gzwxK2qIc5poD58N3oulDri+0L23pEjsMUV1V0CwuyBr+XvN1cJjCAi4C0dHUgvgwQE0hLi8cxQ==
 
 react-native-drawer@2.5.1:
   version "2.5.1"
