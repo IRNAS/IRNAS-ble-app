@@ -314,7 +314,7 @@ class App extends React.Component {
                     //console.log(allCharacteristics)
                     //console.log(allCharacteristics)
                     console.log("discoverServices");
-                    return dev.discoverAllServicesAndCharacteristics();      // TODO connect together with save services
+                    return dev.discoverAllServicesAndCharacteristics();
                 })
                 .then((dev) => {
                     console.log("save services");
@@ -335,11 +335,11 @@ class App extends React.Component {
 
     disconnect() {
         console.log("disconnect()");
-        var device = this.state.device;
-        if (device !== undefined) {
+        let dev = this.state.device;
+        if (dev !== undefined) {
             this.notifyStop();      // stop notifications from device
-            this.manager.cancelDeviceConnection(device.id)  // perform disconnect
-                .then((device) => {
+            this.manager.cancelDeviceConnection(dev.id)  // perform disconnect
+                .then(() => {
                     console.log("Disconnect OK");
                 })
                 .catch((error) => {
@@ -378,7 +378,7 @@ class App extends React.Component {
     notify() {
         if (this.state.device !== undefined) {
             console.log("Turning on notifications: " + this.state.device.id.toString());
-            NotifyMessage("Please wait for device to load latest status data...");
+            NotifyMessage("Please wait for device to load the latest status data...");
             this.setupNotifications()
                 .then(() => {
                     NotifyMessage("Listening...");
@@ -407,17 +407,16 @@ class App extends React.Component {
     }
 
     async setupNotifications() {
-        //const characteristic = await device.writeCharacteristicWithResponseForService( service, characteristicW, "AQ==");
-
-        //console.log(this.uartService, this.uartTx);
-        if (this.state.device) {
-            this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
+        let dev = this.state.device;
+        if (dev && dev !== undefined) {
+            //this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
+            this.manager.monitorCharacteristicForDevice(dev.id, this.uartService, this.uartTx , (error, characteristic) => {
                 if (error) {
                     if (error.errorCode === BleErrorCode.DeviceDisconnected) {
                         this.disconnect();
                     }
                     else {
-                        console.log("Notifications error:", error.message);
+                        console.log("Notifications error: %s, reason: %s", error.message, error.reason);
                         console.log("Error codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
                     }
                     return;
@@ -467,7 +466,7 @@ class App extends React.Component {
     }
 
     write() {
-        let device = this.state.device;
+        let dev = this.state.device;
         //device.writeCharacteristicWithoutResponseForService(this.nordicUartService, this.uartRx, "heh")
         let encoded; // = EncodeBase64([1]);
         if (this.state.writeText) {   // if user write data send that
@@ -476,7 +475,7 @@ class App extends React.Component {
             encoded = EncodeBase64(this.state.writeText);
         }
         console.log("Writing encoded data: " + encoded);
-        device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
+        this.manager.writeCharacteristicWithoutResponseForDevice(dev.id, this.uartService, this.uartRx, encoded)
             .then(() => {
                 NotifyMessage("Write ok...");
             }, (error) => {
@@ -486,10 +485,10 @@ class App extends React.Component {
 
     read() {
         const dev = this.state.device;
-        device.readCharacteristicForService(this.nordicUartService, this.readChar)
-            .then((chara) => {
+        this.manager.readCharacteristicForDevice(dev.id, this.nordicUartService, this.readChar)
+            .then((read_value) => {
                 //console.log("read ok");
-                const result = DecodeBase64(chara.value);
+                const result = DecodeBase64(read_value.value);
                 //console.log(result.length);
                 NotifyMessage("Read: " + result[0]);
             }, (error) => {
