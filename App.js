@@ -29,7 +29,7 @@ import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
     GenerateSettingsLookupTable, IrnasGreen, lightGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
-    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues
+    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues, bleScanTimeout
 } from './Helpers';
 import { Value } from 'react-native-reanimated';
 
@@ -70,8 +70,8 @@ class App extends React.Component {
             writeScreenActive: true,
             deviceCommands: [],
             retryCount: 0,
-            pickerLoraSelected: "60",
-            pickerStatusSelected: "60",
+            pickerLoraSelected: validPickerIntervalValues[0],
+            pickerStatusSelected: validPickerIntervalValues[0],
         };
         this.services = {};
 
@@ -84,6 +84,7 @@ class App extends React.Component {
 
         this.oldJson = {};
         this.logScreenDisabled = true;
+        this.scanTimeout = undefined;
     }
 
     writeState(object, fun) {        // wrapper function to set state, which prevents warnings can't call setState on an unmounted component
@@ -165,9 +166,7 @@ class App extends React.Component {
             this.disconnect();
             this.notificationsOnOff();
         }
-        if (this.state.scanRunning) { // stop scan if running
-            this.stop();
-        }
+        this.stopScan();    // stop scan if running
         AppState.removeEventListener('change', this.handleAppStateChange);     // remove listener for app going into background
     }
 
@@ -226,14 +225,14 @@ class App extends React.Component {
 
     startStopScan() {
         if (this.state.scanRunning) {  // scan is running
-            this.stop();
+            this.stopScan();
         }
         else {  // scan is not running
-            this.scan();
+            this.startScan();
         }
     }
 
-    scan() {
+    startScan() {
         this.writeState({ scanRunning: true });
         this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
             if (error) {
@@ -280,17 +279,28 @@ class App extends React.Component {
         });
     }
 
-    stop() {
-        this.manager.stopDeviceScan();
+    stopScan() {
+        if (this.state.scanRunning) {
+            this.manager.stopDeviceScan();
+        }
         //console.log("Found " + this.state.devices.length + " devices.");
         this.writeState({ scanRunning: false });
     }
 
+    scanTimeoutTimer() {
+        if (this.scanTimeout) {
+            console.log("scan timeout defined");
+            clearTimeout(this.scanTimeout);
+        }
+        const that = this;
+        this.scanTimeout = setTimeout(() => {
+                that.stopScan();
+            }, bleScanTimeout);
+    }
+
     connectToDevice = item => {
         console.log("selected device: " + item.id + " " + item.name);
-        if (this.state.scanRunning) { // stop scan if running
-            this.stop();
-        }
+        this.stopScan();    // stop scan if running
         this.connect(item);
     }
 
@@ -376,7 +386,7 @@ class App extends React.Component {
             //console.log(error.attErrorCode);
             //console.log(error.androidErrorCode);
             this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
-        } 
+        }
     }
 
     notify() {
@@ -504,11 +514,11 @@ class App extends React.Component {
         this.writeTrackerCommand(statusMessageCommand);             // Request status
         const that = this;
         setTimeout(() => {      // workaround for multiple commands TODO chain them together
-                that.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
-            },100);
-        setTimeout(() => { 
-                that.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
-            },100);
+            that.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
+        }, 100);
+        setTimeout(() => {
+            that.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
+        }, 100);
     }
 
     displayAllServices() {
@@ -566,7 +576,7 @@ class App extends React.Component {
         this.writeState({ devices: [] });
         this.writeState({ numOfDevices: 0, refreshing: false });
         if (!this.state.scanRunning) {
-            this.scan();
+            this.startScan();
         }
     }
 
@@ -626,9 +636,7 @@ class App extends React.Component {
 
     openJsonConfig() {
         console.log("openJsonConfig");
-        if (this.state.scanRunning) { // stop scan if running
-            this.stop();
-        }
+        this.stopScan();     // stop scan if running
         this.writeState({ jsonEditActive: true });
     }
 

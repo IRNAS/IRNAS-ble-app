@@ -3,8 +3,6 @@ import { StyleSheet, View, Button } from 'react-native';
 import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right } from 'native-base';
 import { IrnasGreen } from '../Helpers';
 
-// TODO solve each child should have unique key prop
-
 const UartButton = (props) => {
     return (
         <View style={styles.button}>

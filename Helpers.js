@@ -5,8 +5,9 @@ var Buffer = require('buffer/').Buffer;
 const MAX_UINT32 = 4294967295;
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
+export const bleScanTimeout = 10000;    // miliseconds
 export const chargingTreshold = 5000;
-export const validPickerIntervalValues = ["60","900","3600","7200","14400"];
+export const validPickerIntervalValues = ["60","900","3600","7200","14400"];    // seconds
 
 export const rebootCommand = "cmd_reset:";
 export const loraSendIntervalCommand = "lr_send_interval: ";
