@@ -199,7 +199,7 @@ class App extends React.Component {
         });
 
         console.log("Checking storage permission");
-        this.requestStoragePermission();
+        this.requestStoragePermission();        // TODO this is called only on the second time fresh installed app is launched
     }
 
     requestStoragePermission = async () => {
@@ -234,6 +234,7 @@ class App extends React.Component {
 
     startScan() {
         this.writeState({ scanRunning: true });
+        this.startScanTimeoutTimer();
         this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
             if (error) {
                 NotifyMessage("Scan error: " + JSON.stringify(error.message));
@@ -283,15 +284,21 @@ class App extends React.Component {
         if (this.state.scanRunning) {
             this.manager.stopDeviceScan();
         }
+        this.stopScanTimeoutTimer();
         //console.log("Found " + this.state.devices.length + " devices.");
         this.writeState({ scanRunning: false });
     }
 
-    scanTimeoutTimer() {
+    stopScanTimeoutTimer() {
         if (this.scanTimeout) {
             console.log("scan timeout defined");
             clearTimeout(this.scanTimeout);
         }
+        this.scanTimeout = undefined;
+    }
+
+    startScanTimeoutTimer() {
+        this.stopScanTimeoutTimer();    // stop timer if running
         const that = this;
         this.scanTimeout = setTimeout(() => {
                 that.stopScan();
