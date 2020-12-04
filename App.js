@@ -39,7 +39,6 @@ import { Value } from 'react-native-reanimated';
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
 // TODO check port when receiving message from tracker
-// TODO add scan timeout and auto restart
 
 function Separator() {
     return <View style={styles.separator} />;
@@ -361,7 +360,12 @@ class App extends React.Component {
                     console.log("found services");
                     this.services = services;
                     NotifyMessage("Connect OK");
-                    this.writeState({ device: dev, connectionInProgress: false }, this.notificationsOnOff);
+                    this.writeState({ device: dev, connectionInProgress: false }, 
+                        () => {
+                            this.notificationsOnOff();
+                            this.monitorDeviceConnection();
+                        }
+                    )
                 })
                 .catch((error) => {
                     this.handleConnectError(error, dev);
@@ -384,6 +388,21 @@ class App extends React.Component {
             this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [] });
             NotifyMessage("Device was disconnected.");
         }
+    }
+
+    monitorDeviceConnection() {     // TODO this doesn't work, write set timeout for isDeviceConnected()
+        let dev = this.state.device;
+        let subscription = this.manager.onDeviceDisconnected(dev.id, (error, device) => {
+            if (error === null) {   // device got disconnected from the app
+                console.log("Device got disconnected");
+            }
+            else {  // some error happened
+                console.log("%s disconnected: %s, reason: %s", device, error);
+                this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [], monitorDevConnSubscription: undefined });
+            }
+        });
+        console.log("monitorDeviceConnection subscription: ", subscription);
+        this.writeState({monitorDevConnSubscription: subscription});
     }
 
     handleConnectError(error, item) {
@@ -450,7 +469,7 @@ class App extends React.Component {
         let dev = this.state.device;
         if (dev && dev !== undefined) {
             //this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
-            this.manager.monitorCharacteristicForDevice(dev.id, this.uartService, this.uartTx , (error, characteristic) => {
+            this.manager.monitorCharacteristicForDevice(dev.id, this.uartService, this.uartTx, (error, characteristic) => {
                 if (error) {
                     if (error.errorCode === BleErrorCode.DeviceDisconnected) {
                         this.disconnect();
@@ -515,11 +534,12 @@ class App extends React.Component {
             encoded = EncodeBase64(this.state.writeText);
         }
         console.log("Writing encoded data: " + encoded);
-        this.manager.writeCharacteristicWithoutResponseForDevice(dev.id, this.uartService, this.uartRx, encoded)
+        this.manager.writeCharacteristicWithResponseForDevice(dev.id, this.uartService, this.uartRx, encoded)
             .then(() => {
-                NotifyMessage("Write ok...");
+                console.log("Write ok...");
             }, (error) => {
-                console.log(error.message);
+                console.log(error.message, error.reason);
+                NotifyMessage("Error when sending data to the device!");
             });
     }
 
