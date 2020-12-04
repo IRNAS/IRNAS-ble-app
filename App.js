@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
-import { BleAndroidErrorCode, BleErrorCode, BleManager, LogLevel } from 'react-native-ble-plx';
+import { BleAndroidErrorCode, BleErrorCode, BleManager, LogLevel, State } from 'react-native-ble-plx';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
 import { getDeviceId } from 'react-native-device-info';
@@ -53,6 +53,7 @@ class App extends React.Component {
         this.manager = new BleManager();
         this.manager.setLogLevel(LogLevel.Debug);
         this.state = {
+            bluetoothPopupHappened: false,
             scanRunning: false,
             refreshingScanList: false,
             NotifyData: [],
@@ -100,7 +101,7 @@ class App extends React.Component {
         if (nextAppState === 'background' || nextAppState === 'inactive') {
             // save current config to app storage
             //this.storeData();     // TEST
-            console.log('dataToSave');
+            console.log('TODO dataToSave');
         }
         if (nextAppState === 'active') {
             this.recoverData();
@@ -108,6 +109,14 @@ class App extends React.Component {
         }
         //console.log("nextAppState: ", nextAppState);
     };
+
+    enableBluetooth() { // Android only
+        this.manager.enable()
+            .then(() => {
+                console.log("bluetooth enabled");
+                
+            });
+    }
     
     storeData = async () => {   // save latest json data
         try {
@@ -167,16 +176,20 @@ class App extends React.Component {
             this.notificationsOnOff();
         }
         this.stopScan();    // stop scan if running
+        this.writeState({ bluetoothPopupHappened: false });
         AppState.removeEventListener('change', this.handleAppStateChange);     // remove listener for app going into background
     }
 
     checkPermissions() {
         console.log("Checking Bluetooth");
         const subscription = this.manager.onStateChange((state) => {
-            if (state === 'PoweredOn') {
+            if (state == State.PoweredOn) {
                 NotifyMessage("Bluetooth is OK");
                 subscription.remove();
-            } 
+            }
+            else if (state == State.PoweredOff) {
+                this.enableBluetooth();
+            }
             else {
                 NotifyMessage("Bluetooth is " + state.toString());
             }
@@ -233,14 +246,20 @@ class App extends React.Component {
     }
 
     startScan() {
-        this.writeState({ scanRunning: true });
+        if (!this.state.bluetoothPopupHappened) {
+            this.writeState({ bluetoothPopupHappened: true });
+            this.enableBluetooth();
+        }
         this.startScanTimeoutTimer();
+        this.writeState({ scanRunning: true });
         this.manager.startDeviceScan(null, trackerScanOptions, (error, scannedDevice) => {
             if (error) {
                 NotifyMessage("Scan error: " + JSON.stringify(error.message));
                 this.writeState({ scanRunning: false });
+                this.stopScanTimeoutTimer();
                 return;
             }
+            // when scan result is received
             if (scannedDevice) {
                 //console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
                 //console.log(scannedDevice.name, ", ", DecodeBase64(scannedDevice.manufacturerData));
@@ -882,6 +901,7 @@ class App extends React.Component {
                     if (this.state.connectionInProgress) {
                         scanStatus = "Connecting...";
                     }
+                    //else if (this.state.)
                     else {
                         scanStatus = "Idle";
                     }
