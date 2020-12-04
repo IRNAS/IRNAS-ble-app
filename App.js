@@ -29,7 +29,7 @@ import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
     GenerateSettingsLookupTable, IrnasGreen, lightGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
-    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues, bleScanTimeout
+    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues, bleScanTimeout, trackerScanOptions
 } from './Helpers';
 import { Value } from 'react-native-reanimated';
 
@@ -235,7 +235,7 @@ class App extends React.Component {
     startScan() {
         this.writeState({ scanRunning: true });
         this.startScanTimeoutTimer();
-        this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
+        this.manager.startDeviceScan(null, trackerScanOptions, (error, scannedDevice) => {
             if (error) {
                 NotifyMessage("Scan error: " + JSON.stringify(error.message));
                 this.writeState({ scanRunning: false });

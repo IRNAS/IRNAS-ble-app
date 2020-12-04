@@ -1,8 +1,10 @@
 import { ToastAndroid, AlertIOS, Settings } from 'react-native';
+import { ScanMode } from 'react-native-ble-plx';
 import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
 const MAX_UINT32 = 4294967295;
+export const trackerScanOptions = {scanMode: ScanMode.LowLatency};     // scan using lowest latency (uses more power)
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
 export const bleScanTimeout = 60000;    // in miliseconds, set to 60 seconds (max value which doesn't produce a warning)
