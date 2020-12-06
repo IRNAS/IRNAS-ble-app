@@ -390,11 +390,12 @@ class App extends React.Component {
         }
     }
 
-    monitorDeviceConnection() {     // TODO this doesn't work, write set timeout for isDeviceConnected()
+    monitorDeviceConnection() {
         let dev = this.state.device;
         let subscription = this.manager.onDeviceDisconnected(dev.id, (error, device) => {
             if (error === null) {   // device got disconnected from the app
                 console.log("Device got disconnected");
+                this.disconnect();
             }
             else {  // some error happened
                 console.log("%s disconnected: %s, reason: %s", device, error);
