@@ -239,6 +239,16 @@ class App extends React.Component {
         if (this.state.scanRunning) {  // scan is running
             this.stopScan();
         }
+        else if (this.state.connectionInProgress) {     // if we are connecting to device
+            console.log("Canceling device connection");
+            this.manager.cancelDeviceConnection(this.state.device.id)
+                .then(() => {
+                    this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
+                })
+                .catch((error) => {
+                    console.log("cancelDeviceConnection error: ", error);
+                });
+        }
         else {  // scan is not running
             this.startScan();
         }
@@ -332,9 +342,8 @@ class App extends React.Component {
     connect(item) {
         console.log("connect()");
         let dev = item;
-        this.writeState({ connectionInProgress: true });
-
         if (dev !== undefined) {
+            this.writeState({ connectionInProgress: true, device: dev });
             if (this.state.retryCount === 0) {  // only display message to user when first connect try
                 NotifyMessage("connecting to device: " + dev.id);
             }
@@ -360,7 +369,8 @@ class App extends React.Component {
                     console.log("found services");
                     this.services = services;
                     NotifyMessage("Connect OK");
-                    this.writeState({ device: dev, connectionInProgress: false }, 
+                    //this.writeState({ device: dev, connectionInProgress: false }, 
+                    this.writeState({ connectionInProgress: false },
                         () => {
                             this.notificationsOnOff();
                             this.monitorDeviceConnection();
@@ -423,6 +433,10 @@ class App extends React.Component {
             console.log("Device was already connected");
             this.writeState({ retryCount: 0, device: item, connectionInProgress: false });
         }
+        else if (error.errorCode = BleErrorCode.OperationCancelled) {   // connection operation was canceled by user
+            console.log("Connection canceled");
+            this.writeState({ retryCount: 0, device: item, connectionInProgress: false });
+        }
         // more errors to be added
         else {      // other error - log it
             NotifyMessage("Error when connecting to selected device.");
@@ -469,7 +483,6 @@ class App extends React.Component {
     async setupNotifications() {
         let dev = this.state.device;
         if (dev && dev !== undefined) {
-            //this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
             this.manager.monitorCharacteristicForDevice(dev.id, this.uartService, this.uartTx, (error, characteristic) => {
                 if (error) {
                     if (error.errorCode === BleErrorCode.DeviceDisconnected) {
@@ -857,7 +870,7 @@ class App extends React.Component {
     }
 
     render() {
-        if (this.state.device === undefined) {
+        if (this.state.device === undefined || this.state.connectionInProgress) {       // TODO one of those is not triggered properly (when canceling connection)
             if (this.state.jsonEditActive) {  // edit json file screen
                 return (
                     <View style={styles.container}>
@@ -918,12 +931,12 @@ class App extends React.Component {
                     scanStatus = "Scanning...";
                 }
                 else {
-                    scanText = "Start scan";
                     if (this.state.connectionInProgress) {
                         scanStatus = "Connecting...";
+                        scanText = "Cancel";
                     }
-                    //else if (this.state.)
                     else {
+                        scanText = "Start scan";
                         scanStatus = "Idle";
                     }
                 }

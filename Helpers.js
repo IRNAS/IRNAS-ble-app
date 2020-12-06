@@ -4,10 +4,11 @@ import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
 const MAX_UINT32 = 4294967295;
-export const trackerScanOptions = {scanMode: ScanMode.LowLatency};     // scan using lowest latency (uses more power)
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
-export const bleScanTimeout = 60000;    // in miliseconds, set to 60 seconds (max value which doesn't produce a warning)
+export const bleScanTimeout = 60000;    // in ms, set to 60 seconds (max value which doesn't produce a warning)
+export const bleConnectionTimeout = 1000   // in ms, set to 10 secs
+export const trackerScanOptions = {scanMode: ScanMode.LowLatency};     // scan using lowest latency (uses more power)
 export const chargingTreshold = 5000;
 export const validPickerIntervalValues = ["60","900","3600","7200","14400"];    // seconds
 
