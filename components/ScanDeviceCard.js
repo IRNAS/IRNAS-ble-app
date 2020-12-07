@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { View, TouchableHighlight, StyleSheet } from 'react-native';
 import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { DecodeBase64, ParseTrackerAdvData, IrnasGreen, lightGreen, DecodeStatusMessage, chargingTreshold } from '../Helpers';
+import { DecodeBase64, ParseTrackerAdvData, darkBackColor, lightBackColor, DecodeStatusMessage, chargingTreshold } from '../Helpers';
 
 const ScanDeviceCard = (props) => {
     let device_name = "N/A";
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 22,
         fontWeight: "bold",
-        color: IrnasGreen,
+        color: darkBackColor,
     },
     subtitle: {
         fontSize: 16,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 10,
         fontWeight: "bold",
-        color: lightGreen,
+        color: lightBackColor,
     }
 });
 

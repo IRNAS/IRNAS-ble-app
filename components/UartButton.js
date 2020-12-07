@@ -1,13 +1,13 @@
 import React from 'react';
 import { StyleSheet, View, Button } from 'react-native';
 import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right } from 'native-base';
-import { IrnasGreen } from '../Helpers';
+import { darkBackColor } from '../Helpers';
 
 const UartButton = (props) => {
     return (
         <View style={styles.button}>
             <Button
-                color={IrnasGreen}
+                color={darkBackColor}
                 title={props.title}
                 onPress={() => props.writeUartCommand(props.uart_command)}
             />

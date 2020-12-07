@@ -1,6 +1,7 @@
 /**
- * IRNAS BLE app to communicate with Nordic UART Service profile
- * Tested with server in Nrf connect Android app and Nordic dev board PCA10040
+ * Smart Parks App to communicate with trackers
+ * Using React Native with react-native-ble-plx library
+ * Copyright (C) 2020 Vid Rajtmajer <vid@irnas.eu>, Irnas d.o.o.
  *
  * @format
  * @flow strict-local
@@ -28,7 +29,7 @@ import UartButton from './components/UartButton';
 import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
-    GenerateSettingsLookupTable, IrnasGreen, lightGreen, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
+    GenerateSettingsLookupTable, darkBackColor, lightBackColor, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
     statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues, bleScanTimeout, trackerScanOptions
 } from './Helpers';
 import { Value } from 'react-native-reanimated';
@@ -881,14 +882,14 @@ class App extends React.Component {
                             <View style={styles.multiLineViewMain}>
                                 <View style={styles.multiLineView}>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title="Save"
                                         onPress={() => this.closeJsonConfig(true)}
                                     />
                                 </View>
                                 <View style={styles.multiLineView}>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title="Back"
                                         onPress={() => this.closeJsonConfig(false)}
                                     />
@@ -897,14 +898,14 @@ class App extends React.Component {
                             <View style={styles.multiLineViewMain}>
                                 <View style={styles.multiLineView}>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title="Import"
                                         onPress={() => this.importJsonConfig()}
                                     />
                                 </View>
                                 <View style={styles.multiLineView}>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title="Export"
                                         onPress={() => this.exportJsonConfig()}
                                     />
@@ -945,19 +946,19 @@ class App extends React.Component {
                     <View style={styles.container}>
                         <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
                             <Text style={styles.mainTitle}>
-                                IRNAS BLE app - tracker
+                                Smart Parks Sensors
                             </Text>
                             <View style={styles.multiLineViewMain}>
                                 <View style={styles.multiLineView}>
                                 <Button
-                                    color={IrnasGreen}
+                                    color={darkBackColor}
                                     title={scanText}
                                     onPress={() => this.startStopScan()}
                                 />
                                 </View>
                                 <View style={styles.multiLineView}>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title='Edit config'
                                         onPress={() => this.openJsonConfig()}
                                     />
@@ -984,8 +985,8 @@ class App extends React.Component {
                 statusText = JSON.parse(this.state.statusData);
             }
             let error_text = "".concat(
-                statusText.lr_err ? " LR" : '',
-                statusText.ble_err ? " BLE" : '',
+                statusText.lr_err ? " LP1" : '',
+                statusText.ble_err ? " short range" : '',
                 statusText.ublox_err ? " Ublox" : '',
                 statusText.acc_err ? " accel" : '',
                 statusText.bat_err ? " batt" : '',
@@ -1005,14 +1006,14 @@ class App extends React.Component {
                             <View style={styles.multiLineViewMain}>
                                 <View style={styles.multiLineView}>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title='Disconnect'
                                         onPress={() => this.disconnect()}
                                     />
                                 </View>
                                 <View style={styles.multiLineView}>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title='Refresh data'
                                         onPress={() => this.refreshData()}
                                     />
@@ -1102,7 +1103,7 @@ class App extends React.Component {
                                         onChangeText={this.handleWriteText}
                                         style={{ margin: 10, backgroundColor: '#ebebeb' }}/>
                                     <Button
-                                        color={IrnasGreen}
+                                        color={darkBackColor}
                                         title='Send'
                                         onPress={() => this.write()}/>
                                 </CardItem>
@@ -1119,7 +1120,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
-        backgroundColor: lightGreen,
+        backgroundColor: lightBackColor,
     },
     title: {
         fontSize: 16,
@@ -1128,7 +1129,7 @@ const styles = StyleSheet.create({
     },
     mainTitle: {
         fontSize: 20,
-        color: IrnasGreen,
+        color: darkBackColor,
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 10,

@@ -5,12 +5,12 @@
 	},
 	"commands" : [
 		{
-			"name" : "Send status to LoRa",
+			"name" : "Send status to LP1",
 			"device_command": "cmd_send_status:",
 			"uart_command" : null
 		},
 		{
-			"name" : "Send GPS data to LoRa",
+			"name" : "Send GPS data to LP1",
 			"device_command": "cmd_send_status:",
 			"uart_command" : null
 		},

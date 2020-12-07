@@ -42,8 +42,12 @@ const settingsLookupTable = GenerateSettingsLookupTable();
 //const opModesEnum = Object.freeze({ 0: "factory", 1: "storage", 2: "deployment", 3: "operation_slow", 4: "operation_fast" });
 //const connectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-psm" });
 
-export const IrnasGreen = '#5baf49';
-export const lightGreen = '#7dbd62';
+// actual Irnas colours
+//export const darkBackColor = '#5baf49';
+//export const lightBackColor = '#7dbd62';
+// Smart Parks option green
+export const darkBackColor = '#53725D';
+export const lightBackColor = '#90AF9B';
 
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {

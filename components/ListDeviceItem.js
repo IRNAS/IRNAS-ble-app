@@ -1,5 +1,5 @@
 import React from 'react';
-import { DecodeBase64, ParseTrackerAdvData, IrnasGreen, lightGreen, DecodeStatusMessage } from '../Helpers';
+import { DecodeBase64, ParseTrackerAdvData, darkBackColor, lightBackColor, DecodeStatusMessage } from '../Helpers';
 import { View, Text, TouchableHighlight, StyleSheet } from 'react-native';
 
 const ListDeviceItem = (props) => {
