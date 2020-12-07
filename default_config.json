@@ -15,6 +15,11 @@
 			"uart_command" : null
 		},
 		{
+			"name" : "Initialize location and time",
+			"device_command": "cmd_set_location_and_time:",
+			"uart_command": null
+		},
+		{
 			"name" : "Reboot device",
 			"device_command": "cmd_reset:",
 			"uart_command" : null

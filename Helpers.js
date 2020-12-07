@@ -209,9 +209,17 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
             if (command_value in settings_json.values) {    // value is actually id of a value
                 value = settings_json.values[command_value.replace(/\s/g, '')].id;
             }
-            else {      // value is actually id of a setting
+            else if (settingsLookupTable[parseInt(command_value)]) {   // value is actually id of a setting
                 let command_name = settingsLookupTable[parseInt(command_value)].name;
                 value = settings_json.settings[command_name].id;
+            }
+            else {      // value is actually a value or we have more values together
+                value = command_value.substring(1);
+                value = value.split(" ").map(x => parseInt(x, 10));
+                if (value.length === 1) {
+                    value = value[0];
+                }
+                // TODO parse array of 3x uint32 to 12x uint8
             }
             result = packUintToBytes([port, id, length], value);
         }
@@ -430,14 +438,14 @@ export function packUintToBytes(header, value) {
         return null;
     }
     let valueLength = header[2];        // we expect length information on the third place in the header buffer
-    let arr = new ArrayBuffer(headerLength + valueLength);        // total lenght of the buffer is header + value lengths
+    let arr = new ArrayBuffer(headerLength + valueLength);        // total length of the buffer is header + value lengths
     let view = new DataView(arr);
 
     for (i = 0; i < headerLength; i++) {  // copy header to buffer
         view.setUint8(i, header[i]);
     }
 
-    switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, litteEndian = true
+    switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, littleEndian = true
         case 1:    //uint8 or bool
             view.setUint8(headerLength, value);
             break;
@@ -452,12 +460,15 @@ export function packUintToBytes(header, value) {
             }
             break;
         case 4:     //uint32
+            console.log(value);
             if (Array.isArray(value)) {
+                console.log("if");
                 for (i = 0; i < valueLength; i++) {
                     view.setUint8(headerLength + i, value[i]);
                 }
             }
             else {
+                console.log("else");
                 view.setUint32(headerLength, value, true);
             }
             break;
