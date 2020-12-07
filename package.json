@@ -16,7 +16,7 @@
     "@react-native-community/masked-view": "^0.1.10",
     "@react-navigation/native": "^5.7.6",
     "buffer": "^5.6.0",
-    "native-base": "^2.13.14",
+    "native-base": "2.13.14",
     "react": "17.0.0",
     "react-native": "0.63.3",
     "react-native-ble-plx": "^2.0.1",
