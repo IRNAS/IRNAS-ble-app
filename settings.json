@@ -50,32 +50,41 @@
           "conversion": "uint32"
       },
       "gps_init_lon": {
-        "id": "0x05",
-        "enabled": true,
-        "default": 156447700,
-        "min": -1800000000,
-        "max": 1800000000,
-        "length": 4,
-        "conversion": "int32"
+          "id": "0x05",
+          "enabled": true,
+          "default": 156447700,
+          "min": -1800000000,
+          "max": 1800000000,
+          "length": 4,
+          "conversion": "int32"
       },
       "gps_init_lat": {
-        "id": "0x06",
-        "enabled": true,
-        "default": 465556280,
-        "min": -900000000,
-        "max": 900000000,
-        "length": 4,
-        "conversion": "int32"
+          "id": "0x06",
+          "enabled": true,
+          "default": 465556280,
+          "min": -900000000,
+          "max": 900000000,
+          "length": 4,
+          "conversion": "int32"
       },
       "init_time": {
-        "id": "0x07",
-        "enabled": true,
-        "default": 1606314575,
-        "min": 1606314575,
-        "max": 4294967295,
-        "length": 4,
-        "conversion": "uint32"
+          "id": "0x07",
+          "enabled": true,
+          "default": 1606314575,
+          "min": 1606314575,
+          "max": 4294967295,
+          "length": 4,
+          "conversion": "uint32"
       },
+      "ble_adv": {
+          "id": "0x08",
+          "enabled": true,
+          "default": true,
+          "min": false,
+          "max": true,
+          "length": 1,
+          "conversion": "bool"
+          },
       "lr_port":
       {
           "id": "0x11",
