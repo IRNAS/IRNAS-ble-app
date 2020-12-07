@@ -64,8 +64,8 @@ const ScanDeviceCard = (props) => {
         }
         else {
             let error_text = "".concat(
-                adv_data.lr_err ? " LR" : '',
-                adv_data.ble_err ? " BLE" : '',
+                adv_data.lr_err ? " LP1" : '',
+                adv_data.ble_err ? " short range" : '',
                 adv_data.ublox_err ? " Ublox" : '',
                 adv_data.acc_err ? " accel" : '',
                 adv_data.bat_err ? " batt" : '',

@@ -24,7 +24,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right, Picker, Item, Form, ListItem, Label, Input } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
 import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
@@ -222,7 +221,7 @@ class App extends React.Component {
                 {
                     title: "External Storage Write Permission",
                     message:
-                        "Irnas BLE App needs access to your storage " +
+                        "The app needs access to your storage " +
                         "so it can save read logs.",
                 }
             );
