@@ -206,7 +206,7 @@ class App extends React.Component {
                 console.log("Location OK");
             }
             else {
-                NotifyMessage("In order to scan for BLE devices, location access must be granted!");
+                NotifyMessage("Location access must be granted in order to scan for trackers!");
             }
         });
 
@@ -1052,7 +1052,7 @@ class App extends React.Component {
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_additional}>
                                     <Left>
-                                        <Text>LoRa send</Text>
+                                        <Text>LR1 send</Text>
                                     </Left>
                                     <Picker
                                         mode="dropdown"
