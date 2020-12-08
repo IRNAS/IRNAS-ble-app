@@ -177,7 +177,10 @@ class App extends React.Component {
             this.notificationsOnOff();
         }
         this.stopScan();    // stop scan if running
-        this.writeState({ bluetoothPopupHappened: false });
+        if (this.state.monitorDevConnSubscription !== undefined) {
+            this.state.monitorDevConnSubscription.remove();
+        }
+        this.writeState({ bluetoothPopupHappened: false, monitorDevConnSubscription: undefined });
         AppState.removeEventListener('change', this.handleAppStateChange);     // remove listener for app going into background
     }
 
@@ -422,6 +425,7 @@ class App extends React.Component {
         let dev = this.state.device;
         if (dev !== undefined) {
             this.notifyStop();      // stop notifications from device
+            this.state.monitorDevConnSubscription.remove();
             this.manager.cancelDeviceConnection(dev.id)  // perform disconnect
                 .then(() => {
                     console.log("Disconnect OK");
