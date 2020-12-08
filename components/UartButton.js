@@ -9,7 +9,7 @@ const UartButton = (props) => {
             <Button
                 color={darkBackColor}
                 title={props.title}
-                onPress={() => props.writeUartCommand(props.uart_command)}
+                onPress={() => props.writeCommand(props.uart_command)}
             />
         </View>
     );

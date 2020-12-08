@@ -775,14 +775,18 @@ class App extends React.Component {
     parseDeviceCommands(commands) {
         var return_cmds = [];
         for (var command of commands) {
-            if (command.uart_command === null) {
+            if (command.uart_command === null) {        // if command in raw form (uint8s) is not given
+                if (command.device_command === "cmd_set_location_and_time:") {   // add additional values to command if it requires
+                    console.log("found cmd_set_location_and_time cmd, append gps position and time from this device");
+
+                }
                 let new_device_command = EncodeTrackerSettings(command.device_command);
                 if (new_device_command !== null) {
                     var new_command = command;
                     new_command.uart_command = new_device_command;
                     return_cmds.push(new_command);
                 }
-                else {
+                else {      // if command does not exist in settings.json
                     console.log("Cannot parse command: " + command.device_command.toString());
                 }
             }
@@ -798,21 +802,29 @@ class App extends React.Component {
         this.writeState({ deviceCommands: return_cmds });
     }
 
+    getGpsDataFromPhone() {
+
+    }
+
+    getUnixTimeFromPhone() {
+        
+    }
+
     displayUartButtons() {
         const views = [];
         for (var command of this.state.deviceCommands) {
-            views.push(<UartButton key={command.name} title={command.name} uart_command={command.uart_command} writeUartCommand={this.writeUartCommand} />)
+            views.push(<UartButton key={command.name} title={command.name} uart_command={command.uart_command} writeCommand={this.writeUartCommand} />)
         }
         return views;
     }
 
-    writeUartCommand = uart => {
-        console.log('button clicked, writing command: ' + uart);
+    writeUartCommand = uart => {    // write encoded command
+        console.log('button clicked, writing encoded command: ' + uart);
         this.writeState({ writeText: uart }, this.write);
     }
 
-    writeTrackerCommand = cmd => {
-        console.log('button clicked, writing command: ' + cmd);
+    writeTrackerCommand = cmd => {  // write command that is not yet encoded
+        console.log('button clicked, encoding data and writing command: ' + cmd);
         let encoded_cmd = EncodeTrackerSettings(cmd);
         this.writeState({ writeText: encoded_cmd }, this.write);
     }
