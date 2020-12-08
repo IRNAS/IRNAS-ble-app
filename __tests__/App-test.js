@@ -68,7 +68,7 @@ test('encode uint32', () => {
     expect(output).toBe(expectedOutput);
 });
 
-test('encode uint16 - command doesn not exist', () => {
+test('encode uint16 - command does not not exist', () => {
     var input = "setting_name_2: 300";   // device_command
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded);
@@ -100,6 +100,7 @@ test('encode negative int16', () => {
     expect(output).toBe(expectedOutput);
 });
 */
+
 test('encode negative int32', () => {
     var input = "gps_init_lat: -999";
     var encoded = EncodeTrackerSettings(input);
@@ -107,6 +108,7 @@ test('encode negative int32', () => {
     var expectedOutput = "3 6 4 25 252 255 255"; // id 0x16 is 22
     expect(output).toBe(expectedOutput);
 });
+
 /*
 test('encode float', () => {
     var input = "acc_x: 9.5";
@@ -124,6 +126,7 @@ test('encode negative float', () => {
     expect(output).toBe(expectedOutput);
 });
 */
+
 test('encode bool', () => {
     var input = "setting_name_9: true";
     var encoded = EncodeTrackerSettings(input);
@@ -131,6 +134,7 @@ test('encode bool', () => {
     var expectedOutput = "3 25 1 1"; // id 0x19 is 25
     expect(output).toBe(expectedOutput);
 });
+
 /*
 test('encode string - byte_array', () => {
     var input = "cmd_set_location_and_time: testing string";
@@ -142,6 +146,7 @@ test('encode string - byte_array', () => {
     expect(output).toBe(expectedOutput);
 });
 */
+
 test('decode wrong id', () => {
     var input = new Uint8Array([98,0,4,0,0,186,6]).buffer;
     var output = DecodeTrackerSettings(input);
@@ -233,3 +238,21 @@ test('encode request single setting - lora interval', () => {
     var expectedOutput = "99 168 1 1"; // id 0x19 is 25
     expect(output).toBe(expectedOutput);
 });
+
+
+test('encode initial pos and time', () => {
+    var input = "cmd_set_location_and_time: 156447700 465556280 1607347581";
+    var encoded = EncodeTrackerSettings(input);
+    var output = unpackBytesToUint(encoded).join(' ');
+    var expectedOutput = "99 175 12 212 51 83 9 56 211 191 27 125 45 206 95"; // id 0xAF is 175
+    expect(output).toBe(expectedOutput);
+});
+/*
+test('encode initial pos and time', () => {     // this is not used in settings anymore
+    var input = "cmd_reset_initial_time: 1607347581";
+    var encoded = EncodeTrackerSettings(input);
+    var output = unpackBytesToUint(encoded).join(' ');
+    var expectedOutput = "99 170 4 125 45 206 95"; // id 0xAA is 170
+    expect(output).toBe(expectedOutput);
+});
+*/
