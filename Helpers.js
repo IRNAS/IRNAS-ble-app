@@ -17,30 +17,31 @@ export const loraSendIntervalCommand = "lr_send_interval: ";
 export const statusSendIntervalCommand = "status_send_interval: "
 export const statusMessageCommand = "cmd_send_status:";
 export const initialStatus = {
-    "reset": 0,
-    "bat": 0,
-    "volt": 0,
-    "temp": 0,
-    "uptime": 0,
-    "acc_x": 0,
-    "acc_y": 0,
-    "acc_z": 0,
-    "lr_sat": 0,
-    "lr_fix": 0,
-    "lat": 0,
-    "lon": 0,
-    "lr_err": 0,
-    "ble_err": 0,
-    "ublox_err": 0,
-    "acc_err": 0,
-    "bat_err": 0,
-    "time_err": 0,
+    reset       : 0,
+    bat         : 0,
+    volt        : 0,
+    temp        : 0,
+    uptime      : 0,
+    acc_x       : 0,
+    acc_y       : 0,
+    acc_z       : 0,
+    lr_sat      : 0,
+    lr_fix      : 0,
+    //lat         : 0,
+    //lon         : 0,
+    err_lr      : 0,
+    err_ble     : 0,
+    err_ublox   : 0,
+    err_acc     : 0,
+    err_bat     : 0,
+    err_time    : 0,
+    ver_fw_major: 0,
+    ver_fw_minor: 0,
+    ver_hw_major: 0,
+    ver_hw_minor: 0,
+    ver_hw_type : 0
 }
-
-const settings_json = require('./settings.json');    // read settings.json
-const settingsLookupTable = GenerateSettingsLookupTable();
-//const opModesEnum = Object.freeze({ 0: "factory", 1: "storage", 2: "deployment", 3: "operation_slow", 4: "operation_fast" });
-//const connectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-psm" });
+export const hwTypeEnum = Object.freeze({0: "Unknown", 1: "Rhino", 2: "Elephant", 3: "Wisent" });
 
 // actual Irnas colours
 //export const darkBackColor = '#5baf49';
@@ -48,6 +49,9 @@ const settingsLookupTable = GenerateSettingsLookupTable();
 // Smart Parks option green
 export const darkBackColor = '#53725D';
 export const lightBackColor = '#90AF9B';
+
+const settings_json = require('./settings.json');    // read settings.json
+const settingsLookupTable = GenerateSettingsLookupTable();
 
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
