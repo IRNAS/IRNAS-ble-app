@@ -778,7 +778,9 @@ class App extends React.Component {
             if (command.uart_command === null) {        // if command in raw form (uint8s) is not given
                 if (command.device_command === "cmd_set_location_and_time:") {   // add additional values to command if it requires
                     console.log("found cmd_set_location_and_time cmd, append gps position and time from this device");
-
+                    let position = this.getGpsDataFromPhone();
+                    let datetime = this.getUnixTimeFromPhone();
+                    console.log("Current datetime: ", datetime);
                 }
                 let new_device_command = EncodeTrackerSettings(command.device_command);
                 if (new_device_command !== null) {
@@ -803,11 +805,13 @@ class App extends React.Component {
     }
 
     getGpsDataFromPhone() {
-
+        // TODO
     }
 
     getUnixTimeFromPhone() {
-        
+        let date = new Date();
+        let unixTimeStamp = Math.floor(date.getTime() / 1000);
+        return unixTimeStamp;
     }
 
     displayUartButtons() {
