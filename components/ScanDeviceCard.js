@@ -41,17 +41,21 @@ const ScanDeviceCard = (props) => {
         let adv_data = DecodeStatusMessage(array_raw_data.slice(2));
         additional_data_status = (
             <CardItem cardBody style={styles.card_additional}>
+                <Icon name="chip" size={20} style={styles.normal_icon}/>
+                <Text>v{adv_data.ver_hw_major}.{adv_data.ver_hw_minor}</Text>
+                <Icon name="console" size={20} style={styles.normal_icon}/>
+                <Text>v{adv_data.ver_fw_major}.{adv_data.ver_fw_minor}</Text>
                 <Icon name="battery" size={20} style={styles.normal_icon}/>
                 <Text>{adv_data.bat} mV</Text>
                 <Icon name="battery-charging" size={20} color={adv_data.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
-                <Icon name="thermometer" size={20} style={styles.normal_icon}/>
-                <Text>{adv_data.temp.toFixed(1)} °C</Text>
             </CardItem>
         );
         additional_data_accel = (
             <CardItem cardBody style={styles.card_additional}>
                 <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
                 <Text>X: {adv_data.acc_x.toFixed(1)}   Y: {adv_data.acc_y.toFixed(1)}   Z: {adv_data.acc_z.toFixed(1)} </Text>
+                <Icon name="thermometer" size={20} style={styles.normal_icon}/>
+                <Text>{adv_data.temp.toFixed(1)} °C</Text>
             </CardItem>
         );
         if (array_raw_data.slice(2)[1] === 0) {
@@ -102,7 +106,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
     },
     card_additional: {
-        marginHorizontal: 50,
+        marginHorizontal: 20,
     },
     card: {
         paddingBottom: 5,

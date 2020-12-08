@@ -837,7 +837,7 @@ class App extends React.Component {
                     console.log("Cannot parse command: " + command.device_command.toString());
                 }
             }
-            else {
+            else {  // TODO wrap this in try catch
                 let new_command = command;
                 let cmdArray = command.uart_command.split(' ').map(x => parseInt(Number("0x" + x, 10)));    // convert string of hex numbers to array of ints
                 let header = cmdArray.slice(0, 3);

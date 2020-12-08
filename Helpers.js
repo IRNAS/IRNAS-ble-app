@@ -347,46 +347,53 @@ export function DecodeStatusMessage(bytes) {
     var acc_x = decode_uint8(bytes[6], -100, 100);
     var acc_y = decode_uint8(bytes[7], -100, 100);
     var acc_z = decode_uint8(bytes[8], -100, 100);
-    var lr_sat = bytes[9];
-    var lr_fix = bytes[10];
-    var value = bytes[13] << 16 | bytes[12] << 8 | bytes[11];
-    var lat = (value - 900000) / 10000;
-    value = bytes[16] << 16 | bytes[15] << 8 | bytes[14];
-    var lon = (value - 1800000) / 10000;
+    var version = bytes[9];
+    var ver_hw_minor = version & 0x0F;
+    var ver_hw_major = version >> 4;
+    version = bytes[10];
+    var ver_fw_minor = version & 0x0F;
+    var ver_fw_major = version >> 4;
+    var ver_hw_type = bytes[11];
+    var lr_sat = bytes[12];
+    var lr_fix = bytes[13];
+    var value = bytes[16] << 16 | bytes[15] << 8 | bytes[14];
 
     //Errors
-    var lr_err = 0;
-    if (err & 1) lr_err = 1;
-    var ble_err = 0;
-    if (err & 2) ble_err = 1;
-    var ublox_err = 0;
-    if (err & 4) ublox_err = 1;
-    var acc_err = 0;
-    if (err & 8) acc_err = 1;
-    var bat_err = 0;
-    if (err & 16) bat_err = 1;
-    var time_err = 0;
-    if (err & 32) time_err = 1;
+    var err_lr = 0;
+    if(err & 1) err_lr = 1;
+    var err_ble = 0;
+    if(err & 2) err_ble = 1;
+    var err_ublox = 0;
+    if(err & 4) err_ublox = 1;
+    var err_acc = 0;
+    if(err & 8) err_acc = 1;
+    var err_bat = 0;
+    if(err & 16) err_bat = 1;
+    var err_time = 0;
+    if(err & 32) err_time = 1;
 
     decoded = {
-        reset: reset,
-        bat: bat,
-        volt: volt,
-        temp: temp,
-        uptime: uptime,
-        acc_x: acc_x,
-        acc_y: acc_y,
-        acc_z: acc_z,
-        lr_sat: lr_sat,
-        lr_fix: lr_fix,
-        lat: lat,
-        lon: lon,
-        lr_err: lr_err,
-        ble_err: ble_err,
-        ublox_err: ublox_err,
-        acc_err: acc_err,
-        bat_err: bat_err,
-        time_err: time_err,
+        reset       : reset,
+        bat         : bat,
+        volt        : volt,
+        temp        : temp,
+        uptime      : uptime,
+        acc_x       : acc_x,
+        acc_y       : acc_y,
+        acc_z       : acc_z,
+        lr_sat      : lr_sat,
+        lr_fix      : lr_fix,
+        err_lr      : err_lr,
+        err_ble     : err_ble,
+        err_ublox   : err_ublox,
+        err_acc     : err_acc,
+        err_bat     : err_bat,
+        err_time    : err_time,
+        ver_fw_major: ver_fw_major,
+        ver_fw_minor: ver_fw_minor,
+        ver_hw_major: ver_hw_major,
+        ver_hw_minor: ver_hw_minor,
+        ver_hw_type : ver_hw_type
     };
     return decoded;
 }
@@ -444,7 +451,7 @@ export function packUintToBytes(header, value) {
     for (i = 0; i < headerLength; i++) {  // copy header to buffer
         view.setUint8(i, header[i]);
     }
-    
+
     switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, littleEndian = true
         case 1:    //uint8 or bool
             view.setUint8(headerLength, value);
