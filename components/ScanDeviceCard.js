@@ -65,11 +65,11 @@ const ScanDeviceCard = (props) => {
         else {
             let error_text = "".concat(
                 adv_data.lr_err ? " LP1" : '',
-                adv_data.ble_err ? " short range" : '',
+                adv_data.ble_err ? " ShortRange" : '',
                 adv_data.ublox_err ? " Ublox" : '',
-                adv_data.acc_err ? " accel" : '',
-                adv_data.bat_err ? " batt" : '',
-                adv_data.time_err ? " time" : ''
+                adv_data.acc_err ? " Accel" : '',
+                adv_data.bat_err ? " Batt" : '',
+                adv_data.time_err ? " Time" : ''
             );
             additional_data_error = (
                 <CardItem cardBody style={styles.card_additional}>
