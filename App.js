@@ -188,7 +188,7 @@ class App extends React.Component {
         console.log("Checking Bluetooth");
         const subscription = this.manager.onStateChange((state) => {
             if (state == State.PoweredOn) {
-                NotifyMessage("Bluetooth is OK");
+                console.log("Bluetooth permission OK");
                 subscription.remove();
             }
             else if (state == State.PoweredOff) {
@@ -228,10 +228,10 @@ class App extends React.Component {
         })
         .then(granted => {
             if (granted) {
-                console.log("Location OK");
+                console.log("Location permission OK");
                 this.writeState({ locationPermissionAllowed: true });
                 this.locationSubscription = RNLocation.subscribeToLocationUpdates(locations => { 
-                    console.log(locations);
+                    //console.log(locations);
                     let latitude = locations[0].latitude;
                     let longitude = locations[0].longitude;
                     if (longitude !== undefined && latitude !== undefined) {
@@ -355,7 +355,7 @@ class App extends React.Component {
 
     stopScanTimeoutTimer() {
         if (this.scanTimeout) {
-            console.log("scan timeout defined");
+            console.log("scan timeout");
             clearTimeout(this.scanTimeout);
         }
         this.scanTimeout = undefined;
@@ -493,9 +493,10 @@ class App extends React.Component {
             NotifyMessage("Please wait for device to load the latest status data...");
             this.setupNotifications()
                 .then(() => {
-                    NotifyMessage("Listening...");
+                    console.log("Notifications turned on");
                     this.writeState({ notificationsRunning: true }, this.refreshData());
                 }, (error) => {
+                    NotifyMessage("Error when turning on notifications for the tracker!");
                     console.log(error.message);
                     this.writeState({ notificationsRunning: false });
                 });
@@ -704,7 +705,7 @@ class App extends React.Component {
         //this.settingsLookupTable = GenerateSettingsLookupTable();
 
         this.oldJson = data;
-        NotifyMessage("JSON filters parsed OK");
+        console.log("JSON filters parsed OK");
     }
 
     parseCmdCommands() {
