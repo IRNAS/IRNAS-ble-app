@@ -425,7 +425,9 @@ class App extends React.Component {
         let dev = this.state.device;
         if (dev !== undefined) {
             this.notifyStop();      // stop notifications from device
-            this.state.monitorDevConnSubscription.remove();
+            if (this.state.monitorDevConnSubscription !== undefined) {
+                this.state.monitorDevConnSubscription.remove();
+            }
             this.manager.cancelDeviceConnection(dev.id)  // perform disconnect
                 .then(() => {
                     console.log("Disconnect OK");
@@ -825,7 +827,7 @@ class App extends React.Component {
                     let position = this.state.latestPosition;
                     let datetime = this.getUnixTimeFromPhone();
                     current_command = current_command.concat(" " + position[0] + " " + position[1] + " " + datetime);
-                    console.log(current_command);
+                    //console.log(current_command);
                 }
                 let new_device_command = EncodeTrackerSettings(current_command);
                 if (new_device_command !== null) {
@@ -1057,7 +1059,7 @@ class App extends React.Component {
             if (this.state.writeScreenActive) {  // write screen
                 return (
                     <View style={styles.container}>
-                        <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
+                        <View style={{backgroundColor: 'white', margin: 2, padding: 5, marginBottom: 8, }}>
                             <Text style={styles.mainTitle}>
                                 Connected to {device_type} ({displayName})
                             </Text>
@@ -1085,21 +1087,31 @@ class App extends React.Component {
                                     <Text>Device status</Text>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
+                                    <Icon name="chip" size={20} style={styles.normal_icon}/>
+                                    <Text>v{statusText.ver_hw_major}.{statusText.ver_hw_minor}</Text>
+                                    <Icon name="console" size={20} style={styles.normal_icon}/>
+                                    <Text>v{statusText.ver_fw_major}.{statusText.ver_fw_minor}</Text>
                                     <Icon name="clock-fast" size={20} style={styles.normal_icon}/>
                                     <Text>{statusText.uptime} h</Text>
                                     <Icon name="restore-alert" size={20} style={styles.normal_icon}/>
                                     <Text>{statusText.reset}</Text>
+                                    <Icon name="thermometer" size={20} style={{ marginTop: 3 }}/>
+                                    <Text>{statusText.temp.toFixed(1)} °C</Text>
+                                </CardItem>
+                                <CardItem cardBody style={styles.card_status}>
                                     <Icon name="battery" size={20} style={styles.normal_icon}/>
                                     <Text>{statusText.bat} mV</Text>
                                     <Icon name="battery-charging" size={20} color={statusText.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
-                                    <Icon name="thermometer" size={20} style={{ marginTop: 3 }}/>
-                                    <Text>{statusText.temp.toFixed(1)} °C</Text>
+                                    <Icon name="satellite-variant" size={20} style={styles.normal_icon}/>
+                                    <Text>{statusText.lr_sat}</Text>
+                                    <Icon name="crosshairs-gps" size={20} style={styles.normal_icon}/>
+                                    <Text>{statusText.lr_fix}</Text>
                                 </CardItem>
                                 <CardItem cardBody style={styles.card_status}>
                                     <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
                                     <Text>X: {statusText.acc_x.toFixed(1)}   Y: {statusText.acc_y.toFixed(1)}   Z: {statusText.acc_z.toFixed(1)} </Text>
                                 </CardItem>
-                                <CardItem cardBody style={styles.card_status}>
+                                <CardItem cardBody style={{ marginHorizontal: 20, marginBottom: 5 }}>
                                     <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
                                     <Text>{error_text}</Text>
                                 </CardItem>
@@ -1232,7 +1244,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
     },
     card_status: {
-        marginHorizontal: 5,
+        marginHorizontal: 20,
     },
     card_additional: {
         marginHorizontal: 10,
