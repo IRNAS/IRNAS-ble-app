@@ -444,7 +444,7 @@ export function packUintToBytes(header, value) {
     for (i = 0; i < headerLength; i++) {  // copy header to buffer
         view.setUint8(i, header[i]);
     }
-
+    
     switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, littleEndian = true
         case 1:    //uint8 or bool
             view.setUint8(headerLength, value);
@@ -462,19 +462,24 @@ export function packUintToBytes(header, value) {
         case 4:     //uint32
             console.log(value);
             if (Array.isArray(value)) {
-                console.log("if");
                 for (i = 0; i < valueLength; i++) {
                     view.setUint8(headerLength + i, value[i]);
                 }
             }
             else {
-                console.log("else");
                 view.setUint32(headerLength, value, true);
             }
             break;
-        default:    // string
-            for (i = 0; i < valueLength; i++) {  // copy values to buffer
-                view.setUint8(headerLength + i, value[i]);
+        default:
+            if (Array.isArray(value) && valueLength !== value.length) {   // we have array of values (ex. 3 uint32 - we need to encode as uint32)
+                for (i = 0; i < value.length; i++) {  // copy uint32s to buffer
+                    view.setUint32(headerLength + i*4, value[i], true);
+                }
+            }
+            else {      // string
+                for (i = 0; i < valueLength; i++) {  // copy values to buffer
+                    view.setUint8(headerLength + i, value[i]);
+                }
             }
             break;
     }
