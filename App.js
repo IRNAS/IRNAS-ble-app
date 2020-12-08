@@ -23,6 +23,7 @@ import RNFileSelector from 'react-native-file-selector';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right, Picker, Item, Form, ListItem, Label, Input } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+//import Geolocation from 'react-native-geolocation-service';
 
 import UartButton from './components/UartButton';
 import ScanDeviceCard from './components/ScanDeviceCard';
@@ -72,6 +73,7 @@ class App extends React.Component {
             retryCount: 0,
             pickerLoraSelected: validPickerIntervalValues[0],
             pickerStatusSelected: validPickerIntervalValues[0],
+            latestPosition: [],
         };
         this.services = {};
 
@@ -195,18 +197,49 @@ class App extends React.Component {
         }, true);
 
         console.log("Checking location permission");
+        RNLocation.configure({
+            distanceFilter: 100, // Meters
+            desiredAccuracy: {
+                ios: "best",
+                android: "balancedPowerAccuracy"
+            },
+            // Android only
+            androidProvider: "auto",
+            interval: 5000, // Milliseconds
+            fastestInterval: 10000, // Milliseconds
+            maxWaitTime: 5000, // Milliseconds
+            // iOS Only
+            activityType: "other",
+            allowsBackgroundLocationUpdates: false,
+            headingFilter: 1, // Degrees
+            headingOrientation: "portrait",
+            pausesLocationUpdatesAutomatically: false,
+            showsBackgroundLocationIndicator: false,
+        });
+
         RNLocation.requestPermission({
             ios: "whenInUse",
             android: {
-                detail: "coarse"
+                detail: "fine"       // "coarse"
             }
         })
         .then(granted => {
             if (granted) {
                 console.log("Location OK");
+                this.writeState({ locationPermissionAllowed: true });
+                this.locationSubscription = RNLocation.subscribeToLocationUpdates(locations => { 
+                    console.log(locations);
+                    let latitude = locations[0].latitude;
+                    let longitude = locations[0].longitude;
+                    if (longitude !== undefined && latitude !== undefined) {
+                        let position = [parseInt(longitude * Math.pow(10,7)), parseInt(latitude * Math.pow(10,7))];
+                        this.writeState({ latestPosition: position });
+                    }
+                });
             }
             else {
                 NotifyMessage("Location access must be granted in order to scan for trackers!");
+                this.writeState({ locationPermissionAllowed: false });
             }
         });
 
@@ -373,6 +406,7 @@ class App extends React.Component {
                     this.writeState({ connectionInProgress: false },
                         () => {
                             this.notificationsOnOff();
+                            this.parseCmdCommands();
                             this.monitorDeviceConnection();
                         }
                     )
@@ -665,14 +699,18 @@ class App extends React.Component {
         // prepare lookup table from settings.json for decoding data received from tracker
         //this.settingsLookupTable = GenerateSettingsLookupTable();
 
+        this.oldJson = data;
+        NotifyMessage("JSON filters parsed OK");
+    }
+
+    parseCmdCommands() {
+        console.log("parseCmdCommands");
+        let data = this.state.jsonParsed;
         // check if device contains commands and parse it
         if (data.commands !== undefined) {
             console.log("JSON data: found " + data.commands.length + " commands.");
             this.parseDeviceCommands(data.commands);
         }
-
-        this.oldJson = data;
-        NotifyMessage("JSON parsed OK");
     }
 
     changeJsonText = text => {
@@ -776,13 +814,15 @@ class App extends React.Component {
         var return_cmds = [];
         for (var command of commands) {
             if (command.uart_command === null) {        // if command in raw form (uint8s) is not given
-                if (command.device_command === "cmd_set_location_and_time:") {   // add additional values to command if it requires
+                let current_command = command.device_command;
+                if (current_command === "cmd_set_location_and_time:") {   // add additional values to command if it requires
                     console.log("found cmd_set_location_and_time cmd, append gps position and time from this device");
-                    let position = this.getGpsDataFromPhone();
+                    let position = this.state.latestPosition;
                     let datetime = this.getUnixTimeFromPhone();
-                    console.log("Current datetime: ", datetime);
+                    current_command = current_command.concat(" " + position[0] + " " + position[1] + " " + datetime);
+                    console.log(current_command);
                 }
-                let new_device_command = EncodeTrackerSettings(command.device_command);
+                let new_device_command = EncodeTrackerSettings(current_command);
                 if (new_device_command !== null) {
                     var new_command = command;
                     new_command.uart_command = new_device_command;
@@ -802,10 +842,6 @@ class App extends React.Component {
             }
         }
         this.writeState({ deviceCommands: return_cmds });
-    }
-
-    getGpsDataFromPhone() {
-        // TODO
     }
 
     getUnixTimeFromPhone() {
@@ -1001,11 +1037,11 @@ class App extends React.Component {
             }
             let error_text = "".concat(
                 statusText.lr_err ? " LP1" : '',
-                statusText.ble_err ? " short range" : '',
+                statusText.ble_err ? " ShortRange" : '',
                 statusText.ublox_err ? " Ublox" : '',
-                statusText.acc_err ? " accel" : '',
-                statusText.bat_err ? " batt" : '',
-                statusText.time_err ? " time" : ''
+                statusText.acc_err ? " Accel" : '',
+                statusText.bat_err ? " Batt" : '',
+                statusText.time_err ? " Time" : ''
             );
             if (error_text == "") {
                 error_text = "No errors";
