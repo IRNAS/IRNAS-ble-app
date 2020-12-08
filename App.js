@@ -23,7 +23,6 @@ import RNFileSelector from 'react-native-file-selector';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right, Picker, Item, Form, ListItem, Label, Input } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-//import Geolocation from 'react-native-geolocation-service';
 
 import UartButton from './components/UartButton';
 import ScanDeviceCard from './components/ScanDeviceCard';

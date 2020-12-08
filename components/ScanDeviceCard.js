@@ -3,6 +3,7 @@ import { View, TouchableHighlight, StyleSheet } from 'react-native';
 import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { DecodeBase64, ParseTrackerAdvData, darkBackColor, lightBackColor, DecodeStatusMessage, chargingTreshold, hwTypeEnum } from '../Helpers';
+import RhinoIcon from '../custom_icons/RhinoIcon';
 
 const ScanDeviceCard = (props) => {
     let device_name = "N/A";
@@ -69,24 +70,24 @@ const ScanDeviceCard = (props) => {
             );
         }
 
-        let device_icon_name = "bluetooth";
+        let icon_device_type = (<Icon name="bluetooth" size={40} />);
         switch(hwTypeEnum[adv_data.ver_hw_type]) {
             case "Rhino":
-                device_icon_name = "dog";
+                icon_device_type = (<RhinoIcon size={40} />);
                 break;
             case "Elephant":
-                device_icon_name = "elephant";
+                icon_device_type = (<Icon name="elephant" size={40} />);
                 break;
             case "Wisent":
-                device_icon_name = "turtle";  
+                icon_device_type = (<Icon name="donkey" size={40} /> );
                 break;
             default:
-                device_icon_name = "google-downasaur";
+                icon_device_type = (<Icon name="google-downasaur" size={40} />);
         }
         
         let basic_data = (
             <CardItem bordered button onPress={() => props.connectToDevice(props.item_in)}>
-                <Icon name={device_icon_name} size={40} />
+                {icon_device_type}
                 <Body>
                     <Text style={styles.title}> {device_name} </Text>
                     <Text style={styles.subtitle}> {props.item_in.id} </Text>
