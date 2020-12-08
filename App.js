@@ -30,7 +30,7 @@ import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
     EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
     GenerateSettingsLookupTable, darkBackColor, lightBackColor, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
-    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues, bleScanTimeout, trackerScanOptions
+    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues, bleScanTimeout, trackerScanOptions, hwTypeEnum
 } from './Helpers';
 import { Value } from 'react-native-reanimated';
 
@@ -1034,12 +1034,14 @@ class App extends React.Component {
         }
         else {   // connect screen
             console.log("connect redraw");
+            
             let displayName = this.state.device.name;
             let statusText = initialStatus;
             if (this.state.statusData) {
                 console.log("Status data received");
                 statusText = JSON.parse(this.state.statusData);
             }
+            let device_type = hwTypeEnum[statusText.ver_hw_type];
             let error_text = "".concat(
                 statusText.lr_err ? " LP1" : '',
                 statusText.ble_err ? " ShortRange" : '',
@@ -1057,7 +1059,7 @@ class App extends React.Component {
                     <View style={styles.container}>
                         <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
                             <Text style={styles.mainTitle}>
-                                Connected to {displayName}
+                                Connected to {device_type} ({displayName})
                             </Text>
                             <View style={styles.multiLineViewMain}>
                                 <View style={styles.multiLineView}>
