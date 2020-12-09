@@ -4,6 +4,8 @@ import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right } f
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { DecodeBase64, ParseTrackerAdvData, darkBackColor, lightBackColor, DecodeStatusMessage, chargingTreshold, hwTypeEnum } from '../Helpers';
 import RhinoIcon from '../custom_icons/RhinoIcon';
+import ElephantIcon from '../custom_icons/ElephantIcon';
+import WisentIcon from '../custom_icons/WisentIcon';
 
 const ScanDeviceCard = (props) => {
     let device_name = "N/A";
@@ -76,10 +78,10 @@ const ScanDeviceCard = (props) => {
                 icon_device_type = (<RhinoIcon size={40} />);
                 break;
             case "Elephant":
-                icon_device_type = (<Icon name="elephant" size={40} />);
+                icon_device_type = (<ElephantIcon size={40} />);
                 break;
             case "Wisent":
-                icon_device_type = (<Icon name="donkey" size={40} /> );
+                icon_device_type = (<WisentIcon size={40} /> );
                 break;
             default:
                 icon_device_type = (<Icon name="google-downasaur" size={40} />);
