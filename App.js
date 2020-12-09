@@ -838,13 +838,18 @@ class App extends React.Component {
                     console.log("Cannot parse command: " + command.device_command.toString());
                 }
             }
-            else {  // TODO wrap this in try catch
-                let new_command = command;
-                let cmdArray = command.uart_command.split(' ').map(x => parseInt(Number("0x" + x, 10)));    // convert string of hex numbers to array of ints
-                let header = cmdArray.slice(0, 3);
-                let values = cmdArray.slice(3);
-                new_command.uart_command = packUintToBytes(header, values);
-                return_cmds.push(new_command);
+            else {
+                try {
+                    let new_command = command;
+                    let cmdArray = command.uart_command.split(' ').map(x => parseInt(Number("0x" + x, 10)));    // convert string of hex numbers to array of ints
+                    let header = cmdArray.slice(0, 3);
+                    let values = cmdArray.slice(3);
+                    new_command.uart_command = packUintToBytes(header, values);
+                    return_cmds.push(new_command);
+                }
+                catch (error) {
+                    console.log("Can't parse device commands!");
+                }
             }
         }
         this.writeState({ deviceCommands: return_cmds });
