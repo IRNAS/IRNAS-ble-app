@@ -75,22 +75,22 @@ const ScanDeviceCard = (props) => {
         let icon_device_type = (<Icon name="bluetooth" size={40} />);
         switch(hwTypeEnum[adv_data.ver_hw_type]) {
             case "Rhino":
-                icon_device_type = (<RhinoIcon size={40} />);
+                icon_device_type = (<RhinoIcon size={45} />);
                 break;
             case "Elephant":
-                icon_device_type = (<ElephantIcon size={40} />);
+                icon_device_type = (<ElephantIcon size={45} />);
                 break;
             case "Wisent":
-                icon_device_type = (<WisentIcon size={40} /> );
+                icon_device_type = (<WisentIcon size={45} /> );
                 break;
             default:
-                icon_device_type = (<Icon name="google-downasaur" size={40} />);
+                icon_device_type = (<Icon name="google-downasaur" size={45} />);
         }
         
         let basic_data = (
             <CardItem bordered button onPress={() => props.connectToDevice(props.item_in)}>
                 {icon_device_type}
-                <Body>
+                <Body style={{ marginStart: 5 }}>
                     <Text style={styles.title}> {device_name} </Text>
                     <Text style={styles.subtitle}> {props.item_in.id} </Text>
                 </Body>
