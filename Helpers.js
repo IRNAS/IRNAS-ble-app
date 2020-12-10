@@ -1,19 +1,57 @@
 import { ToastAndroid, AlertIOS, Settings } from 'react-native';
+import { ScanMode } from 'react-native-ble-plx';
 import { set } from 'react-native-reanimated';
 var Buffer = require('buffer/').Buffer;
 
+const MAX_UINT32 = 4294967295;
 export const mtuSize = 30;
 export const BLE_RETRY_COUNT = 5;
+export const bleScanTimeout = 60000;    // in ms, set to 60 seconds (max value which doesn't produce a warning)
+export const bleConnectionTimeout = 1000   // in ms, set to 10 secs
+export const trackerScanOptions = {scanMode: ScanMode.LowLatency};     // scan using lowest latency (uses more power)
+export const chargingTreshold = 5000;
+export const validPickerIntervalValues = ["60","900","3600","7200","14400"];    // seconds
 
-const MAX_UINT32 = 4294967295;
+export const rebootCommand = "cmd_reset:";
+export const loraSendIntervalCommand = "lr_send_interval: ";
+export const statusSendIntervalCommand = "status_send_interval: "
+export const statusMessageCommand = "cmd_send_status:";
+export const initialStatus = {
+    reset       : 0,
+    bat         : 0,
+    volt        : 0,
+    temp        : 0,
+    uptime      : 0,
+    acc_x       : 0,
+    acc_y       : 0,
+    acc_z       : 0,
+    lr_sat      : 0,
+    lr_fix      : 0,
+    //lat         : 0,
+    //lon         : 0,
+    err_lr      : 0,
+    err_ble     : 0,
+    err_ublox   : 0,
+    err_acc     : 0,
+    err_bat     : 0,
+    err_time    : 0,
+    ver_fw_major: 0,
+    ver_fw_minor: 0,
+    ver_hw_major: 0,
+    ver_hw_minor: 0,
+    ver_hw_type : 0
+}
+export const hwTypeEnum = Object.freeze({0: "Unknown", 1: "Rhino", 2: "Elephant", 3: "Wisent" });
+
+// actual Irnas colours
+//export const darkBackColor = '#5baf49';
+//export const lightBackColor = '#7dbd62';
+// Smart Parks option green
+export const darkBackColor = '#53725D';
+export const lightBackColor = '#90AF9B';
 
 const settings_json = require('./settings.json');    // read settings.json
 const settingsLookupTable = GenerateSettingsLookupTable();
-//const opModesEnum = Object.freeze({ 0: "factory", 1: "storage", 2: "deployment", 3: "operation_slow", 4: "operation_fast" });
-//const connectionsEnum = Object.freeze({ 0: "offline", 1: "online", 2: "online-psm" });
-
-export const IrnasGreen = '#5baf49';
-export const lightGreen = '#7dbd62';
 
 export function NotifyMessage(msg) {
     if (Platform.OS === 'android') {
@@ -171,7 +209,22 @@ export function EncodeTrackerSettings(command) {        // TODO handle multiple 
             result = packUintToBytes([port, id, length]);
         }
         else {      // if we have header and the value
-            let value = settings_json.values[command_value.replace(/\s/g, '')].id;
+            let value = null;
+            if (command_value in settings_json.values) {    // value is actually id of a value
+                value = settings_json.values[command_value.replace(/\s/g, '')].id;
+            }
+            else if (settingsLookupTable[parseInt(command_value)]) {   // value is actually id of a setting
+                let command_name = settingsLookupTable[parseInt(command_value)].name;
+                value = settings_json.settings[command_name].id;
+            }
+            else {      // value is actually a value or we have more values together
+                value = command_value.substring(1);
+                value = value.split(" ").map(x => parseInt(x, 10));
+                if (value.length === 1) {
+                    value = value[0];
+                }
+                // TODO parse array of 3x uint32 to 12x uint8
+            }
             result = packUintToBytes([port, id, length], value);
         }
         return result;
@@ -292,32 +345,36 @@ export function DecodeStatusMessage(bytes) {
     var reset = bytes[0];
     var err = bytes[1];
     var bat = (bytes[2] * 10) + 2500;
-    var volt = bytes[3];
+    var volt = bytes[3] * 100;
     var temp = decode_uint8(bytes[4], -100, 100);
     var uptime = bytes[5];
     var acc_x = decode_uint8(bytes[6], -100, 100);
     var acc_y = decode_uint8(bytes[7], -100, 100);
     var acc_z = decode_uint8(bytes[8], -100, 100);
-    var lr_sat = bytes[9];
-    var lr_fix = bytes[10];
-    var value = bytes[13] << 16 | bytes[12] << 8 | bytes[11];
-    var lat = (value - 900000) / 10000;
-    value = bytes[16] << 16 | bytes[15] << 8 | bytes[14];
-    var lon = (value - 1800000) / 10000;
+    var version = bytes[9];
+    var ver_hw_minor = version & 0x0F;
+    var ver_hw_major = version >> 4;
+    version = bytes[10];
+    var ver_fw_minor = version & 0x0F;
+    var ver_fw_major = version >> 4;
+    var ver_hw_type = bytes[11];
+    var lr_sat = bytes[12];
+    var lr_fix = bytes[13];
+    var value = bytes[16] << 16 | bytes[15] << 8 | bytes[14];
 
     //Errors
-    var lr_err = 0;
-    if(err & 1) lr_err = 1;
-    var ble_err = 0;
-    if(err & 2) ble_err = 1;
-    var ublox_err = 0;
-    if(err & 4) ublox_err = 1;
-    var acc_err = 0;
-    if(err & 8) acc_err = 1;
-    var bat_err = 0;
-    if(err & 16) bat_err = 1;
-    var time_err = 0;
-    if(err & 32) time_err = 1;
+    var err_lr = 0;
+    if(err & 1) err_lr = 1;
+    var err_ble = 0;
+    if(err & 2) err_ble = 1;
+    var err_ublox = 0;
+    if(err & 4) err_ublox = 1;
+    var err_acc = 0;
+    if(err & 8) err_acc = 1;
+    var err_bat = 0;
+    if(err & 16) err_bat = 1;
+    var err_time = 0;
+    if(err & 32) err_time = 1;
 
     decoded = {
         reset       : reset,
@@ -330,14 +387,17 @@ export function DecodeStatusMessage(bytes) {
         acc_z       : acc_z,
         lr_sat      : lr_sat,
         lr_fix      : lr_fix,
-        lat         : lat,
-        lon         : lon,
-        lr_err      : lr_err,
-        ble_err     : ble_err,
-        ublox_err   : ublox_err,
-        acc_err     : acc_err,
-        bat_err     : bat_err,
-        time_err    : time_err,
+        err_lr      : err_lr,
+        err_ble     : err_ble,
+        err_ublox   : err_ublox,
+        err_acc     : err_acc,
+        err_bat     : err_bat,
+        err_time    : err_time,
+        ver_fw_major: ver_fw_major,
+        ver_fw_minor: ver_fw_minor,
+        ver_hw_major: ver_hw_major,
+        ver_hw_minor: ver_hw_minor,
+        ver_hw_type : ver_hw_type
     };
     return decoded;
 }
@@ -389,14 +449,14 @@ export function packUintToBytes(header, value) {
         return null;
     }
     let valueLength = header[2];        // we expect length information on the third place in the header buffer
-    let arr = new ArrayBuffer(headerLength + valueLength);        // total lenght of the buffer is header + value lengths
+    let arr = new ArrayBuffer(headerLength + valueLength);        // total length of the buffer is header + value lengths
     let view = new DataView(arr);
 
     for (i = 0; i < headerLength; i++) {  // copy header to buffer
         view.setUint8(i, header[i]);
     }
 
-    switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, litteEndian = true
+    switch (valueLength) {  // copy value to buffer, byteOffset = headerLength, littleEndian = true
         case 1:    //uint8 or bool
             view.setUint8(headerLength, value);
             break;
@@ -411,6 +471,7 @@ export function packUintToBytes(header, value) {
             }
             break;
         case 4:     //uint32
+            console.log(value);
             if (Array.isArray(value)) {
                 for (i = 0; i < valueLength; i++) {
                     view.setUint8(headerLength + i, value[i]);
@@ -420,9 +481,16 @@ export function packUintToBytes(header, value) {
                 view.setUint32(headerLength, value, true);
             }
             break;
-        default:    // string
-            for (i = 0; i < valueLength; i++) {  // copy values to buffer
-                view.setUint8(headerLength + i, value[i]);
+        default:
+            if (Array.isArray(value) && valueLength !== value.length) {   // we have array of values (ex. 3 uint32 - we need to encode as uint32)
+                for (i = 0; i < value.length; i++) {  // copy uint32s to buffer
+                    view.setUint32(headerLength + i*4, value[i], true);
+                }
+            }
+            else {      // string
+                for (i = 0; i < valueLength; i++) {  // copy values to buffer
+                    view.setUint8(headerLength + i, value[i]);
+                }
             }
             break;
     }

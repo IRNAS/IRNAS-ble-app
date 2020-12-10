@@ -16,7 +16,7 @@
       "lr_send_interval": {
           "id": "0x01",
           "enabled": true,
-          "default": 10,
+          "default": 60,
           "min": 0,
           "max": 86400,
           "length": 4,
@@ -25,7 +25,7 @@
       "ublox_send_interval": {
           "id": "0x02",
           "enabled": true,
-          "default": 10,
+          "default": 60,
           "min": 0,
           "max": 86400,
           "length": 4,
@@ -43,12 +43,48 @@
       "satellite_send_interval": {
           "id": "0x04",
           "enabled": true,
-          "default": 86400,
+          "default": 0,
           "min": 0,
           "max": 86400,
           "length": 4,
           "conversion": "uint32"
       },
+      "gps_init_lon": {
+          "id": "0x05",
+          "enabled": true,
+          "default": 156447700,
+          "min": -1800000000,
+          "max": 1800000000,
+          "length": 4,
+          "conversion": "int32"
+      },
+      "gps_init_lat": {
+          "id": "0x06",
+          "enabled": true,
+          "default": 465556280,
+          "min": -900000000,
+          "max": 900000000,
+          "length": 4,
+          "conversion": "int32"
+      },
+      "init_time": {
+          "id": "0x07",
+          "enabled": true,
+          "default": 1606314575,
+          "min": 1606314575,
+          "max": 4294967295,
+          "length": 4,
+          "conversion": "uint32"
+      },
+      "ble_adv": {
+          "id": "0x08",
+          "enabled": true,
+          "default": true,
+          "min": false,
+          "max": true,
+          "length": 1,
+          "conversion": "bool"
+          },
       "lr_port":
       {
           "id": "0x11",
@@ -119,15 +155,15 @@
           "length": 2,
           "conversion": "uint16"
       },
-      "setting_name_8":
+      "ble_advertisement_interval":
       {
           "id": "0x18",
           "enabled": true,
-          "default": "asd-asd-asd-asd",
-          "min": "0",
-          "max": "123456789012345",
-          "length": 16,
-          "conversion": "byte_array"
+          "default": 1000,
+          "min": 100,
+          "max": 10000,
+          "length": 4,
+          "conversion": "uint32"
       },
       "setting_name_9":
       {
@@ -177,7 +213,61 @@
         "length": 0,
         "conversion": "uint8",
         "value": 0
-      }
+      },
+      "cmd_send_all_settings": {
+        "id": "0xA7",
+        "length": 0,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_send_single_setting": {
+        "id": "0xA8",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_reset_initial_position": {
+        "id": "0xA9",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_reset_initial_time": {
+        "id": "0xAA",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_clear_nvs": {
+        "id": "0xAB",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_reset_to_def_settings": {
+        "id": "0xAC",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_send_status_lr": {
+        "id": "0xAD",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_send_lr_fix": {
+        "id": "0xAE",
+        "length": 1,
+        "conversion": "uint8",
+        "value": 0
+      },
+      "cmd_set_location_and_time": {
+          "id": "0xAF",
+          "length": 12,
+          "conversion": "byte_array",
+          "value": 0
+        }
     },
   "values": {
     "port": 98,
@@ -194,7 +284,7 @@
       "id": "0xD2",
       "enabled": true,
       "default": 465556280,
-      "min": 0,
+      "min": -900000000,
       "max": 900000000,
       "length": 4,
       "conversion": "int32"
@@ -270,6 +360,15 @@
       "max": 100,
       "length": 4,
       "conversion": "float"
+    },
+    "charge_mV": {
+      "id": "0xDB",
+      "enabled": true,
+      "default": 0,
+      "min": 0,
+      "max": 32000,
+      "length": 4,
+      "conversion": "int32"
     }
   },
   "messages": {

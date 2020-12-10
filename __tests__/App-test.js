@@ -68,7 +68,7 @@ test('encode uint32', () => {
     expect(output).toBe(expectedOutput);
 });
 
-test('encode uint16 - command doesn not exist', () => {
+test('encode uint16 - command does not not exist', () => {
     var input = "setting_name_2: 300";   // device_command
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded);
@@ -83,7 +83,7 @@ test('encode uint8', () => {
     var expectedOutput = "3 17 1 99";
     expect(output).toBe(expectedOutput);
 });
-
+/*
 test('encode negative int8', () => {
     var input = "setting_name_4: -4";
     var encoded = EncodeTrackerSettings(input);
@@ -99,17 +99,19 @@ test('encode negative int16', () => {
     var expectedOutput = "3 21 2 212 254"; // id 0x15 is 21
     expect(output).toBe(expectedOutput);
 });
+*/
 
 test('encode negative int32', () => {
-    var input = "setting_name_6: -999";
+    var input = "gps_init_lat: -999";
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded).join(' ');
-    var expectedOutput = "3 22 4 25 252 255 255"; // id 0x16 is 22
+    var expectedOutput = "3 6 4 25 252 255 255"; // id 0x16 is 22
     expect(output).toBe(expectedOutput);
 });
 
+/*
 test('encode float', () => {
-    var input = "setting_name_7: 9.5";
+    var input = "acc_x: 9.5";
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded).join(' ');
     var expectedOutput = "3 23 4 9 0 136 19"; // id 0x17 is 23, 136 and 19 is little endian for 5000 (which is 0,5 on 4 places)
@@ -117,12 +119,13 @@ test('encode float', () => {
 });
 
 test('encode negative float', () => {
-    var input = "setting_name_7: -9.5";
+    var input = "acc_x: -9.5";
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded).join(' ');
     var expectedOutput = "3 23 4 247 255 136 19"; // id 0x17 is 23
     expect(output).toBe(expectedOutput);
 });
+*/
 
 test('encode bool', () => {
     var input = "setting_name_9: true";
@@ -132,8 +135,9 @@ test('encode bool', () => {
     expect(output).toBe(expectedOutput);
 });
 
+/*
 test('encode string - byte_array', () => {
-    var input = "setting_name_8: testing string";
+    var input = "cmd_set_location_and_time: testing string";
     var stringAsChars = convertStringToChars("testing string").join(' ');
     var encoded = EncodeTrackerSettings(input);
     var output = unpackBytesToUint(encoded).join(' ');
@@ -141,6 +145,7 @@ test('encode string - byte_array', () => {
     expectedOutput = expectedOutput.concat(stringAsChars); // testing string as char array is 116, 101, 115, 116, 105, 110, 103, 32, 115, 116, 114, 105, 110, 103
     expect(output).toBe(expectedOutput);
 });
+*/
 
 test('decode wrong id', () => {
     var input = new Uint8Array([98,0,4,0,0,186,6]).buffer;
@@ -225,3 +230,29 @@ test('lookup table generate all settings, check if null', () => {
     var expectedOutput = null;
     expect(output).toBe(expectedOutput);
 });
+
+test('encode request single setting - lora interval', () => {
+    var input = "cmd_send_single_setting: 1";
+    var encoded = EncodeTrackerSettings(input);
+    var output = unpackBytesToUint(encoded).join(' ');
+    var expectedOutput = "99 168 1 1"; // id 0x19 is 25
+    expect(output).toBe(expectedOutput);
+});
+
+
+test('encode initial pos and time', () => {
+    var input = "cmd_set_location_and_time: 156447700 465556280 1607347581";
+    var encoded = EncodeTrackerSettings(input);
+    var output = unpackBytesToUint(encoded).join(' ');
+    var expectedOutput = "99 175 12 212 51 83 9 56 211 191 27 125 45 206 95"; // id 0xAF is 175
+    expect(output).toBe(expectedOutput);
+});
+/*
+test('encode initial pos and time', () => {     // this is not used in settings anymore
+    var input = "cmd_reset_initial_time: 1607347581";
+    var encoded = EncodeTrackerSettings(input);
+    var output = unpackBytesToUint(encoded).join(' ');
+    var expectedOutput = "99 170 4 125 45 206 95"; // id 0xAA is 170
+    expect(output).toBe(expectedOutput);
+});
+*/

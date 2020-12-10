@@ -1,6 +1,7 @@
 /**
- * IRNAS BLE app to communicate with Nordic UART Service profile
- * Tested with server in Nrf connect Android app and Nordic dev board PCA10040
+ * Smart Parks App to communicate with trackers
+ * Using React Native with react-native-ble-plx library
+ * Copyright (C) 2020 Vid Rajtmajer <vid@irnas.eu>, Irnas d.o.o.
  *
  * @format
  * @flow strict-local
@@ -8,32 +9,36 @@
 
 import React, { Component } from 'react';
 import {
-    StyleSheet, ScrollView, View, Text, StatusBar, Button, FlatList, Alert, RefreshControl, AppState,
+    StyleSheet, ScrollView, View, StatusBar, Button, FlatList, Alert, RefreshControl, AppState,
     TextInput, TouchableOpacityBase, TouchableWithoutFeedbackBase, KeyboardAvoidingView, PermissionsAndroid
 } from 'react-native';
 import { jHeader, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 
-import { BleAndroidErrorCode, BleErrorCode, BleManager, LogLevel } from 'react-native-ble-plx';
+import { BleAndroidErrorCode, BleErrorCode, BleManager, LogLevel, State } from 'react-native-ble-plx';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { writeFile, readFile, readDir, DownloadDirectoryPath, DocumentDirectoryPath, mkdir, stat, statResult } from 'react-native-fs';
 import { getDeviceId } from 'react-native-device-info';
 import RNLocation from 'react-native-location';
 import RNFileSelector from 'react-native-file-selector';
 import AsyncStorage from '@react-native-community/async-storage';
+import { Container, Header, Content, Card, CardItem, Body, Text, Left, Right, Picker, Item, Form, ListItem, Label, Input } from 'native-base';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import ListDeviceItem from './components/ListDeviceItem';
 import UartButton from './components/UartButton';
+import ScanDeviceCard from './components/ScanDeviceCard';
 import { 
-    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, 
-    packUintToBytes, GenerateSettingsLookupTable, IrnasGreen, mtuSize, BLE_RETRY_COUNT,
+    EncodeBase64, DecodeBase64, NotifyMessage, GetTimestamp, GetFullTimestamp, EncodeTrackerSettings, DecodeTrackerSettings, initialStatus, packUintToBytes, 
+    GenerateSettingsLookupTable, darkBackColor, lightBackColor, mtuSize, BLE_RETRY_COUNT, chargingTreshold, DecodeStatusMessage, statusMessageCommand,
+    statusSendIntervalCommand, loraSendIntervalCommand, rebootCommand, validPickerIntervalValues, bleScanTimeout, trackerScanOptions, hwTypeEnum
 } from './Helpers';
+import { Value } from 'react-native-reanimated';
+
 
 //console.disableYellowBox = true;  // disable yellow warnings in the app
 
 // TRACKER STUFF:
 // TODO device settings fetch from github (get all tags)
 // TODO check port when receiving message from tracker
-// TODO add scan timeout and auto restart
 
 function Separator() {
     return <View style={styles.separator} />;
@@ -47,9 +52,11 @@ class App extends React.Component {
         this.manager = new BleManager();
         this.manager.setLogLevel(LogLevel.Debug);
         this.state = {
+            bluetoothPopupHappened: false,
             scanRunning: false,
             refreshingScanList: false,
             NotifyData: [],
+            statusData: undefined,
             devices: [],
             device: undefined,
             connectionInProgress: false,
@@ -63,6 +70,9 @@ class App extends React.Component {
             writeScreenActive: true,
             deviceCommands: [],
             retryCount: 0,
+            pickerLoraSelected: validPickerIntervalValues[0],
+            pickerStatusSelected: validPickerIntervalValues[0],
+            latestPosition: [],
         };
         this.services = {};
 
@@ -74,6 +84,8 @@ class App extends React.Component {
         this.bleFilterMac = "";
 
         this.oldJson = {};
+        this.logScreenDisabled = true;
+        this.scanTimeout = undefined;
     }
 
     writeState(object, fun) {        // wrapper function to set state, which prevents warnings can't call setState on an unmounted component
@@ -89,7 +101,7 @@ class App extends React.Component {
         if (nextAppState === 'background' || nextAppState === 'inactive') {
             // save current config to app storage
             //this.storeData();     // TEST
-            console.log('dataToSave');
+            console.log('TODO dataToSave');
         }
         if (nextAppState === 'active') {
             this.recoverData();
@@ -97,6 +109,14 @@ class App extends React.Component {
         }
         //console.log("nextAppState: ", nextAppState);
     };
+
+    enableBluetooth() { // Android only
+        this.manager.enable()
+            .then(() => {
+                console.log("bluetooth enabled");
+                
+            });
+    }
     
     storeData = async () => {   // save latest json data
         try {
@@ -145,6 +165,7 @@ class App extends React.Component {
         this.checkPermissions();  // on launch check all required permissions
         AppState.addEventListener('change', this.handleAppStateChange);    // add listener for app going into background
         this.recoverData(); // get data from saved state (async storage) or load defaults
+        //this.writeState({device: "heh"});       // TEST
     }
 
     componentWillUnmount() {
@@ -154,42 +175,78 @@ class App extends React.Component {
             this.disconnect();
             this.notificationsOnOff();
         }
-        if (this.state.scanRunning) { // stop scan if running
-            this.stop();
+        this.stopScan();    // stop scan if running
+        if (this.state.monitorDevConnSubscription !== undefined) {
+            this.state.monitorDevConnSubscription.remove();
         }
+        this.writeState({ bluetoothPopupHappened: false, monitorDevConnSubscription: undefined });
         AppState.removeEventListener('change', this.handleAppStateChange);     // remove listener for app going into background
     }
 
     checkPermissions() {
         console.log("Checking Bluetooth");
         const subscription = this.manager.onStateChange((state) => {
-            if (state === 'PoweredOn') {
-                NotifyMessage("Bluetooth is OK");
+            if (state == State.PoweredOn) {
+                console.log("Bluetooth permission OK");
                 subscription.remove();
-            } 
+            }
+            else if (state == State.PoweredOff) {
+                this.enableBluetooth();
+            }
             else {
                 NotifyMessage("Bluetooth is " + state.toString());
             }
         }, true);
 
         console.log("Checking location permission");
+        RNLocation.configure({
+            distanceFilter: 100, // Meters
+            desiredAccuracy: {
+                ios: "best",
+                android: "balancedPowerAccuracy"
+            },
+            // Android only
+            androidProvider: "auto",
+            interval: 5000, // Milliseconds
+            fastestInterval: 10000, // Milliseconds
+            maxWaitTime: 5000, // Milliseconds
+            // iOS Only
+            activityType: "other",
+            allowsBackgroundLocationUpdates: false,
+            headingFilter: 1, // Degrees
+            headingOrientation: "portrait",
+            pausesLocationUpdatesAutomatically: false,
+            showsBackgroundLocationIndicator: false,
+        });
+
         RNLocation.requestPermission({
             ios: "whenInUse",
             android: {
-                detail: "coarse"
+                detail: "fine"       // "coarse"
             }
         })
         .then(granted => {
             if (granted) {
-                console.log("Location OK");
+                console.log("Location permission OK");
+                this.writeState({ locationPermissionAllowed: true });
+                this.locationSubscription = RNLocation.subscribeToLocationUpdates(locations => { 
+                    //console.log(locations);
+                    let latitude = locations[0].latitude;
+                    let longitude = locations[0].longitude;
+                    if (longitude !== undefined && latitude !== undefined) {
+                        let position = [parseInt(longitude * Math.pow(10,7)), parseInt(latitude * Math.pow(10,7))];
+                        this.writeState({ latestPosition: position });
+                    }
+                });
             }
             else {
-                NotifyMessage("In order to scan for BLE devices, location access must be granted!");
+                NotifyMessage("Location access must be granted in order to scan for trackers!");
+                this.writeState({ locationPermissionAllowed: false });
             }
         });
 
         console.log("Checking storage permission");
-        this.requestStoragePermission();
+        this.requestStoragePermission();        // TODO this is called only on the second time fresh installed app is launched
     }
 
     requestStoragePermission = async () => {
@@ -199,7 +256,7 @@ class App extends React.Component {
                 {
                     title: "External Storage Write Permission",
                     message:
-                        "Irnas BLE App needs access to your storage " +
+                        "The app needs access to your storage " +
                         "so it can save read logs.",
                 }
             );
@@ -215,21 +272,38 @@ class App extends React.Component {
 
     startStopScan() {
         if (this.state.scanRunning) {  // scan is running
-            this.stop();
+            this.stopScan();
+        }
+        else if (this.state.connectionInProgress) {     // if we are connecting to device
+            console.log("Canceling device connection");
+            this.manager.cancelDeviceConnection(this.state.device.id)
+                .then(() => {
+                    this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
+                })
+                .catch((error) => {
+                    console.log("cancelDeviceConnection error: ", error);
+                });
         }
         else {  // scan is not running
-            this.scan();
+            this.startScan();
         }
     }
 
-    scan() {
+    startScan() {
+        if (!this.state.bluetoothPopupHappened) {
+            this.writeState({ bluetoothPopupHappened: true });
+            this.enableBluetooth();
+        }
+        this.startScanTimeoutTimer();
         this.writeState({ scanRunning: true });
-        this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
+        this.manager.startDeviceScan(null, trackerScanOptions, (error, scannedDevice) => {
             if (error) {
                 NotifyMessage("Scan error: " + JSON.stringify(error.message));
                 this.writeState({ scanRunning: false });
+                this.stopScanTimeoutTimer();
                 return;
             }
+            // when scan result is received
             if (scannedDevice) {
                 //console.log(scannedDevice.id, ", ", scannedDevice.localName, ", ", scannedDevice.name, ", ", scannedDevice.rssi);
                 //console.log(scannedDevice.name, ", ", DecodeBase64(scannedDevice.manufacturerData));
@@ -269,66 +343,92 @@ class App extends React.Component {
         });
     }
 
-    stop() {
-        this.manager.stopDeviceScan();
+    stopScan() {
+        if (this.state.scanRunning) {
+            this.manager.stopDeviceScan();
+        }
+        this.stopScanTimeoutTimer();
         //console.log("Found " + this.state.devices.length + " devices.");
         this.writeState({ scanRunning: false });
     }
 
+    stopScanTimeoutTimer() {
+        if (this.scanTimeout) {
+            console.log("scan timeout");
+            clearTimeout(this.scanTimeout);
+        }
+        this.scanTimeout = undefined;
+    }
+
+    startScanTimeoutTimer() {
+        this.stopScanTimeoutTimer();    // stop timer if running
+        const that = this;
+        this.scanTimeout = setTimeout(() => {
+                that.stopScan();
+            }, bleScanTimeout);
+    }
+
     connectToDevice = item => {
         console.log("selected device: " + item.id + " " + item.name);
-        if (this.state.scanRunning) { // stop scan if running
-            this.stop();
-        }
+        this.stopScan();    // stop scan if running
         this.connect(item);
     }
 
     connect(item) {
         console.log("connect()");
-        const device = item;
-        this.writeState({ connectionInProgress: true });
-
-        if (device !== undefined) {
+        let dev = item;
+        if (dev !== undefined) {
+            this.writeState({ connectionInProgress: true, device: dev });
             if (this.state.retryCount === 0) {  // only display message to user when first connect try
-                NotifyMessage("connecting to device: " + device.id);
+                NotifyMessage("connecting to device: " + dev.id);
             }
-            device.connect()
-                .then((device) => {     // increase MTU to match the tracker buffer size
+            this.manager.connectToDevice(dev.id)
+                .then((dev) => {     // increase MTU to match the tracker buffer size
                     console.log("MTU");
-                    return device.requestMTU(mtuSize);
+                    return dev.requestMTU(mtuSize);
                 })
-                .then((device) => {
+                .then((dev) => {
                     //let allCharacteristics = device.discoverAllServicesAndCharacteristics()
                     //console.log("chars: ");
                     //console.log(allCharacteristics)
                     //console.log(allCharacteristics)
                     console.log("discoverServices");
-                    return device.discoverAllServicesAndCharacteristics();      // TODO connect together with save services
+                    return dev.discoverAllServicesAndCharacteristics();
                 })
-                .then((device) => {
+                .then((dev) => {
                     console.log("save services");
-                    let services = device.services(device.id);
+                    let services = dev.services(dev.id);
                     return services;
                 })
                 .then((services) => {
                     console.log("found services");
                     this.services = services;
                     NotifyMessage("Connect OK");
-                    this.writeState({ device: item, connectionInProgress: false }, this.notificationsOnOff);
+                    //this.writeState({ device: dev, connectionInProgress: false }, 
+                    this.writeState({ connectionInProgress: false },
+                        () => {
+                            this.notificationsOnOff();
+                            this.parseCmdCommands();
+                            this.monitorDeviceConnection();
+                        }
+                    )
                 })
                 .catch((error) => {
-                    this.handleConnectError(error, device);
+                    this.handleConnectError(error, dev);
                 });
         }
     }
 
     disconnect() {
         console.log("disconnect()");
-        var device = this.state.device;
-        if (device !== undefined) {
+        let dev = this.state.device;
+        if (dev !== undefined) {
             this.notifyStop();      // stop notifications from device
-            this.manager.cancelDeviceConnection(device.id)  // perform disconnect
-                .then((device) => {
+            if (this.state.monitorDevConnSubscription !== undefined) {
+                this.state.monitorDevConnSubscription.remove();
+            }
+            this.manager.cancelDeviceConnection(dev.id)  // perform disconnect
+                .then(() => {
                     console.log("Disconnect OK");
                 })
                 .catch((error) => {
@@ -337,6 +437,22 @@ class App extends React.Component {
             this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [] });
             NotifyMessage("Device was disconnected.");
         }
+    }
+
+    monitorDeviceConnection() {
+        let dev = this.state.device;
+        let subscription = this.manager.onDeviceDisconnected(dev.id, (error, device) => {
+            if (error === null) {   // device got disconnected from the app
+                console.log("Device got disconnected");
+                this.disconnect();
+            }
+            else {  // some error happened
+                console.log("%s disconnected: %s, reason: %s", device, error);
+                this.writeState({ device: undefined, connectionInProgress: false, NotifyData: [], monitorDevConnSubscription: undefined });
+            }
+        });
+        console.log("monitorDeviceConnection subscription: ", subscription);
+        this.writeState({monitorDevConnSubscription: subscription});
     }
 
     handleConnectError(error, item) {
@@ -352,6 +468,14 @@ class App extends React.Component {
                 this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
             }
         }
+        else if (error.errorCode == BleErrorCode.DeviceAlreadyConnected) {
+            console.log("Device was already connected");
+            this.writeState({ retryCount: 0, device: item, connectionInProgress: false });
+        }
+        else if (error.errorCode = BleErrorCode.OperationCancelled) {   // connection operation was canceled by user
+            console.log("Connection canceled");
+            this.writeState({ retryCount: 0, device: item, connectionInProgress: false });
+        }
         // more errors to be added
         else {      // other error - log it
             NotifyMessage("Error when connecting to selected device.");
@@ -361,17 +485,19 @@ class App extends React.Component {
             //console.log(error.attErrorCode);
             //console.log(error.androidErrorCode);
             this.writeState({ retryCount: 0, device: undefined, connectionInProgress: false });
-        } 
+        }
     }
 
     notify() {
         if (this.state.device !== undefined) {
             console.log("Turning on notifications: " + this.state.device.id.toString());
+            NotifyMessage("Please wait for device to load the latest status data...");
             this.setupNotifications()
                 .then(() => {
-                    NotifyMessage("Listening...");
-                    this.writeState({ notificationsRunning: true });
+                    console.log("Notifications turned on");
+                    this.writeState({ notificationsRunning: true }, this.refreshData());
                 }, (error) => {
+                    NotifyMessage("Error when turning on notifications for the tracker!");
                     console.log(error.message);
                     this.writeState({ notificationsRunning: false });
                 });
@@ -395,35 +521,57 @@ class App extends React.Component {
     }
 
     async setupNotifications() {
-        //const characteristic = await device.writeCharacteristicWithResponseForService( service, characteristicW, "AQ==");
-
-        this.state.device.monitorCharacteristicForService(this.uartService, this.uartTx, (error, characteristic) => {
-            if (error) {
-                if (error.errorCode === BleErrorCode.DeviceDisconnected) {
-                    this.disconnect();
+        let dev = this.state.device;
+        if (dev && dev !== undefined) {
+            this.manager.monitorCharacteristicForDevice(dev.id, this.uartService, this.uartTx, (error, characteristic) => {
+                if (error) {
+                    if (error.errorCode === BleErrorCode.DeviceDisconnected) {
+                        this.disconnect();
+                    }
+                    else {
+                        console.log("Notifications error: %s, reason: %s", error.message, error.reason);
+                        console.log("Error codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
+                    }
+                    return;
+                }
+                //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
+                let result = DecodeBase64(characteristic.value);
+                let resultDecodedRaw = new Uint8Array(result);
+                console.log("Received data from device (raw): " + resultDecodedRaw);
+                let resultDecoded = DecodeTrackerSettings(resultDecodedRaw.buffer);
+                let stringResult = null;
+                if (resultDecoded !== null) {
+                    console.log(resultDecoded);
+                    if (resultDecoded[0] == "msg_status") {
+                        this.writeState({statusData: resultDecoded[1]});
+                    }
+                    else if (resultDecoded[0] == "lr_send_interval") {
+                        let receivedLoraInterval = resultDecoded[1].toString();
+                        if (validPickerIntervalValues.includes(receivedLoraInterval)) {
+                            this.writeState({pickerLoraSelected: receivedLoraInterval});
+                        }
+                    }
+                    else if (resultDecoded[0] == "status_send_interval") {
+                        let receivedStatusInterval = resultDecoded[1].toString();
+                        if (validPickerIntervalValues.includes(receivedStatusInterval)) {
+                            this.writeState({pickerStatusSelected: receivedStatusInterval});
+                        }
+                    }
+                    else {
+                        stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
+                    }
                 }
                 else {
-                    console.log("Notifications error:", error.message);
-                    console.log("Error codes:", error.errorCode, error.androidErrorCode, error.attErrorCode);
+                    stringResult = GetTimestamp() + ": RAW : " + resultDecodedRaw  + "\n";
                 }
-                return;
-            }
-            //console.log("Char monitor: " + characteristic.uuid, characteristic.value);
-            let result = DecodeBase64(characteristic.value);
-            let resultDecodedRaw = new Uint8Array(result);
-            console.log("Received data from device (raw): " + resultDecodedRaw);
-            let resultDecoded = DecodeTrackerSettings(resultDecodedRaw.buffer);
-            let stringResult = null;
-            if (resultDecoded !== null) {
-                stringResult = GetTimestamp() + ": " + resultDecoded.toString().replace(',', ' : ');  + "\n";
-            }
-            else {
-                stringResult = GetTimestamp() + ": RAW : " + resultDecodedRaw  + "\n";
-            }
-            this.writeState(prevState => ({   // updater function to prevent race conditions (append new data)
-                NotifyData: [...prevState.NotifyData, stringResult + "\n"]
-            }));
-        });
+                
+                if (!this.logScreenDisabled) {
+                    this.writeState(prevState => ({   // updater function to prevent race conditions (append new data)
+                        NotifyData: [...prevState.NotifyData, stringResult + "\n"]
+                    }));
+                }
+            });
+        }
     }
 
     handleWriteText = text => {
@@ -431,6 +579,7 @@ class App extends React.Component {
     }
 
     write() {
+        let dev = this.state.device;
         //device.writeCharacteristicWithoutResponseForService(this.nordicUartService, this.uartRx, "heh")
         let encoded; // = EncodeBase64([1]);
         if (this.state.writeText) {   // if user write data send that
@@ -438,27 +587,38 @@ class App extends React.Component {
             //encoded = EncodeBase64(textToSend);
             encoded = EncodeBase64(this.state.writeText);
         }
-        //console.log("Writing encoded data: " + encoded);
-
-        this.state.device.writeCharacteristicWithoutResponseForService(this.uartService, this.uartRx, encoded)
+        console.log("Writing encoded data: " + encoded);
+        this.manager.writeCharacteristicWithResponseForDevice(dev.id, this.uartService, this.uartRx, encoded)
             .then(() => {
-                NotifyMessage("Write ok...");
+                console.log("Write ok...");
             }, (error) => {
-                console.log(error.message);
+                console.log(error.message, error.reason);
+                NotifyMessage("Error when sending data to the device!");
             });
     }
 
     read() {
         const dev = this.state.device;
-        device.readCharacteristicForService(this.nordicUartService, this.readChar)
-            .then((chara) => {
+        this.manager.readCharacteristicForDevice(dev.id, this.nordicUartService, this.readChar)
+            .then((read_value) => {
                 //console.log("read ok");
-                const result = DecodeBase64(chara.value);
+                const result = DecodeBase64(read_value.value);
                 //console.log(result.length);
                 NotifyMessage("Read: " + result[0]);
             }, (error) => {
                 console.log(error.message);
             })
+    }
+
+    refreshData() {
+        this.writeTrackerCommand(statusMessageCommand);             // Request status
+        const that = this;
+        setTimeout(() => {      // workaround for multiple commands TODO chain them together
+            that.writeTrackerCommand("cmd_send_single_setting: 1");     // Request current lr_send_interval
+        }, 100);
+        setTimeout(() => {
+            that.writeTrackerCommand("cmd_send_single_setting: 3");     // Request current status_send_interval
+        }, 100);
     }
 
     displayAllServices() {
@@ -477,7 +637,7 @@ class App extends React.Component {
             return (
                 <FlatList
                     data={devices}
-                    renderItem={({ item }) => <ListDeviceItem item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
+                    renderItem={({ item }) => <ScanDeviceCard item_in={item} filter_name={this.bleFilterName} connectToDevice={this.connectToDevice} />}
                     refreshControl={
                         <RefreshControl
                             refreshing={this.state.refreshingScanList}
@@ -496,7 +656,7 @@ class App extends React.Component {
                 filtersText += "\nmac: " + this.bleFilterMac;
             }
             return (
-                <View>
+                <View style={{backgroundColor: 'white', marginTop: 10, marginHorizontal: 3, padding: 5}}>
                     <Text style={styles.title}>No devices found yet</Text>
                     <Text style={styles.sectionTitle}>{filtersText}</Text>
                 </View>
@@ -504,7 +664,7 @@ class App extends React.Component {
         }
         else {  // No devices and no active filters
             return (
-                <View>
+                <View style={{backgroundColor: 'white', marginTop: 10, marginHorizontal: 3, padding: 5}}>
                     <Text style={styles.title}>No devices found yet</Text>
                     <Text style={styles.sectionTitle}>No filters active</Text>
                 </View>
@@ -516,7 +676,7 @@ class App extends React.Component {
         this.writeState({ devices: [] });
         this.writeState({ numOfDevices: 0, refreshing: false });
         if (!this.state.scanRunning) {
-            this.scan();
+            this.startScan();
         }
     }
 
@@ -545,14 +705,18 @@ class App extends React.Component {
         // prepare lookup table from settings.json for decoding data received from tracker
         //this.settingsLookupTable = GenerateSettingsLookupTable();
 
+        this.oldJson = data;
+        console.log("JSON filters parsed OK");
+    }
+
+    parseCmdCommands() {
+        console.log("parseCmdCommands");
+        let data = this.state.jsonParsed;
         // check if device contains commands and parse it
         if (data.commands !== undefined) {
             console.log("JSON data: found " + data.commands.length + " commands.");
             this.parseDeviceCommands(data.commands);
         }
-
-        this.oldJson = data;
-        NotifyMessage("JSON parsed OK");
     }
 
     changeJsonText = text => {
@@ -576,9 +740,7 @@ class App extends React.Component {
 
     openJsonConfig() {
         console.log("openJsonConfig");
-        if (this.state.scanRunning) { // stop scan if running
-            this.stop();
-        }
+        this.stopScan();     // stop scan if running
         this.writeState({ jsonEditActive: true });
     }
 
@@ -657,40 +819,65 @@ class App extends React.Component {
     parseDeviceCommands(commands) {
         var return_cmds = [];
         for (var command of commands) {
-            if (command.uart_command === null) {
-                let new_device_command = EncodeTrackerSettings(command.device_command);
+            if (command.uart_command === null) {        // if command in raw form (uint8s) is not given
+                let current_command = command.device_command;
+                if (current_command === "cmd_set_location_and_time:") {   // add additional values to command if it requires
+                    console.log("found cmd_set_location_and_time cmd, append gps position and time from this device");
+                    let position = this.state.latestPosition;
+                    let datetime = this.getUnixTimeFromPhone();
+                    current_command = current_command.concat(" " + position[0] + " " + position[1] + " " + datetime);
+                    //console.log(current_command);
+                }
+                let new_device_command = EncodeTrackerSettings(current_command);
                 if (new_device_command !== null) {
                     var new_command = command;
                     new_command.uart_command = new_device_command;
                     return_cmds.push(new_command);
                 }
-                else {
+                else {      // if command does not exist in settings.json
                     console.log("Cannot parse command: " + command.device_command.toString());
                 }
             }
             else {
-                let new_command = command;
-                let cmdArray = command.uart_command.split(' ').map(x => parseInt(Number("0x" + x, 10)));    // convert string of hex numbers to array of ints
-                let header = cmdArray.slice(0, 3);
-                let values = cmdArray.slice(3);
-                new_command.uart_command = packUintToBytes(header, values);
-                return_cmds.push(new_command);
+                try {
+                    let new_command = command;
+                    let cmdArray = command.uart_command.split(' ').map(x => parseInt(Number("0x" + x, 10)));    // convert string of hex numbers to array of ints
+                    let header = cmdArray.slice(0, 3);
+                    let values = cmdArray.slice(3);
+                    new_command.uart_command = packUintToBytes(header, values);
+                    return_cmds.push(new_command);
+                }
+                catch (error) {
+                    console.log("Can't parse device commands!");
+                }
             }
         }
         this.writeState({ deviceCommands: return_cmds });
     }
 
+    getUnixTimeFromPhone() {
+        let date = new Date();
+        let unixTimeStamp = Math.floor(date.getTime() / 1000);
+        return unixTimeStamp;
+    }
+
     displayUartButtons() {
         const views = [];
         for (var command of this.state.deviceCommands) {
-            views.push(<UartButton key={command.name} title={command.name} uart_command={command.uart_command} writeUartCommand={this.writeUartCommand} />)
+            views.push(<UartButton key={command.name} title={command.name} uart_command={command.uart_command} writeCommand={this.writeUartCommand} />)
         }
         return views;
     }
 
-    writeUartCommand = uart => {
-        console.log('button clicked, writing command: ' + uart);
+    writeUartCommand = uart => {    // write encoded command
+        console.log('button clicked, writing encoded command: ' + uart);
         this.writeState({ writeText: uart }, this.write);
+    }
+
+    writeTrackerCommand = cmd => {  // write command that is not yet encoded
+        console.log('button clicked, encoding data and writing command: ' + cmd);
+        let encoded_cmd = EncodeTrackerSettings(cmd);
+        this.writeState({ writeText: encoded_cmd }, this.write);
     }
 
     displayLogs() {
@@ -737,55 +924,65 @@ class App extends React.Component {
         }
     }
 
+    updatePickerLora(value) {
+       this.writeState({pickerLoraSelected: value}, this.writeUartCommand(loraSendIntervalCommand + this.state.pickerLoraSelected));
+    }
+
+    updatePickerStatus(value) {
+        this.writeState({pickerStatusSelected: value}, this.writeUartCommand(statusSendIntervalCommand + this.state.pickerStatusSelected));
+    }
+
     render() {
-        if (this.state.device === undefined) {
+        if (this.state.device === undefined || this.state.connectionInProgress) {       // TODO one of those is not triggered properly (when canceling connection)
             if (this.state.jsonEditActive) {  // edit json file screen
                 return (
                     <View style={styles.container}>
-                        <Text style={styles.mainTitle}>
-                            Json editor screen
-                        </Text>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Save"
-                                    onPress={() => this.closeJsonConfig(true)}
-                                />
+                        <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
+                            <Text style={styles.mainTitle}>
+                                Json editor screen
+                            </Text>
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={darkBackColor}
+                                        title="Save"
+                                        onPress={() => this.closeJsonConfig(true)}
+                                    />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={darkBackColor}
+                                        title="Back"
+                                        onPress={() => this.closeJsonConfig(false)}
+                                    />
+                                </View>
                             </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Back"
-                                    onPress={() => this.closeJsonConfig(false)}
-                                />
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={darkBackColor}
+                                        title="Import"
+                                        onPress={() => this.importJsonConfig()}
+                                    />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={darkBackColor}
+                                        title="Export"
+                                        onPress={() => this.exportJsonConfig()}
+                                    />
+                                </View>
                             </View>
+                            <Separator />
+                            <KeyboardAwareScrollView>
+                                <TextInput
+                                    placeholder="Json config wll be displayed here"
+                                    style={styles.inputMulti}
+                                    onChangeText={this.changeJsonText}
+                                    value={this.state.jsonText}
+                                    multiline={true} />
+                            </KeyboardAwareScrollView>
                         </View>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Import"
-                                    onPress={() => this.importJsonConfig()}
-                                />
-                            </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title="Export"
-                                    onPress={() => this.exportJsonConfig()}
-                                />
-                            </View>
-                        </View>
-                        <Separator />
-                        <KeyboardAwareScrollView>
-                            <TextInput
-                                placeholder="Json config wll be displayed here"
-                                style={styles.inputMulti}
-                                onChangeText={this.changeJsonText}
-                                value={this.state.jsonText}
-                                multiline={true} />
-                        </KeyboardAwareScrollView>
                     </View>
                 );
             }
@@ -797,150 +994,195 @@ class App extends React.Component {
                     scanStatus = "Scanning...";
                 }
                 else {
-                    scanText = "Start scan";
                     if (this.state.connectionInProgress) {
                         scanStatus = "Connecting...";
+                        scanText = "Cancel";
                     }
                     else {
+                        scanText = "Start scan";
                         scanStatus = "Idle";
                     }
                 }
 
                 return (
                     <View style={styles.container}>
-                        <Text style={styles.mainTitle}>
-                            IRNAS BLE app - tracker
-                        </Text>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                            <Button
-                                color={IrnasGreen}
-                                title={scanText}
-                                onPress={() => this.startStopScan()}
-                            />
-                            </View>
-                            <View style={styles.multiLineView}>
+                        <View style={{backgroundColor: 'white', margin: 2, padding: 5}}>
+                            <Text style={styles.mainTitle}>
+                                Smart Parks Sensors
+                            </Text>
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
                                 <Button
-                                    color={IrnasGreen}
-                                    title='Edit configuration'
-                                    onPress={() => this.openJsonConfig()}
+                                    color={darkBackColor}
+                                    title={scanText}
+                                    onPress={() => this.startStopScan()}
                                 />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={darkBackColor}
+                                        title='Edit config'
+                                        onPress={() => this.openJsonConfig()}
+                                    />
+                                </View>
                             </View>
+                            <Separator />
+                            <Text style={styles.title}>
+                                Status: {scanStatus}
+                            </Text>
                         </View>
-                        <Separator />
-                        <Text style={styles.title}>
-                            Status: {scanStatus}
-                        </Text>
-                        <Separator />
                         <View style={styles.displayDevices}>
                             {this.displayResults()}
                         </View>
-                        <Separator />
                     </View>
                 );
             }
         }
         else {   // connect screen
+            console.log("connect redraw");
+            
             let displayName = this.state.device.name;
+            let statusText = initialStatus;
+            if (this.state.statusData) {
+                console.log("Status data received");
+                statusText = JSON.parse(this.state.statusData);
+            }
+            let device_type = hwTypeEnum[statusText.ver_hw_type];
+            let error_text = "".concat(
+                statusText.lr_err ? " LP1" : '',
+                statusText.ble_err ? " ShortRange" : '',
+                statusText.ublox_err ? " Ublox" : '',
+                statusText.acc_err ? " Accel" : '',
+                statusText.bat_err ? " Batt" : '',
+                statusText.time_err ? " Time" : ''
+            );
+            if (error_text == "") {
+                error_text = "No errors";
+            }
+
             if (this.state.writeScreenActive) {  // write screen
                 return (
                     <View style={styles.container}>
-                        <Text style={styles.mainTitle}>
-                            Connected to {displayName}
-                        </Text>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Disconnect'
-                                    onPress={() => this.disconnect()}
-                                />
-                            </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Read logs'
-                                    onPress={() => this.displayLogs()}
-                                />
-                            </View>
-                        </View>
-                        <Separator />
-                        <KeyboardAwareScrollView>
-                            <Text style={styles.title}>
-                                Write data to device (RX characteristic)
+                        <View style={{backgroundColor: 'white', margin: 2, padding: 5, marginBottom: 8, }}>
+                            <Text style={styles.mainTitle}>
+                                Connected to {device_type} ({displayName})
                             </Text>
-                            <View style={{ justifyContent: 'center', }}>
-                                {this.displayUartButtons()}
-                            </View>
-                            <Separator />
-                            <View style = {{ marginHorizontal: 10, alignContent: 'center', }}>
-                                <Button
-                                    title='Send custom data to RX char'
-                                    onPress={() => this.write()}
-                                />
-                            </View>
-                            <TextInput
-                                placeholder="Write custom string here"
-                                style={styles.input}
-                                onChangeText={this.handleWriteText}
-                                onSubmitEditing={() => this.write()}
-                            />
-                        </KeyboardAwareScrollView>
-                    </View>
-                );
-            }
-            else {  // read screen
-                let logs = this.state.NotifyData;
-                if (logs.length === 0) {
-                    logs = "No logs yet";
-                }
-
-                return (
-                    <View style={styles.container}>
-                        <Text style={styles.mainTitle}>
-                            Connected to {displayName}
-                        </Text>
-                        <View style={styles.multiLineViewMain}>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Disconnect'
-                                    onPress={() => this.disconnect()}
-                                />
-                            </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Write commands'
-                                    onPress={() => this.displayLogs()}
-                                />
-                            </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Clear logs'
-                                    onPress={() => this.clearLog()}
-                                />
-                            </View>
-                            <View style={styles.multiLineView}>
-                                <Button
-                                    color={IrnasGreen}
-                                    title='Save logs'
-                                    onPress={() => this.saveLog()}
-                                />
+                            <View style={styles.multiLineViewMain}>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={darkBackColor}
+                                        title='Disconnect'
+                                        onPress={() => this.disconnect()}
+                                    />
+                                </View>
+                                <View style={styles.multiLineView}>
+                                    <Button
+                                        color={darkBackColor}
+                                        title='Refresh data'
+                                        onPress={() => this.refreshData()}
+                                    />
+                                </View>
                             </View>
                         </View>
-                        <Separator />
-                        <Text style={styles.title}>
-                            Read logs
-                        </Text>
-                        <ScrollView
-                            ref={ref => scrollView = ref}
-                            onContentSizeChange={() => {
-                                scrollView.scrollToEnd({ animated: true });
-                            }}>
-                            <Text>{logs}</Text>
-                        </ScrollView>
+                        <KeyboardAwareScrollView>
+                            <Card>
+                                <CardItem cardBody style={{ justifyContent: "center" }}>
+                                    <Icon name="message-text-outline" size={20} style={styles.normal_icon}/>
+                                    <Text>Device status</Text>
+                                </CardItem>
+                                <CardItem cardBody style={styles.card_status}>
+                                    <Icon name="chip" size={20} style={styles.normal_icon}/>
+                                    <Text>v{statusText.ver_hw_major}.{statusText.ver_hw_minor}</Text>
+                                    <Icon name="console" size={20} style={styles.normal_icon}/>
+                                    <Text>v{statusText.ver_fw_major}.{statusText.ver_fw_minor}</Text>
+                                    <Icon name="clock-fast" size={20} style={styles.normal_icon}/>
+                                    <Text>{statusText.uptime} h</Text>
+                                    <Icon name="restore-alert" size={20} style={styles.normal_icon}/>
+                                    <Text>{statusText.reset}</Text>
+                                    <Icon name="thermometer" size={20} style={{ marginTop: 3 }}/>
+                                    <Text>{statusText.temp.toFixed(1)} °C</Text>
+                                </CardItem>
+                                <CardItem cardBody style={styles.card_status}>
+                                    <Icon name="battery" size={20} style={styles.normal_icon}/>
+                                    <Text>{statusText.bat} mV</Text>
+                                    <Icon name="battery-charging" size={20} color={statusText.volt < chargingTreshold ? 'gray' : 'green'} style={styles.normal_icon} />
+                                    <Icon name="satellite-variant" size={20} style={styles.normal_icon}/>
+                                    <Text>{statusText.lr_sat}</Text>
+                                    <Icon name="crosshairs-gps" size={20} style={styles.normal_icon}/>
+                                    <Text>{statusText.lr_fix}</Text>
+                                </CardItem>
+                                <CardItem cardBody style={styles.card_status}>
+                                    <Icon name="axis-arrow" size={20} style={styles.normal_icon}/>
+                                    <Text>X: {statusText.acc_x.toFixed(1)}   Y: {statusText.acc_y.toFixed(1)}   Z: {statusText.acc_z.toFixed(1)} </Text>
+                                </CardItem>
+                                <CardItem cardBody style={{ marginHorizontal: 20, marginBottom: 5 }}>
+                                    <Icon name="close-circle-outline" size={20} style={styles.normal_icon}/> 
+                                    <Text>{error_text}</Text>
+                                </CardItem>
+                            </Card>
+                            <Card>
+                                <CardItem cardBody style={{ justifyContent: "center"}}>
+                                    <Icon name="cloud-upload-outline" size={20} style={styles.normal_icon}/>
+                                    <Text>Set sending intervals</Text>
+                                </CardItem>
+                                <CardItem cardBody style={styles.card_additional}>
+                                    <Left>
+                                        <Text>LR1 send</Text>
+                                    </Left>
+                                    <Picker
+                                        mode="dropdown"
+                                        iosIcon={<Icon name="arrow-down" />}
+                                        style={{ width: undefined }}
+                                        selectedValue={this.state.pickerLoraSelected}
+                                        onValueChange={this.updatePickerLora.bind(this)}>
+                                        <Picker.Item label="1 min" value={validPickerIntervalValues[0]} />
+                                        <Picker.Item label="15 mins" value={validPickerIntervalValues[1]} />
+                                        <Picker.Item label="1 hour" value={validPickerIntervalValues[2]} />
+                                        <Picker.Item label="2 hours" value={validPickerIntervalValues[3]} />
+                                        <Picker.Item label="4 hours" value={validPickerIntervalValues[4]} />
+                                    </Picker>
+                                </CardItem>
+                                <CardItem cardBody style={styles.card_additional}>
+                                    <Left>
+                                        <Text>Status send</Text>
+                                    </Left>
+                                    <Picker
+                                        mode="dropdown"
+                                        iosIcon={<Icon name="arrow-down" />}
+                                        style={{ width: undefined }}
+                                        selectedValue={this.state.pickerStatusSelected}
+                                        onValueChange={this.updatePickerStatus.bind(this)}>
+                                        <Picker.Item label="1 min" value={validPickerIntervalValues[0]} />
+                                        <Picker.Item label="15 mins" value={validPickerIntervalValues[1]} />
+                                        <Picker.Item label="1 hour" value={validPickerIntervalValues[2]} />
+                                        <Picker.Item label="2 hours" value={validPickerIntervalValues[3]} />
+                                        <Picker.Item label="4 hours" value={validPickerIntervalValues[4]} />
+                                    </Picker>
+                                </CardItem>
+                            </Card>
+                            <Card>
+                                <CardItem cardBody style={{ justifyContent: "center", marginBottom: 5 }}>
+                                    <Icon name="tools" size={20} style={styles.normal_icon}/>
+                                    <Text>Device commands</Text>
+                                </CardItem>
+                                {this.displayUartButtons()}
+                            </Card>
+                            <Card>
+                                <CardItem cardBody style={styles.card_additional}>
+                                    <Left>
+                                        <Icon name="wrench-outline" size={20} style={styles.normal_icon}/>
+                                        <Label>Custom command</Label>
+                                    </Left>
+                                    <Input 
+                                        onChangeText={this.handleWriteText}
+                                        style={{ margin: 10, backgroundColor: '#ebebeb' }}/>
+                                    <Button
+                                        color={darkBackColor}
+                                        title='Send'
+                                        onPress={() => this.write()}/>
+                                </CardItem>
+                            </Card>
+                        </KeyboardAwareScrollView>
                     </View>
                 );
             }
@@ -952,6 +1194,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
+        backgroundColor: lightBackColor,
     },
     title: {
         fontSize: 16,
@@ -960,16 +1203,17 @@ const styles = StyleSheet.create({
     },
     mainTitle: {
         fontSize: 20,
-        color: IrnasGreen,
+        color: darkBackColor,
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 10,
     },
     sectionTitle: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '600',
         color: Colors.black,
         textAlign: 'center',
+        marginBottom: 5,
     },
     separator: {
         marginVertical: 8,
@@ -996,9 +1240,19 @@ const styles = StyleSheet.create({
         width: '48%',
     },
     displayDevices: {
-        paddingBottom: 70,
-        marginBottom: 70,
-    }
+        paddingBottom: 10,
+        flex: 1,
+    },
+    normal_icon: {
+        marginTop: 3,
+        marginHorizontal: 5,
+    },
+    card_status: {
+        marginHorizontal: 20,
+    },
+    card_additional: {
+        marginHorizontal: 10,
+    },
 });
 
 export default App;
